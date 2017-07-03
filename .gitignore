@@ -1,0 +1,13 @@
+*.class
+.DS_Store
+Thumbs.db
+
+# Intellij Idea
+.idea/
+*.iml
+out/
+
+# gradle
+gradle.properties
+.gradle/
+build/

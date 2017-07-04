@@ -23,6 +23,8 @@ public class CommercetoolsHandlePaymentsController {
             value = "/{tenantName}/commercetools/handle/payments/{paymentId}")
     public Payment handlePayments(@PathVariable String tenantName,
                                   @PathVariable String paymentId) {
+
+        // skeleton for tests: just "reflect" the tenant name and payment ID as JSON
         return new Payment(tenantName,
                 String.format(template, paymentId));
     }

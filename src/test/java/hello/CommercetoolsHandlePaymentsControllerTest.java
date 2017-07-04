@@ -32,5 +32,15 @@ public class CommercetoolsHandlePaymentsControllerTest {
                 .andExpect(jsonPath("$.paymentId").value("Hello, payment [XXX-YYY]!"));
     }
 
+    @Test
+    public void finalSlashIsProcessedToo() throws Exception {
+
+        this.mockMvc.perform(get("/asdhfasdfasf/commercetools/handle/payments/6753324-23]452-sgsfgd/"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tenantName").value("asdhfasdfasf"))
+                .andExpect(jsonPath("$.paymentId").value("Hello, payment [6753324-23]452-sgsfgd]!"));
+    }
+
 
 }

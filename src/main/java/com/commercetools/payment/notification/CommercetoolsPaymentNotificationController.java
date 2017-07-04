@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static com.commercetools.payment.constants.Psp.PSP_NAME;
 import static java.lang.String.format;
@@ -19,7 +20,15 @@ public class CommercetoolsPaymentNotificationController {
             value = "/{tenantName}/"+ PSP_NAME + "/notification")
     public String handlePayments(@PathVariable String tenantName,
                                  HttpServletRequest request) {
-        return format("Requested tenant [%s] with data: [%s]", tenantName,
-                new HashMap<>(request.getParameterMap()).toString());
+
+
+        // skeleton for tests: just "reflect" the tenant name and request arguments
+        String requestParameters = request.getParameterMap().entrySet().stream()
+                .map(stringEntry -> format("%s=%s", stringEntry.getKey(), Arrays.stream(stringEntry.getValue())
+                        .findFirst().orElse("")))
+                .collect(Collectors.joining("\n"));
+
+        return format("Requested tenant [%s] with data:%n%s%n", tenantName,
+                requestParameters);
     }
 }

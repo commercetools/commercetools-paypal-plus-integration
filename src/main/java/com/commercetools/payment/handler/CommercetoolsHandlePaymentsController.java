@@ -1,6 +1,6 @@
 package com.commercetools.payment.handler;
 
-import com.commercetools.payment.Payment;
+import com.commercetools.payment.PaymentDemo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.web.bind.WebDataBinder;
@@ -21,11 +21,11 @@ public class CommercetoolsHandlePaymentsController {
     @RequestMapping(
             method = RequestMethod.GET,
             value = "/{tenantName}/commercetools/handle/payments/{paymentId}")
-    public Payment handlePayments(@PathVariable String tenantName,
-                                  @PathVariable String paymentId) {
+    public PaymentDemo handlePayments(@PathVariable String tenantName,
+                                      @PathVariable String paymentId) {
 
         // skeleton for tests: just "reflect" the tenant name and payment ID as JSON
-        return new Payment(tenantName,
+        return new PaymentDemo(tenantName,
                 String.format(template, paymentId));
     }
 

@@ -1,11 +1,11 @@
 package com.commercetools.payment;
 
-public class Payment {
+public class PaymentDemo {
 
     private final String tenantName;
     private final String paymentId;
 
-    public Payment(String tenantName, String paymentId) {
+    public PaymentDemo(String tenantName, String paymentId) {
         this.tenantName = tenantName;
         this.paymentId = paymentId;
     }

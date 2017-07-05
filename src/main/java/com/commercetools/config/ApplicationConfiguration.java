@@ -1,15 +1,27 @@
-package com.commercetools;
+package com.commercetools.config;
 
+import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.SphereClientFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 @Configuration
+@DependsOn({"sphereConfig"})
 public class ApplicationConfiguration {
 
+    @Bean
+    @Autowired
+    public SphereClient sphereClient(SphereClientConfig sphereClientConfig) {
+        return SphereClientFactory.of().createClient(sphereClientConfig);
+    }
+
     /**
-     * @return ignore trailing slash on the request
+     * @return bean which forces to treat trailing slash same as without it.
      */
     @Bean
     public RequestMappingHandlerMapping useTrailingSlash() {
@@ -19,7 +31,7 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * @return trim whitespaces, treat empty string as non-null
+     * @return bean which allows to trim whitespaces in URL request arguments (path variables, request params)
      */
     @Bean
     public StringTrimmerEditor stringTrimmerEditor() {

@@ -23,8 +23,17 @@ repositories {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+final depVersions = [
+        springBoot: '1.5.4.RELEASE',
+        commercetoolsSdkJvm: '1.20.0'
+]
+
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter-web:${depVersions.springBoot}")
+
+    compile "com.commercetools.sdk.jvm.core:commercetools-models:${depVersions.commercetoolsSdkJvm}"
+    compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${depVersions.commercetoolsSdkJvm}"
+
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 

@@ -1,0 +1,6 @@
+# rename to application.yml and fill-in to use it in local integration tests
+
+ctp.client:
+  projectKey:
+  clientId:
+  clientSecret:

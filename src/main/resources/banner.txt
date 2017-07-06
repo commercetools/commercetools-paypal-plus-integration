@@ -1,0 +1,3 @@
+Running [${application.title}:${application.version}]
+
+Spring boot version: [${spring-boot.version}]

@@ -7,21 +7,26 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'org.springframework.boot'
-
-jar {
-    baseName = rootProject.name
-    version =  '0.1.0-DEV'
-}
-
 repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 1.8
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+
 targetCompatibility = 1.8
+sourceCompatibility = 1.8
+
+
+jar {
+    version =  '0.1.0-DEV'
+    baseName = rootProject.name
+    manifest {
+        attributes("Implementation-Title": rootProject.name,
+                   "Implementation-Version": version)
+    }
+}
 
 final depVersions = [
         springBoot: '1.5.4.RELEASE',

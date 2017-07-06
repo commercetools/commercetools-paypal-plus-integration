@@ -1,7 +1,2 @@
-# settings from /config/application.yml re-write settings from /application.yml
-# rename to application.yml and fill-in to use it in local test mode (integration tests)
-
-ctp.client:
-  projectKey:
-  clientId:
-  clientSecret:
+# local tests config
+application.yml

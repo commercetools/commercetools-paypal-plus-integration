@@ -21,7 +21,7 @@ sourceCompatibility = 1.8
 
 jar {
     version =  '0.1.0-DEV'
-    baseName = rootProject.name
+    archiveName = "${rootProject.name}.jar"
     manifest {
         attributes("Implementation-Title": rootProject.name,
                    "Implementation-Version": version)

@@ -2,6 +2,10 @@
 
 ## Local debug
 
+```bash
+./gradlew bootRun
+```
+
 Local _Run/Debug_ setting may be configured in [`/src/main/resources/config/application.yml`](/src/main/resources/config/application.yml) 
 file. If the file exists - it overrides default [`/src/main/resources/application.yml`](/src/main/resources/application.yml).
 

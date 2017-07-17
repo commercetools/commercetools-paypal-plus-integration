@@ -1,9 +1,11 @@
 package com.commercetools.service;
 
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentMethodInfo;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -19,4 +21,12 @@ public interface PaymentService {
      * @return completion stage with optional found payment.
      */
     CompletionStage<Optional<Payment>> getByPaymentMethodAndInterfaceId(String paymentMethodInterface, String interfaceId);
+
+    /**
+     * Apply {@code updateActions} to the {@code payment}
+     * @param payment <b>non-null</b> {@link Payment} to update
+     * @param updateActions <b>non-null</b> list of {@link UpdateAction <Payment>} to apply to the {@code payment}
+     * @return Completion stage with an instance of the updated payment
+     */
+    CompletionStage<Payment> updatePayment(Payment payment, List<UpdateAction<Payment>> updateActions);
 }

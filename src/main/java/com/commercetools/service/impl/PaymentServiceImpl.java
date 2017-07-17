@@ -2,7 +2,9 @@ package com.commercetools.service.impl;
 
 import com.commercetools.service.PaymentService;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.Payment;
+import io.sphere.sdk.payments.commands.PaymentUpdateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.payments.queries.PaymentQuery;
 import io.sphere.sdk.queries.PagedResult;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -40,6 +43,14 @@ public class PaymentServiceImpl extends BaseSphereService implements PaymentServ
                 .plusPredicates(p -> p.interfaceId().is(interfaceId));
         return sphereClient.execute(paymentQuery)
                 .thenApply(PagedResult::head);
+    }
+
+    @Override
+    public CompletionStage<Payment> updatePayment(Payment payment, List<UpdateAction<Payment>> updateActions) {
+        if (payment == null) {
+            return completedFuture(null);
+        }
+        return sphereClient.execute(PaymentUpdateCommand.of(payment, updateActions));
     }
 
 }

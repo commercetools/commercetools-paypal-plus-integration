@@ -1,0 +1,31 @@
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+
+language: java
+
+dist: trusty
+
+jdk:
+  - openjdk8
+
+install: true # skips travis' default installation step which executes gradle assemble.
+
+script: ./gradlew clean build
+
+# The before_cache and the cache steps cache the gradle installation on travis.
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
+# Please note that if you use a depth of 1 and have a queue of jobs, Travis CI won’t build commits that are in the queue when you push a new commit.
+git:
+  depth: 5

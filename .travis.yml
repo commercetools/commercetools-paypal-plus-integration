@@ -29,3 +29,14 @@ cache:
 # Please note that if you use a depth of 1 and have a queue of jobs, Travis CI won’t build commits that are in the queue when you push a new commit.
 git:
   depth: 5
+
+notifications:
+  hipchat:
+    template:
+      - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}, <a href="%{compare_url}">Commit diff</a>, <a href="%{build_url}">Build details</a>, Build duration: %{duration}'
+    format: html
+    on_pull_requests: false
+    on_success: change
+    on_failure: always
+    rooms:
+      secure: bHSK1fFwjTIj+EpV55y9dqXGI0gANmsiAOVnAK/3WvTuFh3kwnDqw3GTYptNyByRmfoCyWKPGjEWr6IaLYHCs1R86Yy+jZ3UNuyi09JGR+H9pkmnlnboEtUDKndIfLIS22cliVGtwY8nq+iw19q1/0IiJVaQm5deBSfinQPlBGSBEx/nIiIWGxstogDe+/CWaSWmp9RElxPqSdAQ7CjDrUuAH3vRiNK/RO88P+IH1xFJPz98al+oaMsg4zK+SCUmhEfuh0X9fXkISzbfPMIlcGVuad/jqzEboMTkLY1DnlmNMIHTj0rhKO9pCEjeycKHNVbM/jvGz4uZByt4Qqd4IpinHA7rDa4kmbBj3lsSrB6J/5vHUwMYgs85S3mPTjCwWTqH6yWD0aUOhqld/nL6xeyk+h+4YLqIjxr3t9T9zJCnEVzwTSLqrv50CCZ3jclqaa0KMv3vZmqoEQ6Vm7M51d5U+XUp0+V44C1UDgSrwuJX5/N+LSTzbTQKDsXGnl4C3NfniJW2JSBTfaR2Ioxhm3Hn60ah+gptmuAq8AUh1E9gh3lUtpVRc//IKtpWm0bLs5GTRo7Q7RHdgCXydkS4LimXQVEGQJt+JKu37cpVwQvLgmL52//L1b2dX6vrmtwKqVVjWQvTfrCNYJmD5jeYI35wgy+v+F8TqZY2Af7b0XQ=

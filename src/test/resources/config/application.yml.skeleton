@@ -3,6 +3,6 @@
 
 # NOTE: THE INTEGRATION TESTS WILL CLEAN-UP THE CTP PROJECT TABLES
 ctp.client:
-  projectKey:
+  projectKey: paypalplus-integration-test
   clientId:
   clientSecret:

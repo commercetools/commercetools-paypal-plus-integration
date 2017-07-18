@@ -1,7 +1,11 @@
 package com.commercetools.testUtil.ctpUtil;
 
+import io.sphere.sdk.carts.commands.CartDeleteCommand;
+import io.sphere.sdk.carts.queries.CartQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
+import io.sphere.sdk.orders.commands.OrderDeleteCommand;
+import io.sphere.sdk.orders.queries.OrderQuery;
 import io.sphere.sdk.payments.commands.PaymentDeleteCommand;
 import io.sphere.sdk.payments.queries.PaymentQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -31,6 +35,20 @@ public final class CleanupTableUtil {
         logger.info("Cleanup Payments table");
         int removed = cleanupTable(sphereClient, PaymentQuery::of, PaymentDeleteCommand::of);
         logger.info("Cleanup Payments table completed, removed {} items", removed);
+        return removed;
+    }
+
+    public static int cleanupOrders(SphereClient sphereClient) {
+        logger.debug("Cleanup Orders table");
+        int removed = cleanupTable(sphereClient, OrderQuery::of, OrderDeleteCommand::of);
+        logger.debug("Cleanup Orders table completed, removed {} items", removed);
+        return removed;
+    }
+
+    public static int cleanupCarts(SphereClient sphereClient) {
+        logger.debug("Cleanup Carts table");
+        int removed = cleanupTable(sphereClient, CartQuery::of, CartDeleteCommand::of);
+        logger.debug("Cleanup Carts table completed, removed {} items", removed);
         return removed;
     }
 

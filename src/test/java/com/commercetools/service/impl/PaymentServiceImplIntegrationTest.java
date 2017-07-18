@@ -1,6 +1,7 @@
-package com.commercetools.service;
+package com.commercetools.service.impl;
 
 import com.commercetools.Application;
+import com.commercetools.service.PaymentService;
 import com.commercetools.testUtil.customTestConfigs.PaymentsCleanupConfiguration;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
+import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // TODO: move to separate integration test
@@ -43,7 +45,7 @@ public class PaymentServiceImplIntegrationTest {
     @Test
     public void createManuallyAndGetById() throws Exception {
 
-        PaymentDraftDsl eur = PaymentDraftBuilder.of(Money.of(22.33, "EUR"))
+        PaymentDraftDsl eur = PaymentDraftBuilder.of(Money.of(22.33, EUR))
                 .key("blah-blah")
                 .build();
 
@@ -51,13 +53,13 @@ public class PaymentServiceImplIntegrationTest {
         Payment paymentRead = executeBlocking(paymentService.getById(paymentCreated.getId()));
 
         assertThat(paymentCreated).isEqualTo(paymentRead);
-        assertThat(paymentRead.getAmountPlanned()).isEqualTo(Money.of(22.33, "EUR"));
+        assertThat(paymentRead.getAmountPlanned()).isEqualTo(Money.of(22.33, EUR));
         assertThat(paymentRead.getKey()).isEqualTo("blah-blah");
     }
 
     @Test
     public void createManuallyAndGetWithWrongId() throws Exception {
-        PaymentDraftDsl eur = PaymentDraftBuilder.of(Money.of(22.33, "EUR"))
+        PaymentDraftDsl eur = PaymentDraftBuilder.of(Money.of(22.33, EUR))
                 .build();
 
         executeBlocking(sphereClient.execute(PaymentCreateCommand.of(eur)));
@@ -74,7 +76,7 @@ public class PaymentServiceImplIntegrationTest {
                 .paymentInterface(paymentInterface)
                 .build();
         String interfaceId = "testInterfaceId";
-        PaymentDraftDsl draft = PaymentDraftBuilder.of(Money.of(22.33, "EUR"))
+        PaymentDraftDsl draft = PaymentDraftBuilder.of(Money.of(22.33, EUR))
                 .paymentMethodInfo(testMethodInfo)
                 .interfaceId(interfaceId)
                 .build();
@@ -89,13 +91,13 @@ public class PaymentServiceImplIntegrationTest {
     @Test
     public void shouldUpdateAmountPlanned() {
         String paymentKey = "testPayment1";
-        Money amountBefore = Money.of(1, "EUR");
+        Money amountBefore = Money.of(1, EUR);
         PaymentDraftDsl draft = PaymentDraftBuilder.of(amountBefore)
                 .key(paymentKey)
                 .build();
         Payment payment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
 
-        Money amountAfter = Money.of(2, "EUR");
+        Money amountAfter = Money.of(2, EUR);
         List<UpdateAction<Payment>> updateActions = Collections.singletonList(ChangeAmountPlanned.of(amountAfter));
         Payment updatedPayment = executeBlocking(
                 paymentService.updatePayment(payment, updateActions)

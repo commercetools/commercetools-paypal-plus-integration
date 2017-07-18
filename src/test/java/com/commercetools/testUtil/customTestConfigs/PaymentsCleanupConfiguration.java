@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupCarts;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrders;
 import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupPaymentTable;
 
 /**
@@ -21,6 +23,8 @@ public class PaymentsCleanupConfiguration {
 
     @PostConstruct
     void init() {
+        cleanupOrders(sphereClient);
+        cleanupCarts(sphereClient);
         cleanupPaymentTable(sphereClient);
     }
 

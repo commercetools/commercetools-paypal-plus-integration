@@ -35,6 +35,6 @@ public class CtpResourcesUtil {
     }
 
     private static CartDraft getCartDraft() {
-        return SphereJsonUtils.readObjectFromResource("mockdata/cartDraft.json", CartDraft.class);
+        return SphereJsonUtils.readObjectFromResource("mockData/cartDraft.json", CartDraft.class);
     }
 }

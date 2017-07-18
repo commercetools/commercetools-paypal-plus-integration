@@ -24,7 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class PaymentServiceImpl extends BaseSphereService implements PaymentService {
 
     @Autowired
-    public PaymentServiceImpl(@Nonnull SphereClient sphereClient) {
+    public PaymentServiceImpl(SphereClient sphereClient) {
         super(sphereClient);
     }
 
@@ -46,8 +46,8 @@ public class PaymentServiceImpl extends BaseSphereService implements PaymentServ
     }
 
     @Override
-    public CompletionStage<Payment> updatePayment(Payment payment, List<UpdateAction<Payment>> updateActions) {
-        if (payment == null) {
+    public CompletionStage<Payment> updatePayment(@Nonnull Payment payment, List<UpdateAction<Payment>> updateActions) {
+        if (updateActions == null || updateActions.isEmpty()) {
             return completedFuture(null);
         }
         return sphereClient.execute(PaymentUpdateCommand.of(payment, updateActions));

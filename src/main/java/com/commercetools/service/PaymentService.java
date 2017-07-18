@@ -4,6 +4,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentMethodInfo;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,7 @@ public interface PaymentService {
      * @param interfaceId the payment's {@link Payment#getInterfaceId()}
      * @return completion stage with optional found payment.
      */
-    CompletionStage<Optional<Payment>> getByPaymentMethodAndInterfaceId(String paymentMethodInterface, String interfaceId);
+    CompletionStage<Optional<Payment>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface, @Nullable String interfaceId);
 
     /**
      * Apply {@code updateActions} to the {@code payment}
@@ -28,5 +29,5 @@ public interface PaymentService {
      * @param updateActions <b>non-null</b> list of {@link UpdateAction <Payment>} to apply to the {@code payment}
      * @return Completion stage with an instance of the updated payment
      */
-    CompletionStage<Payment> updatePayment(Payment payment, List<UpdateAction<Payment>> updateActions);
+    CompletionStage<Payment> updatePayment(@Nonnull Payment payment, @Nullable List<UpdateAction<Payment>> updateActions);
 }

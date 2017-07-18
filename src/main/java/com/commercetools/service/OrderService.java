@@ -2,6 +2,7 @@ package com.commercetools.service;
 
 import io.sphere.sdk.orders.Order;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -18,5 +19,5 @@ public interface OrderService {
      * @param paymentId CTP payment uuid
      * @return {@link Optional} {@link Order} if exists, empty {@link Optional} if not found.
      */
-    CompletionStage<Optional<Order>> getByPaymentId(String paymentId);
+    CompletionStage<Optional<Order>> getByPaymentId(@Nullable String paymentId);
 }

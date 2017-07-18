@@ -2,6 +2,6 @@
 # rename to application.yml and fill-in to use it in local run/debug mode
 
 ctp.client:
-  projectKey:
+  projectKey: paypalplus-dev
   clientId:
   clientSecret:

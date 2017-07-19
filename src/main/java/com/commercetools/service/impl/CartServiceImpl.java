@@ -1,0 +1,32 @@
+package com.commercetools.service.impl;
+
+import com.commercetools.service.CartService;
+import io.sphere.sdk.carts.Cart;
+import io.sphere.sdk.carts.queries.CartQuery;
+import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.queries.PagedQueryResult;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
+@Service
+public class CartServiceImpl extends BaseSphereService implements CartService {
+
+    @Autowired
+    protected CartServiceImpl(SphereClient sphereClient) {
+        super(sphereClient);
+    }
+
+    @Override
+    public CompletionStage<Optional<Cart>> getByPaymentId(String paymentId) {
+        if (StringUtils.isEmpty(paymentId)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+        CartQuery cartQuery = CartQuery.of().withPredicates(m -> m.paymentInfo().payments().id().is(paymentId));
+        return sphereClient.execute(cartQuery).thenApplyAsync(PagedQueryResult::head);
+    }
+}

@@ -118,7 +118,7 @@ public class PaymentServiceImplIntegrationTest {
         Payment payment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
 
         Money amountAfter = Money.of(2, EUR);
-        String paymentKey = "testPayment1";
+        String paymentKey = "testPayment2";
         List<UpdateAction<Payment>> updateActions = Arrays.asList(
                 ChangeAmountPlanned.of(amountAfter),
                 SetKey.of(paymentKey)

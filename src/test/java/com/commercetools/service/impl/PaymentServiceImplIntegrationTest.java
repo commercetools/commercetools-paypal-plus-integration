@@ -142,6 +142,6 @@ public class PaymentServiceImplIntegrationTest {
         assertThat(paymentAfterUpdate).isEqualTo(payment);
 
         paymentAfterUpdate = executeBlocking(paymentService.updatePayment(payment, null));
-        assertThat(paymentAfterUpdate).isNotEqualTo(payment);
+        assertThat(paymentAfterUpdate).isEqualTo(payment);
     }
 }

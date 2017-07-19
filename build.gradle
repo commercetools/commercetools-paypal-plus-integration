@@ -40,7 +40,7 @@ dependencies {
     compile "com.commercetools.sdk.jvm.core:commercetools-models:${depVersions.commercetoolsSdkJvm}"
     compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${depVersions.commercetoolsSdkJvm}"
 
-    testCompile('org.springframework.boot:spring-boot-starter-test') {
+    testCompile("org.springframework.boot:spring-boot-starter-test:${depVersions.springBoot}") {
         exclude group: 'org.assertj', module:'assertj-core' // below override the default outdated one with the latest
     }
 

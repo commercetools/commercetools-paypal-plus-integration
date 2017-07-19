@@ -66,15 +66,15 @@ public class CartServiceImplTest {
 
         Optional<Cart> cartOpt = executeBlocking(cartService.getByPaymentId(ctPayment.getId()));
 
-        assertThat(cartOpt.isPresent()).isTrue();
+        assertThat(cartOpt).isNotEmpty();
     }
 
     @Test
     public void getWithWrongPaymentId() {
         Optional<Cart> cartOpt1 = executeBlocking(cartService.getByPaymentId(null));
-        assertThat(cartOpt1.isPresent()).isFalse();
+        assertThat(cartOpt1).isEmpty();
 
         Optional<Cart> cartOpt2 = executeBlocking(cartService.getByPaymentId(""));
-        assertThat(cartOpt2.isPresent()).isFalse();
+        assertThat(cartOpt2).isEmpty();
     }
 }

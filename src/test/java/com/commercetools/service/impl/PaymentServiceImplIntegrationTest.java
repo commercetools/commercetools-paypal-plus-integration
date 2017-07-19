@@ -87,7 +87,7 @@ public class PaymentServiceImplIntegrationTest {
         Optional<Payment> payment = executeBlocking(
                 paymentService.getByPaymentMethodAndInterfaceId(paymentInterface, interfaceId)
         );
-        assertThat(payment.isPresent()).isTrue();
+        assertThat(payment).isNotEmpty();
     }
 
     @Test

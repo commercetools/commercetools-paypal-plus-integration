@@ -63,7 +63,7 @@ public class OrderServiceImplIntegrationTest {
         createOrderWithPayment(ctPayment);
 
         Optional<Order> orderOpt = executeBlocking(orderService.getByPaymentId(ctPayment.getId()));
-        assertThat(orderOpt.isPresent()).isTrue();
+        assertThat(orderOpt).isNotEmpty();
         String paymentId = orderOpt.get().getPaymentInfo().getPayments().get(0).getId();
         assertThat(paymentId).isEqualTo(ctPayment.getId());
     }
@@ -71,10 +71,10 @@ public class OrderServiceImplIntegrationTest {
     @Test
     public void getWithWrongPaymentId() {
         Optional<Order> orderOpt1 = executeBlocking(orderService.getByPaymentId(null));
-        assertThat(orderOpt1.isPresent()).isFalse();
+        assertThat(orderOpt1).isEmpty();
 
         Optional<Order> orderOpt2 = executeBlocking(orderService.getByPaymentId(""));
-        assertThat(orderOpt2.isPresent()).isFalse();
+        assertThat(orderOpt2).isEmpty();
     }
 
     private void createOrderWithPayment(Payment ctPayment) {

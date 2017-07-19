@@ -15,7 +15,7 @@ public class PaypalPlusApiContextConfig {
     @Value("${paypalPlus.client.secret}")
     private String clientSecret;
 
-    @Value("${paypalPlus.client.mode}")
+    @Value("${paypalPlus.client.mode:sandbox}")
     private String clientMode;
 
     /**

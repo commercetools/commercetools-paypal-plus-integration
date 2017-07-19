@@ -9,9 +9,12 @@ import java.util.concurrent.CompletionStage;
 public interface PaypalPlusPaymentService {
 
     /**
-     * @param payment
-     * @return
-     * @throws {@link PaypalPlusServiceException} unchecked exception when can't be created
+     * Create a payment on the Paypal Plus environment.
+     * <p>
+     * If the request is failed - {@link PaypalPlusServiceException} is thrown inside the completion stage.
+     *
+     * @param payment {@link Payment} to save
+     * @return {@link CompletionStage<Payment>} of the same <i>updated</i> payment.
      */
     CompletionStage<Payment> create(@Nonnull Payment payment);
 }

@@ -25,14 +25,15 @@ jar {
     archiveName = "${rootProject.name}.jar"
     manifest {
         attributes("Implementation-Title": rootProject.name,
-                   "Implementation-Version": version)
+                "Implementation-Version": version)
     }
 }
 
 final depVersions = [
         springBoot         : '1.5.4.RELEASE',
         commercetoolsSdkJvm: '1.20.0',
-        paypalPlusSdk      : '1.13.1'
+        paypalPlusSdk      : '1.13.1',
+        assertJ            : '3.8.0'
 ]
 
 dependencies {
@@ -43,7 +44,11 @@ dependencies {
     compile "com.commercetools.sdk.jvm.core:commercetools-models:${depVersions.commercetoolsSdkJvm}"
     compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${depVersions.commercetoolsSdkJvm}"
 
-    testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.assertj', module: 'assertj-core' // below override the default outdated one with the latest
+    }
+
+    testCompile "org.assertj:assertj-core:${depVersions.assertJ}"
 }
 
 tasks.withType(JavaCompile) {

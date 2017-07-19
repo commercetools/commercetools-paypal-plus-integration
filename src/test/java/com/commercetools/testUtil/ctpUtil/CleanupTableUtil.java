@@ -32,24 +32,15 @@ public final class CleanupTableUtil {
      * @return number of deleted items.
      */
     public static int cleanupPaymentTable(SphereClient sphereClient) {
-        logger.info("Cleanup Payments table");
-        int removed = cleanupTable(sphereClient, PaymentQuery::of, PaymentDeleteCommand::of);
-        logger.info("Cleanup Payments table completed, removed {} items", removed);
-        return removed;
+        return cleanupTable(sphereClient, PaymentQuery::of, PaymentDeleteCommand::of, "Payments");
     }
 
     public static int cleanupOrders(SphereClient sphereClient) {
-        logger.debug("Cleanup Orders table");
-        int removed = cleanupTable(sphereClient, OrderQuery::of, OrderDeleteCommand::of);
-        logger.debug("Cleanup Orders table completed, removed {} items", removed);
-        return removed;
+        return cleanupTable(sphereClient, OrderQuery::of, OrderDeleteCommand::of, "Orders");
     }
 
     public static int cleanupCarts(SphereClient sphereClient) {
-        logger.debug("Cleanup Carts table");
-        int removed = cleanupTable(sphereClient, CartQuery::of, CartDeleteCommand::of);
-        logger.debug("Cleanup Carts table completed, removed {} items", removed);
-        return removed;
+        return cleanupTable(sphereClient, CartQuery::of, CartDeleteCommand::of, "Carts");
     }
 
     /**
@@ -64,10 +55,12 @@ public final class CleanupTableUtil {
      * @param <EntityType>   type of items to read/delete
      * @return number of read/deleted items
      */
-    public static <EntityType> int cleanupTable(
+    private static <EntityType> int cleanupTable(
             @Nonnull final SphereClient client,
             @Nonnull final Supplier<SphereRequest<PagedQueryResult<EntityType>>> querySupplier,
-            @Nonnull final Function<EntityType, SphereRequest<EntityType>> deleteFunction) {
+            @Nonnull final Function<EntityType, SphereRequest<EntityType>> deleteFunction,
+            @Nonnull String resourceName) {
+        logger.debug("Cleanup " + resourceName + " table");
 
         Supplier<CompletionStage<Integer>> readDeleteStage = () -> client.execute(querySupplier.get())
                 .thenApply(PagedQueryResult::getResults)
@@ -80,10 +73,12 @@ public final class CleanupTableUtil {
                 .thenCompose(CleanupTableUtil::allOf);
 
         // repeat read/delete requests sequence till nothing to delete
-        int result = 0;
-        for (int r = 0; (r = executeBlocking(readDeleteStage.get())) > 0; result += r) ;
+        int removedCount = 0;
+        for (int r = 0; (r = executeBlocking(readDeleteStage.get())) > 0; removedCount += r) ;
 
-        return result;
+        logger.debug("Cleanup Carts table completed, removed {} items", removedCount);
+
+        return removedCount;
     }
 
     /**

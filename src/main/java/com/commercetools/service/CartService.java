@@ -2,6 +2,7 @@ package com.commercetools.service;
 
 import io.sphere.sdk.carts.Cart;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -10,5 +11,5 @@ import java.util.concurrent.CompletionStage;
  */
 public interface CartService {
 
-    CompletionStage<Optional<Cart>> getByPaymentId(String paymentId);
+    CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String paymentId);
 }

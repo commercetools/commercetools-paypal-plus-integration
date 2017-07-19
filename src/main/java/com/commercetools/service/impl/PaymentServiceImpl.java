@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -24,7 +25,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class PaymentServiceImpl extends BaseSphereService implements PaymentService {
 
     @Autowired
-    public PaymentServiceImpl(SphereClient sphereClient) {
+    public PaymentServiceImpl(@Nonnull SphereClient sphereClient) {
         super(sphereClient);
     }
 
@@ -34,7 +35,7 @@ public class PaymentServiceImpl extends BaseSphereService implements PaymentServ
     }
 
     @Override
-    public CompletionStage<Optional<Payment>> getByPaymentMethodAndInterfaceId(String paymentInterface, String interfaceId) {
+    public CompletionStage<Optional<Payment>> getByPaymentMethodAndInterfaceId(@Nullable String paymentInterface, @Nullable String interfaceId) {
         if (isBlank(paymentInterface) || isBlank(interfaceId)) {
             return completedFuture(null);
         }
@@ -46,7 +47,7 @@ public class PaymentServiceImpl extends BaseSphereService implements PaymentServ
     }
 
     @Override
-    public CompletionStage<Payment> updatePayment(@Nonnull Payment payment, List<UpdateAction<Payment>> updateActions) {
+    public CompletionStage<Payment> updatePayment(@Nonnull Payment payment, @Nullable List<UpdateAction<Payment>> updateActions) {
         if (updateActions == null || updateActions.isEmpty()) {
             return completedFuture(payment);
         }

@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -17,12 +19,12 @@ import java.util.concurrent.CompletionStage;
 public class CartServiceImpl extends BaseSphereService implements CartService {
 
     @Autowired
-    protected CartServiceImpl(SphereClient sphereClient) {
+    protected CartServiceImpl(@Nonnull SphereClient sphereClient) {
         super(sphereClient);
     }
 
     @Override
-    public CompletionStage<Optional<Cart>> getByPaymentId(String paymentId) {
+    public CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String paymentId) {
         if (StringUtils.isEmpty(paymentId)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }

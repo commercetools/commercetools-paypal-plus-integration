@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -18,12 +20,12 @@ import java.util.concurrent.CompletionStage;
 public class OrderServiceImpl extends BaseSphereService implements OrderService {
 
     @Autowired
-    public OrderServiceImpl(SphereClient sphereClient) {
+    public OrderServiceImpl(@Nonnull SphereClient sphereClient) {
         super(sphereClient);
     }
 
     @Override
-    public CompletionStage<Optional<Order>> getByPaymentId(String paymentId) {
+    public CompletionStage<Optional<Order>> getByPaymentId(@Nullable String paymentId) {
         if (StringUtils.isEmpty(paymentId)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }

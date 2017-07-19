@@ -1,4 +1,4 @@
-package com.commercetools.service;
+package com.commercetools.service.ctp;
 
 import io.sphere.sdk.carts.Cart;
 

@@ -1,6 +1,6 @@
-package com.commercetools.service.impl;
+package com.commercetools.service.ctp.impl;
 
-import com.commercetools.service.OrderService;
+import com.commercetools.service.ctp.OrderService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.orders.Order;
 import io.sphere.sdk.orders.queries.OrderQuery;

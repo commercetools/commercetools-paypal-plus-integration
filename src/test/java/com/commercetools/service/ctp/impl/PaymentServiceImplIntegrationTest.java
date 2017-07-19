@@ -1,7 +1,7 @@
-package com.commercetools.service.impl;
+package com.commercetools.service.ctp.impl;
 
 import com.commercetools.Application;
-import com.commercetools.service.PaymentService;
+import com.commercetools.service.ctp.PaymentService;
 import com.commercetools.testUtil.customTestConfigs.PaymentsCleanupConfiguration;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;

@@ -1,4 +1,4 @@
-package com.commercetools.service.impl;
+package com.commercetools.service.ctp.impl;
 
 import io.sphere.sdk.client.SphereClient;
 

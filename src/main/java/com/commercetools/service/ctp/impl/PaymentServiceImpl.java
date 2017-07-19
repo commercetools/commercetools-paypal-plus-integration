@@ -1,6 +1,6 @@
-package com.commercetools.service.impl;
+package com.commercetools.service.ctp.impl;
 
-import com.commercetools.service.PaymentService;
+import com.commercetools.service.ctp.PaymentService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.Payment;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;

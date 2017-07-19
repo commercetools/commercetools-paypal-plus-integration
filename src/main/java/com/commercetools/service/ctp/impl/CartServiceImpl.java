@@ -1,6 +1,6 @@
-package com.commercetools.service.impl;
+package com.commercetools.service.ctp.impl;
 
-import com.commercetools.service.CartService;
+import com.commercetools.service.ctp.CartService;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.queries.CartQuery;
 import io.sphere.sdk.client.SphereClient;

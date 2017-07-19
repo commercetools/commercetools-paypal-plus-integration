@@ -11,7 +11,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 @Configuration
-@DependsOn({"sphereConfig"})
+@DependsOn({"sphereConfig", "paypalPlusApiContextConfig"})
 public class ApplicationConfiguration {
 
     @Bean

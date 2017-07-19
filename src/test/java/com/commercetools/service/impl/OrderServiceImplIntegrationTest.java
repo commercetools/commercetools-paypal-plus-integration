@@ -68,6 +68,15 @@ public class OrderServiceImplIntegrationTest {
         assertThat(paymentId).isEqualTo(ctPayment.getId());
     }
 
+    @Test
+    public void getWithWrongPaymentId() {
+        Optional<Order> orderOpt1 = executeBlocking(orderService.getByPaymentId(null));
+        assertThat(orderOpt1.isPresent()).isFalse();
+
+        Optional<Order> orderOpt2 = executeBlocking(orderService.getByPaymentId(""));
+        assertThat(orderOpt2.isPresent()).isFalse();
+    }
+
     private void createOrderWithPayment(Payment ctPayment) {
         TaxCategory taxCategory = executeBlocking(sphereClient.execute(
                 TaxCategoryQuery.of().plusPredicates(m -> m.name().is(TAX_CATEGORY_NAME)))
@@ -76,7 +85,6 @@ public class OrderServiceImplIntegrationTest {
         CartDraft cartDraft = CtpResourcesUtil.getCartDraftWithCustomLineItems(taxCategory);
 
         Cart ctCart = executeBlocking(sphereClient.execute(CartCreateCommand.of(cartDraft)));
-
 
         Cart ctCartWithpayment = executeBlocking(sphereClient.execute(CartUpdateCommand.of(ctCart, AddPayment.of(ctPayment))));
 

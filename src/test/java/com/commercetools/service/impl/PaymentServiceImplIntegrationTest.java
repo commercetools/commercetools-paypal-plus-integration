@@ -12,6 +12,7 @@ import io.sphere.sdk.payments.PaymentMethodInfo;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.commands.updateactions.ChangeAmountPlanned;
+import io.sphere.sdk.payments.commands.updateactions.SetKey;
 import org.javamoney.moneta.Money;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -103,7 +105,43 @@ public class PaymentServiceImplIntegrationTest {
                 paymentService.updatePayment(payment, updateActions)
                 .thenCompose(p -> paymentService.getById(p.getId()))
         );
+        assertThat(updatedPayment).isNotEqualTo(payment);
         assertThat(updatedPayment.getKey()).isEqualTo(paymentKey);
         assertThat(updatedPayment.getAmountPlanned()).isEqualTo(amountAfter);
+    }
+
+    @Test
+    public void shouldUpdateMultipleAttributes() {
+        Money amountBefore = Money.of(1, EUR);
+        PaymentDraftDsl draft = PaymentDraftBuilder.of(amountBefore)
+                .build();
+        Payment payment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
+
+        Money amountAfter = Money.of(2, EUR);
+        String paymentKey = "testPayment1";
+        List<UpdateAction<Payment>> updateActions = Arrays.asList(
+                ChangeAmountPlanned.of(amountAfter),
+                SetKey.of(paymentKey)
+        );
+        Payment updatedPayment = executeBlocking(
+                paymentService.updatePayment(payment, updateActions)
+                        .thenCompose(p -> paymentService.getById(p.getId()))
+        );
+        assertThat(updatedPayment).isNotEqualTo(payment);
+        assertThat(updatedPayment.getKey()).isEqualTo(paymentKey);
+        assertThat(updatedPayment.getAmountPlanned()).isEqualTo(amountAfter);
+    }
+
+    @Test
+    public void whenUpdateActionsIsNullOrEmpty_shouldNotUpdateAnything () {
+        PaymentDraftDsl draft = PaymentDraftBuilder.of(Money.of(1, EUR))
+                .build();
+        Payment payment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
+
+        Payment paymentAfterUpdate = executeBlocking(paymentService.updatePayment(payment, Collections.emptyList()));
+        assertThat(paymentAfterUpdate).isEqualTo(payment);
+
+        paymentAfterUpdate = executeBlocking(paymentService.updatePayment(payment, null));
+        assertThat(paymentAfterUpdate).isNotEqualTo(payment);
     }
 }

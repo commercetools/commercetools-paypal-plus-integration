@@ -2,7 +2,10 @@ package com.commercetools.service.paypalPlus.impl;
 
 import com.commercetools.Application;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
-import com.paypal.api.payments.*;
+import com.paypal.api.payments.CreditCard;
+import com.paypal.api.payments.FundingInstrument;
+import com.paypal.api.payments.Payer;
+import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.APIContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,8 +15,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 
+import static com.commercetools.service.paypalPlus.PaypalPlusUtil.*;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
-import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -26,6 +29,9 @@ public class PaypalPlusPaymentServiceImplIntegrationTest {
     @Autowired
     private PaypalPlusPaymentService paymentService;
 
+    /**
+     * It is used to supply store credit card.
+     */
     @Autowired
     private APIContext paypalPlusApiContext;
 
@@ -36,49 +42,10 @@ public class PaypalPlusPaymentServiceImplIntegrationTest {
 
     @Test
     public void createPseudoCreditCardPayment() throws Exception {
-        CreditCard card = new CreditCard()
-                .setType("visa")
-                .setNumber("4669424246660779")
-                .setExpireMonth(11)
-                .setExpireYear(2019)
-                .setCvv2("012")
-                .setFirstName("Joe")
-                .setLastName("Shopper");
+        CreditCard dummyCreditCard = dummyCreditCard();
+        final CreditCard storedCreditCard = dummyCreditCard.create(paypalPlusApiContext);
 
-        final CreditCard storedCreditCard = card.create(paypalPlusApiContext);
-
-        CreditCardToken creditCardToken = new CreditCardToken(storedCreditCard.getId());
-
-        Details details = new Details()
-                .setShipping("1.01")
-                .setSubtotal("5.23")
-                .setTax("1.99");
-
-        Amount amount = new Amount()
-                .setCurrency("USD")
-                .setTotal("8.23") // Total must be equal to the sum of shipping, tax and subtotal.
-                .setDetails(details);
-
-        Transaction transaction = new Transaction();
-        transaction.setAmount(amount);
-        transaction.setDescription("This is the payment transaction description.");
-
-        List<Transaction> transactions = singletonList(transaction);
-
-        FundingInstrument fundingInstrument = new FundingInstrument()
-                .setCreditCardToken(creditCardToken);
-
-        List<FundingInstrument> fundingInstrumentList = singletonList(fundingInstrument);
-
-        Payer payer = new Payer()
-                .setFundingInstruments(fundingInstrumentList)
-                .setPaymentMethod("credit_card");
-
-        Payment mockPayment = new Payment()
-                .setIntent("sale")
-                .setPayer(payer)
-                .setTransactions(transactions);
-
+        Payment mockPayment = dummyCreditCardSecurePayment(storedCreditCard.getId());
 
         Payment payment = executeBlocking(paymentService.create(mockPayment));
 
@@ -94,52 +61,8 @@ public class PaypalPlusPaymentServiceImplIntegrationTest {
 
     @Test
     public void createCreditCardPayment() throws Exception {
-        Address billingAddress = new Address();
-        billingAddress.setCity("Johnstown");
-        billingAddress.setCountryCode("US");
-        billingAddress.setLine1("52 N Main ST");
-        billingAddress.setPostalCode("43210");
-        billingAddress.setState("OH");
 
-        CreditCard creditCard = new CreditCard()
-                .setBillingAddress(billingAddress)
-                .setCvv2("012")
-                .setExpireMonth(11)
-                .setExpireYear(2018)
-                .setFirstName("Joe")
-                .setLastName("Shopper")
-                .setNumber("4669424246660779")
-                .setType("visa");
-
-        Details details = new Details()
-                .setShipping("1.23")
-                .setSubtotal("6.10")
-                .setTax("1.45");
-
-        Amount amount = new Amount()
-                .setCurrency("USD")
-                .setTotal("8.78") // Total must be equal to sum of shipping, tax and subtotal.
-                .setDetails(details);
-
-        Transaction transaction = new Transaction();
-        transaction.setAmount(amount);
-        transaction.setDescription("This is the payment transaction description.");
-
-        List<Transaction> transactions = singletonList(transaction);
-
-        FundingInstrument fundingInstrument = new FundingInstrument()
-                .setCreditCard(creditCard);
-
-        List<FundingInstrument> fundingInstrumentList = singletonList(fundingInstrument);
-
-        Payer payer = new Payer()
-                .setFundingInstruments(fundingInstrumentList)
-                .setPaymentMethod("credit_card");
-
-        Payment mockPayment = new Payment()
-                .setIntent("sale")
-                .setPayer(payer)
-                .setTransactions(transactions);
+        Payment mockPayment = dummyCreditCardSimplePayment();
 
         Payment payment = executeBlocking(paymentService.create(mockPayment));
 

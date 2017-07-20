@@ -2,10 +2,7 @@ package com.commercetools.service.paypalPlus.impl;
 
 import com.commercetools.Application;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
-import com.paypal.api.payments.CreditCard;
-import com.paypal.api.payments.FundingInstrument;
-import com.paypal.api.payments.Payer;
-import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +13,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.List;
 
 import static com.commercetools.service.paypalPlus.PaypalPlusUtil.*;
+import static com.commercetools.service.paypalPlus.constant.PaypalPlusLinkRel.APPROVAL_URL;
+import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMethods.CREDIT_CARD;
+import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMethods.PAYPAL;
+import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentStates.APPROVED;
+import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentStates.CREATED;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -47,10 +49,14 @@ public class PaypalPlusPaymentServiceImplIntegrationTest {
 
         Payment mockPayment = dummyCreditCardSecurePayment(storedCreditCard.getId());
 
-        Payment payment = executeBlocking(paymentService.create(mockPayment));
+        Payment savedPayment = executeBlocking(paymentService.create(mockPayment));
 
-        assertThat(payment).isNotNull();
-        List<FundingInstrument> savedFundingInstruments = of(payment).map(Payment::getPayer).map(Payer::getFundingInstruments).orElse(null);
+        assertThat(savedPayment).isNotNull();
+        assertThat(savedPayment.getId()).isNotBlank();
+        assertThat(savedPayment.getState()).isEqualTo(APPROVED);
+        assertThat(savedPayment.getPayer().getPaymentMethod()).isEqualTo(CREDIT_CARD);
+        List<FundingInstrument> savedFundingInstruments = of(savedPayment).map(Payment::getPayer)
+                .map(Payer::getFundingInstruments).orElse(null);
         assertThat(savedFundingInstruments).isNotNull();
         assertThat(savedFundingInstruments.size()).isEqualTo(1);
         FundingInstrument savedFundingInstrument = savedFundingInstruments.get(0);
@@ -61,16 +67,46 @@ public class PaypalPlusPaymentServiceImplIntegrationTest {
 
     @Test
     public void createCreditCardPayment() throws Exception {
-
         Payment mockPayment = dummyCreditCardSimplePayment();
 
-        Payment payment = executeBlocking(paymentService.create(mockPayment));
+        Payment savedPayment = executeBlocking(paymentService.create(mockPayment));
 
-        assertThat(payment).isNotNull();
-        List<FundingInstrument> savedList = of(payment).map(Payment::getPayer).map(Payer::getFundingInstruments).orElse(null);
+        assertThat(savedPayment).isNotNull();
+        assertThat(savedPayment.getId()).isNotBlank();
+        assertThat(savedPayment.getState()).isEqualTo(APPROVED);
+        assertThat(savedPayment.getPayer().getPaymentMethod()).isEqualTo(CREDIT_CARD);
+        List<FundingInstrument> savedList = of(savedPayment).map(Payment::getPayer).map(Payer::getFundingInstruments).orElse(null);
         assertThat(savedList).isNotNull();
         assertThat(savedList.size()).isEqualTo(1);
         assertThat(savedList.get(0).getCreditCard().getNumber()).isEqualTo("xxxxxxxxxxxx0779");
+    }
+
+    @Test
+    public void createPaypalPayment() throws Exception {
+        Payment dummyPayment = dummyPaypalPayment();
+
+        Payment savedPayment = executeBlocking(paymentService.create(dummyPayment));
+
+        assertThat(savedPayment).isNotNull();
+        assertThat(savedPayment.getId()).isNotBlank();
+        assertThat(savedPayment.getState()).isEqualTo(CREATED);
+        assertThat(savedPayment.getPayer().getPaymentMethod()).isEqualTo(PAYPAL);
+
+        Item soldItem = savedPayment.getTransactions().stream()
+                .map(tr -> tr.getItemList().getItems().stream().findFirst().orElse(null))
+                .findFirst().orElse(null);
+        assertThat(soldItem).isNotNull();
+        assertThat(soldItem.getName()).isEqualTo("Ground Coffee 40 oz");
+        assertThat(soldItem.getPrice()).isEqualTo("5.33");
+
+        // verify redirect URL
+        String approvalUrl = savedPayment.getLinks().stream()
+                .filter(link -> APPROVAL_URL.equals(link.getRel()))
+                .map(Links::getHref)
+                .findFirst()
+                .orElse("");
+
+        assertThat(approvalUrl).contains("https://www.sandbox.paypal.com/");
     }
 
 }

@@ -3,7 +3,10 @@ package com.commercetools.service.paypalPlus;
 import com.paypal.api.payments.*;
 
 import java.util.List;
+import java.util.UUID;
 
+import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMethods.CREDIT_CARD;
+import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMethods.PAYPAL;
 import static java.util.Collections.singletonList;
 
 public final class PaypalPlusUtil {
@@ -52,7 +55,7 @@ public final class PaypalPlusUtil {
 
         Payer payer = new Payer()
                 .setFundingInstruments(fundingInstrumentList)
-                .setPaymentMethod("credit_card");
+                .setPaymentMethod(CREDIT_CARD);
 
         return new Payment()
                 .setIntent("sale")
@@ -90,12 +93,57 @@ public final class PaypalPlusUtil {
 
         Payer payer = new Payer()
                 .setFundingInstruments(fundingInstrumentList)
-                .setPaymentMethod("credit_card");
+                .setPaymentMethod(CREDIT_CARD);
 
         return new Payment()
                 .setIntent("sale")
                 .setPayer(payer)
                 .setTransactions(transactions);
+    }
+
+    public static Payment dummyPaypalPayment() {
+        Details details = new Details()
+                .setShipping("3.22")
+                .setSubtotal("5.33")
+                .setTax("1.44");
+
+        Amount amount = new Amount()
+                .setCurrency("USD")
+                .setTotal("9.99")
+                .setDetails(details);
+
+        Transaction transaction = new Transaction();
+        transaction.setAmount(amount);
+        transaction.setDescription("This is the payment transaction description.");
+
+        Item item = new Item()
+                .setName("Ground Coffee 40 oz")
+                .setQuantity("1")
+                .setCurrency("USD")
+                .setPrice("5.33");
+
+        ItemList itemList = new ItemList();
+        itemList.setItems(singletonList(item));
+
+        transaction.setItemList(itemList);
+
+        List<Transaction> transactions = singletonList(transaction);
+
+        Payer payer = new Payer()
+                .setPaymentMethod(PAYPAL);
+
+        Payment payment = new Payment()
+                .setIntent("sale")
+                .setPayer(payer)
+                .setTransactions(transactions);
+
+        RedirectUrls redirectUrls = new RedirectUrls();
+        String guid = UUID.randomUUID().toString().replaceAll("-", "");
+        redirectUrls.setCancelUrl("http://example.com/paymentwithpaypal/cancel?guid=" + guid);
+        redirectUrls.setReturnUrl("http://example.com/paymentwithpaypal/return?guid=" + guid);
+        payment.setRedirectUrls(redirectUrls);
+
+        return payment;
     }
 
     /**

@@ -19,7 +19,7 @@ import java.util.concurrent.CompletionStage;
 public class CartServiceImpl extends BaseSphereService implements CartService {
 
     @Autowired
-    protected CartServiceImpl(@Nonnull SphereClient sphereClient) {
+    public CartServiceImpl(@Nonnull SphereClient sphereClient) {
         super(sphereClient);
     }
 

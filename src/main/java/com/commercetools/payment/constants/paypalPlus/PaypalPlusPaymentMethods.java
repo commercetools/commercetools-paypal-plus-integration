@@ -1,4 +1,4 @@
-package com.commercetools.payment.constants;
+package com.commercetools.payment.constants.paypalPlus;
 
 public final class PaypalPlusPaymentMethods {
 

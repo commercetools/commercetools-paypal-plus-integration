@@ -5,8 +5,9 @@ import com.paypal.api.payments.*;
 import java.util.List;
 import java.util.UUID;
 
-import static com.commercetools.payment.constants.PaypalPlusPaymentMethods.CREDIT_CARD;
-import static com.commercetools.payment.constants.PaypalPlusPaymentMethods.PAYPAL;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.CREDIT_CARD;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static java.util.Collections.singletonList;
 
 public final class PaypalPlusPaymentTestUtil {
@@ -58,7 +59,7 @@ public final class PaypalPlusPaymentTestUtil {
                 .setPaymentMethod(CREDIT_CARD);
 
         return new Payment()
-                .setIntent("sale")
+                .setIntent(SALE)
                 .setPayer(payer)
                 .setTransactions(transactions);
     }
@@ -96,7 +97,7 @@ public final class PaypalPlusPaymentTestUtil {
                 .setPaymentMethod(CREDIT_CARD);
 
         return new Payment()
-                .setIntent("sale")
+                .setIntent(SALE)
                 .setPayer(payer)
                 .setTransactions(transactions);
     }
@@ -133,7 +134,7 @@ public final class PaypalPlusPaymentTestUtil {
                 .setPaymentMethod(PAYPAL);
 
         Payment payment = new Payment()
-                .setIntent("sale")
+                .setIntent(SALE)
                 .setPayer(payer)
                 .setTransactions(transactions);
 

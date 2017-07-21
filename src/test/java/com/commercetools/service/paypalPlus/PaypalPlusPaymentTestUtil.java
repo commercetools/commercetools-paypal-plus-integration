@@ -5,8 +5,8 @@ import com.paypal.api.payments.*;
 import java.util.List;
 import java.util.UUID;
 
-import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMethods.CREDIT_CARD;
-import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMethods.PAYPAL;
+import static com.commercetools.payment.constants.PaypalPlusPaymentMethods.CREDIT_CARD;
+import static com.commercetools.payment.constants.PaypalPlusPaymentMethods.PAYPAL;
 import static java.util.Collections.singletonList;
 
 public final class PaypalPlusPaymentTestUtil {

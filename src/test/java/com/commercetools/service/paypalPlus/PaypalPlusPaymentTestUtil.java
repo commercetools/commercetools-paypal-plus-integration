@@ -9,7 +9,7 @@ import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMet
 import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMethods.PAYPAL;
 import static java.util.Collections.singletonList;
 
-public final class PaypalPlusUtil {
+public final class PaypalPlusPaymentTestUtil {
 
     /**
      * @return new instance of dummy payment with explicit credit card credentials.
@@ -160,6 +160,6 @@ public final class PaypalPlusUtil {
                 .setLastName("Shopper");
     }
 
-    private PaypalPlusUtil() {
+    private PaypalPlusPaymentTestUtil() {
     }
 }

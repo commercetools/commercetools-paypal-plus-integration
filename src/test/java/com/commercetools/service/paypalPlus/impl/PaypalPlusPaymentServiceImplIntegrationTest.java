@@ -12,7 +12,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 
-import static com.commercetools.service.paypalPlus.PaypalPlusUtil.*;
+import static com.commercetools.service.paypalPlus.PaypalPlusPaymentTestUtil.*;
 import static com.commercetools.service.paypalPlus.constant.PaypalPlusLinkRel.APPROVAL_URL;
 import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMethods.CREDIT_CARD;
 import static com.commercetools.service.paypalPlus.constant.PaypalPlusPaymentMethods.PAYPAL;

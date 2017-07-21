@@ -11,14 +11,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 @Configuration
-@DependsOn({"sphereConfig", "paypalPlusApiContextConfig"})
 public class ApplicationConfiguration {
-
-    @Bean
-    @Autowired
-    public SphereClient sphereClient(SphereClientConfig sphereClientConfig) {
-        return SphereClientFactory.of().createClient(sphereClientConfig);
-    }
 
     /**
      * @return bean which forces to treat trailing slash same as without it.

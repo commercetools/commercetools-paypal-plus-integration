@@ -20,11 +20,9 @@ import java.util.concurrent.CompletionStage;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-@Service
 public class PaymentServiceImpl extends BaseSphereService implements PaymentService {
 
-    @Autowired
-    public PaymentServiceImpl(@Nonnull SphereClient sphereClient) {
+    public PaymentServiceImpl(SphereClient sphereClient) {
         super(sphereClient);
     }
 

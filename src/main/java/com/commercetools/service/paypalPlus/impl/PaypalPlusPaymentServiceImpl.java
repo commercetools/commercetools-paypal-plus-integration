@@ -17,8 +17,6 @@ import java.util.concurrent.CompletionStage;
  * <b>Note:</b> since {@link APIContext} caches <i>PayPal-Request-Id</i> one should not reuse the same instance of
  * {@link PaypalPlusPaymentServiceImpl} for multiple Paypal requests.
  */
-@Service
-@Scope("prototype")
 public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implements PaypalPlusPaymentService {
 
     @Autowired

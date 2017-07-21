@@ -16,11 +16,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-@Service
 public class OrderServiceImpl extends BaseSphereService implements OrderService {
 
-    @Autowired
-    public OrderServiceImpl(@Nonnull SphereClient sphereClient) {
+    public OrderServiceImpl(SphereClient sphereClient) {
         super(sphereClient);
     }
 

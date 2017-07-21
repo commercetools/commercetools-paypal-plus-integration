@@ -15,11 +15,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-@Service
 public class CartServiceImpl extends BaseSphereService implements CartService {
 
-    @Autowired
-    public CartServiceImpl(@Nonnull SphereClient sphereClient) {
+    public CartServiceImpl(SphereClient sphereClient) {
         super(sphereClient);
     }
 

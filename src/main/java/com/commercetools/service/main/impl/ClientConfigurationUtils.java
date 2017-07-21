@@ -1,4 +1,4 @@
-package com.commercetools.service.main;
+package com.commercetools.service.main.impl;
 
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereAccessTokenSupplier;

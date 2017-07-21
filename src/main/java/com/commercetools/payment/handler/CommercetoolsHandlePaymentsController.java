@@ -1,12 +1,16 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.payment.PaymentDemo;
-import com.commercetools.service.main.PaymentHandler;
-import com.commercetools.service.main.PaymentHandlerCache;
+import com.commercetools.service.main.impl.PaymentHandler;
+import com.commercetools.service.main.PaymentHandlerProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CommercetoolsHandlePaymentsController {
@@ -14,13 +18,13 @@ public class CommercetoolsHandlePaymentsController {
     private static final String template = "Hello, payment [%s]!";
 
     private final StringTrimmerEditor stringTrimmerEditor;
-    private final PaymentHandlerCache paymentHandlerCache;
+    private final PaymentHandlerProvider paymentHandlerProvider;
 
     @Autowired
     public CommercetoolsHandlePaymentsController(StringTrimmerEditor stringTrimmerEditor,
-                                                 PaymentHandlerCache paymentHandlerCache) {
+                                                 PaymentHandlerProvider paymentHandlerProvider) {
         this.stringTrimmerEditor = stringTrimmerEditor;
-        this.paymentHandlerCache = paymentHandlerCache;
+        this.paymentHandlerProvider = paymentHandlerProvider;
     }
 
     @RequestMapping(
@@ -28,8 +32,8 @@ public class CommercetoolsHandlePaymentsController {
             value = "/{tenantName}/commercetools/handle/payments/{paymentId}")
     public PaymentDemo handlePayments(@PathVariable String tenantName,
                                       @PathVariable String paymentId) {
-        PaymentHandler paymentHandler = paymentHandlerCache.getPaymentHandler(tenantName);
-        paymentHandler.handlePayment();
+        PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(tenantName);
+        paymentHandler.handlePayment("paymentId");
         // skeleton for tests: just "reflect" the tenant name and payment ID as JSON
         return new PaymentDemo(tenantName,
                 String.format(template, paymentId));

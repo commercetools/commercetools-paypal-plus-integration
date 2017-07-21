@@ -31,7 +31,21 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
         return createPaymentStage(payment);
     }
 
-    private CompletionStage<Payment> createPaymentStage(@Nonnull Payment preparedPayment) {
+    /**
+     * This method is implemented to cover 2 issues of the default Paypal Plus service implementation:
+     * <ol>
+     * <li>{@link com.paypal.api.payments.Payment#create(com.paypal.base.rest.APIContext)} is blocking operation,
+     * but we want to have it asynchronous ({@link CompletionStage<Payment>}</li>
+     * <li>{@link com.paypal.api.payments.Payment#create(com.paypal.base.rest.APIContext)} throws <b>checked</b>
+     * {@link PayPalRESTException}, and this prevents us to use default completion stage chains. So we wrap the
+     * exception to <i>unchecked</i> {@link PaypalPlusServiceException}</li>
+     * </ol>
+     *
+     * @param preparedPayment Paypal Plus payment to store.
+     * @return a {@link CompletionStage<Payment>} with new stored Paypal Plus payment.
+     */
+    private CompletionStage<Payment> createPaymentStage(@Nonnull Payment preparedPayment)
+            throws PaypalPlusServiceException {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return preparedPayment.create(paypalPlusApiContext);

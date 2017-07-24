@@ -6,3 +6,8 @@ ctp.client:
   projectKey: paypalplus-integration-test
   clientId:
   clientSecret:
+
+paypalPlus.client:
+  id:
+  secret:
+  mode: sandbox

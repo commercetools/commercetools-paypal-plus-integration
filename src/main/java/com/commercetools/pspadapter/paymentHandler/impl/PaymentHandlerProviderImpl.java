@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 
 @Component
 public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
@@ -24,10 +25,16 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
     }
 
     @Override
-    public PaymentHandler getPaymentHandler(@Nonnull String tenantName) {
-        CtpExecutor ctpExecutor = ctpFactory.getCtpExecutor(tenantName);
-        PaypalPlusExecutor payPalPlusExecutor = pPPFactory.getPayPalPlusExecutor(tenantName);
-        return new PaymentHandler(ctpExecutor, payPalPlusExecutor);
+    public Optional<PaymentHandler> getPaymentHandler(@Nonnull String tenantName) {
+        Optional<CtpExecutor> ctpExecutorOpt = ctpFactory.getCtpExecutor(tenantName);
+        Optional<PaypalPlusExecutor> payPalPlusExecutorOpt = pPPFactory.getPayPalPlusExecutor(tenantName);
+        if (ctpExecutorOpt.isPresent() && payPalPlusExecutorOpt.isPresent()) {
+            CtpExecutor ctpExecutor = ctpExecutorOpt.get();
+            PaypalPlusExecutor paypalPlusExecutor = payPalPlusExecutorOpt.get();
+            return Optional.of(new PaymentHandler(ctpExecutor, paypalPlusExecutor));
+        } else {
+            return Optional.empty();
+        }
     }
 
 }

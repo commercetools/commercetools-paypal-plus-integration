@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
 public class CommercetoolsHandlePaymentsController {
 
@@ -32,8 +34,8 @@ public class CommercetoolsHandlePaymentsController {
             value = "/{tenantName}/commercetools/handle/payments/{paymentId}")
     public PaymentDemo handlePayments(@PathVariable String tenantName,
                                       @PathVariable String paymentId) {
-        PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(tenantName);
-        paymentHandler.handlePayment(paymentId);
+        Optional<PaymentHandler> paymentHandlerOpt = paymentHandlerProvider.getPaymentHandler(tenantName);
+        paymentHandlerOpt.ifPresent(paymentHandler -> paymentHandler.handlePayment(paymentId));
         // skeleton for tests: just "reflect" the tenant name and payment ID as JSON
         return new PaymentDemo(tenantName,
                 String.format(template, paymentId));

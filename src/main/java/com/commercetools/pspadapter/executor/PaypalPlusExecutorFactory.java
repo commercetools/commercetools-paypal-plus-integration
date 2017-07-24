@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import java.util.Optional;
 
 @Component
 public class PaypalPlusExecutorFactory {
@@ -19,9 +20,14 @@ public class PaypalPlusExecutorFactory {
         this.config = config;
     }
 
-    public PaypalPlusExecutor getPayPalPlusExecutor(@Nonnull String tenantName) {
-        TenantConfig tenantConfig = config.getTenantConfig(tenantName);
-        PaypalPlusPaymentService paypalPlusPaymentService = new PaypalPlusPaymentServiceImpl(tenantConfig.createAPIContext());
-        return new PaypalPlusExecutor(paypalPlusPaymentService);
+    public Optional<PaypalPlusExecutor> getPayPalPlusExecutor(@Nonnull String tenantName) {
+        Optional<TenantConfig> tenantConfigOpt = config.getTenantConfig(tenantName);
+        if (tenantConfigOpt.isPresent()) {
+            TenantConfig tenantConfig = tenantConfigOpt.get();
+            PaypalPlusPaymentService paypalPlusPaymentService = new PaypalPlusPaymentServiceImpl(tenantConfig.createAPIContext());
+            return Optional.of(new PaypalPlusExecutor(paypalPlusPaymentService));
+        } else {
+            return Optional.empty();
+        }
     }
 }

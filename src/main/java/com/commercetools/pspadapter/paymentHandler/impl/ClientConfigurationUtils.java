@@ -1,4 +1,4 @@
-package com.commercetools.service.main.impl;
+package com.commercetools.pspadapter.paymentHandler.impl;
 
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereAccessTokenSupplier;

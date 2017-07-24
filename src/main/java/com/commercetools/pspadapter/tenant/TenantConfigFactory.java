@@ -1,8 +1,10 @@
-package com.commercetools.service.main.impl;
+package com.commercetools.pspadapter.tenant;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
 
 @Component
 public class TenantConfigFactory {
@@ -10,11 +12,11 @@ public class TenantConfigFactory {
     private Environment env;
 
     @Autowired
-    public TenantConfigFactory(Environment env) {
+    public TenantConfigFactory(@Nonnull Environment env) {
         this.env = env;
     }
 
-    public TenantConfig getTenantConfig(String tenantName) {
+    public TenantConfig getTenantConfig(@Nonnull String tenantName) {
         String projectKey = env.getProperty(tenantName + ".ctp.client.projectKey");
         String clientId = env.getProperty(tenantName + ".ctp.client.clientId");
         String clientSecret = env.getProperty(tenantName + ".ctp.client.clientSecret");

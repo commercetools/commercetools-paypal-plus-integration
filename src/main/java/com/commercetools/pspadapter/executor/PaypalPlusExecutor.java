@@ -1,17 +1,17 @@
-package com.commercetools.service.main.impl;
+package com.commercetools.pspadapter.executor;
 
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
 
 /**
- * TODO: add class description
+ * A wrapper class for all services that communicate with Paypal Plus
  */
 public class PaypalPlusExecutor {
 
     public PaypalPlusPaymentService paymentService;
 
-    public PaypalPlusExecutor(PaypalPlusPaymentService paymentService) {
+    public PaypalPlusExecutor(@Nonnull PaypalPlusPaymentService paymentService) {
         this.paymentService = paymentService;
     }
 

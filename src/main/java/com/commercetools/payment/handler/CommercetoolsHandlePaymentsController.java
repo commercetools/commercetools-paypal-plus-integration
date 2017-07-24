@@ -1,8 +1,8 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.payment.PaymentDemo;
-import com.commercetools.service.main.impl.PaymentHandler;
-import com.commercetools.service.main.PaymentHandlerProvider;
+import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
+import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.web.bind.WebDataBinder;
@@ -33,7 +33,7 @@ public class CommercetoolsHandlePaymentsController {
     public PaymentDemo handlePayments(@PathVariable String tenantName,
                                       @PathVariable String paymentId) {
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(tenantName);
-        paymentHandler.handlePayment("paymentId");
+        paymentHandler.handlePayment(paymentId);
         // skeleton for tests: just "reflect" the tenant name and payment ID as JSON
         return new PaymentDemo(tenantName,
                 String.format(template, paymentId));

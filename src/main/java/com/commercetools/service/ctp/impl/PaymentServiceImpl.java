@@ -20,7 +20,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class PaymentServiceImpl extends BaseSphereService implements PaymentService {
 
-    public PaymentServiceImpl(SphereClient sphereClient) {
+    public PaymentServiceImpl(@Nonnull SphereClient sphereClient) {
         super(sphereClient);
     }
 

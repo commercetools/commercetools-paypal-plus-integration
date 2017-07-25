@@ -8,6 +8,7 @@ import io.sphere.sdk.orders.queries.OrderQueryBuilder;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -15,7 +16,7 @@ import java.util.concurrent.CompletionStage;
 
 public class OrderServiceImpl extends BaseSphereService implements OrderService {
 
-    public OrderServiceImpl(SphereClient sphereClient) {
+    public OrderServiceImpl(@Nonnull SphereClient sphereClient) {
         super(sphereClient);
     }
 

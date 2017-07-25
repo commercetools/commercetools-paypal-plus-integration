@@ -7,6 +7,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -14,7 +15,7 @@ import java.util.concurrent.CompletionStage;
 
 public class CartServiceImpl extends BaseSphereService implements CartService {
 
-    public CartServiceImpl(SphereClient sphereClient) {
+    public CartServiceImpl(@Nonnull SphereClient sphereClient) {
         super(sphereClient);
     }
 

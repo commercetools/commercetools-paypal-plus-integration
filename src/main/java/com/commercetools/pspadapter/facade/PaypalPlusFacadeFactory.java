@@ -22,12 +22,8 @@ public class PaypalPlusFacadeFactory {
 
     public Optional<PaypalPlusFacade> getPaypalPlusFacade(@Nonnull String tenantName) {
         Optional<TenantConfig> tenantConfigOpt = config.getTenantConfig(tenantName);
-        if (tenantConfigOpt.isPresent()) {
-            TenantConfig tenantConfig = tenantConfigOpt.get();
-            PaypalPlusPaymentService paypalPlusPaymentService = new PaypalPlusPaymentServiceImpl(tenantConfig.createAPIContext());
-            return Optional.of(new PaypalPlusFacade(paypalPlusPaymentService));
-        } else {
-            return Optional.empty();
-        }
+        return tenantConfigOpt
+                .map(tenantConfig -> new PaypalPlusPaymentServiceImpl(tenantConfig.createAPIContext()))
+                .map(PaypalPlusFacade::new);
     }
 }

@@ -47,7 +47,7 @@ public class CtpPaymentWithCartTest {
         assertThat(paymentWithCart.getPaymentMethod()).isEmpty();
 
         when(paymentMethodInfo.getMethod()).thenReturn("OMG");
-        assertThat(paymentWithCart.getPaymentMethod()).contains("OMG");
+        assertThat(paymentWithCart.getPaymentMethod()).isEqualTo("OMG");
     }
 
     @Test
@@ -59,7 +59,7 @@ public class CtpPaymentWithCartTest {
         assertThat(paymentWithCart.getCreditCardToken()).isEmpty();
 
         when(customFields.getFieldAsString(CREDIT_CARD_TOKEN)).thenReturn("blah-blah");
-        assertThat(paymentWithCart.getCreditCardToken()).contains("blah-blah");
+        assertThat(paymentWithCart.getCreditCardToken()).isEqualTo("blah-blah");
     }
 
 }

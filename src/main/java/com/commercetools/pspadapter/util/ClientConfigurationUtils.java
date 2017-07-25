@@ -1,4 +1,4 @@
-package com.commercetools.pspadapter.paymentHandler.impl;
+package com.commercetools.pspadapter.util;
 
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereAccessTokenSupplier;
@@ -11,25 +11,21 @@ import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class ClientConfigurationUtils {
-    private static HttpClient httpClient;
     private static final long DEFAULT_TIMEOUT = 30;
     private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
-    private static Map<SphereClientConfig, SphereClient> delegatesCache = new HashMap<>();
 
     /**
      * Creates a {@link BlockingSphereClient} with a custom {@code timeout} with a custom {@link TimeUnit}.
      *
      * @return the instanted {@link BlockingSphereClient}.
      */
-    public static synchronized SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
+    public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
                                                          final long timeout,
                                                          @Nonnull final TimeUnit timeUnit) {
-        final HttpClient httpClient = getHttpClient();
+        final HttpClient httpClient = createHttpClient();
         final SphereAccessTokenSupplier tokenSupplier =
                 SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
         return SphereClient.of(clientConfig, httpClient, tokenSupplier);
@@ -46,17 +42,13 @@ public class ClientConfigurationUtils {
 
     /**
      * Gets an asynchronous {@link HttpClient} to be used by the {@link BlockingSphereClient}.
-     * Client is created during first invocation and then cached.
      *
      * @return {@link HttpClient}
      */
-    private static synchronized HttpClient getHttpClient() {
-        if (httpClient == null) {
-            final AsyncHttpClient asyncHttpClient =
-                    new DefaultAsyncHttpClient(
-                            new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
-            httpClient = AsyncHttpClientAdapter.of(asyncHttpClient);
-        }
-        return httpClient;
+    private static HttpClient createHttpClient() {
+        final AsyncHttpClient asyncHttpClient =
+                new DefaultAsyncHttpClient(
+                        new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
+        return AsyncHttpClientAdapter.of(asyncHttpClient);
     }
 }

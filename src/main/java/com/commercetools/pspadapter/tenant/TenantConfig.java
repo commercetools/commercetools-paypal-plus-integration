@@ -1,6 +1,6 @@
 package com.commercetools.pspadapter.tenant;
 
-import com.commercetools.pspadapter.paymentHandler.impl.ClientConfigurationUtils;
+import com.commercetools.pspadapter.util.ClientConfigurationUtils;
 import com.paypal.base.rest.APIContext;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;

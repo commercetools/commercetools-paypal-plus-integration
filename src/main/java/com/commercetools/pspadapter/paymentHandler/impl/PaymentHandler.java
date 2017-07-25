@@ -2,6 +2,7 @@ package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.pspadapter.executor.CtpExecutor;
 import com.commercetools.pspadapter.executor.PaypalPlusExecutor;
+import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
 
@@ -20,9 +21,15 @@ public class PaymentHandler {
         this.paypalPlusExecutor = paypalPlusExecutor;
     }
 
-    public void handlePayment(@Nonnull String paymentId){
-        ctpExecutor.getCartService().getByPaymentId(paymentId);
-        // mapping
-        paypalPlusExecutor.getPaymentService().create(null);
+    public PaymentHandleResult handlePayment(@Nonnull String paymentId){
+        //TODO: @andrii.kovalenko
+        try {
+            ctpExecutor.getCartService().getByPaymentId(paymentId);
+            // mapping
+            paypalPlusExecutor.getPaymentService().create(null);
+            return new PaymentHandleResult(HttpStatus.OK);
+        } catch (Exception e) {
+            return new PaymentHandleResult(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
     }
 }

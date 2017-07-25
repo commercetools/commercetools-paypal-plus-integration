@@ -1,10 +1,11 @@
 package com.commercetools.payment.handler;
 
-import com.commercetools.payment.PaymentDemo;
 import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
-import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandler;
+import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 
 @RestController
 public class CommercetoolsHandlePaymentsController {
@@ -33,13 +33,13 @@ public class CommercetoolsHandlePaymentsController {
     @RequestMapping(
             method = RequestMethod.GET,
             value = "/{tenantName}/commercetools/handle/payments/{paymentId}")
-    public PaymentDemo handlePayments(@PathVariable String tenantName,
-                                      @PathVariable String paymentId) {
-        Optional<PaymentHandler> paymentHandlerOpt = paymentHandlerProvider.getPaymentHandler(tenantName);
-        paymentHandlerOpt.ifPresent(paymentHandler -> paymentHandler.handlePayment(paymentId));
-        // skeleton for tests: just "reflect" the tenant name and payment ID as JSON
-        return new PaymentDemo(tenantName,
-                String.format(template, paymentId));
+    public ResponseEntity<?> handlePayments(@PathVariable String tenantName,
+                                                             @PathVariable String paymentId) {
+        PaymentHandleResult paymentHandleResult = paymentHandlerProvider
+                .getPaymentHandler(tenantName)
+                .map(paymentHandler -> paymentHandler.handlePayment(paymentId))
+                .orElseGet(() -> new PaymentHandleResult(HttpStatus.NOT_FOUND, "Tenant " + tenantName + " not found"));
+        return new ResponseEntity<>(paymentHandleResult.statusCode());
     }
 
     @InitBinder

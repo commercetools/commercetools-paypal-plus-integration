@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 @Component
 public class TenantConfigFactory {
 
-    private Environment env;
+    private final Environment env;
 
     @Autowired
     public TenantConfigFactory(@Nonnull Environment env) {

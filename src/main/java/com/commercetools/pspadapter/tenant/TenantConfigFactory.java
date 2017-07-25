@@ -1,5 +1,6 @@
 package com.commercetools.pspadapter.tenant;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -27,16 +28,12 @@ public class TenantConfigFactory {
         String ppPClientSecret = env.getProperty(tenantName + ".paypalPlus.client.clientSecret");
         String ppPClientMode = env.getProperty(tenantName + ".paypalPlus.client.mode");
 
-        if (isAnyPropertyNull(projectKey, clientId, clientSecret,
+        if (StringUtils.isAnyBlank(projectKey, clientId, clientSecret,
                 ppPClientId, ppPClientSecret, ppPClientMode)) {
             return Optional.empty();
         }
 
         return Optional.of(new TenantConfig(projectKey, clientId, clientSecret,
                 ppPClientId, ppPClientSecret, ppPClientMode));
-    }
-
-    private boolean isAnyPropertyNull(String... properties) {
-        return Stream.of(properties).anyMatch(Objects::isNull);
     }
 }

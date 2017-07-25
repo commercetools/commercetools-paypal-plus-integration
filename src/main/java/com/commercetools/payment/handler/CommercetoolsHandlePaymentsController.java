@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
 
 @RestController
@@ -23,8 +24,8 @@ public class CommercetoolsHandlePaymentsController {
     private final PaymentHandlerProvider paymentHandlerProvider;
 
     @Autowired
-    public CommercetoolsHandlePaymentsController(StringTrimmerEditor stringTrimmerEditor,
-                                                 PaymentHandlerProvider paymentHandlerProvider) {
+    public CommercetoolsHandlePaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,
+                                                 @Nonnull PaymentHandlerProvider paymentHandlerProvider) {
         this.stringTrimmerEditor = stringTrimmerEditor;
         this.paymentHandlerProvider = paymentHandlerProvider;
     }

@@ -8,7 +8,7 @@ import io.sphere.sdk.payments.PaymentMethodInfo;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.CREDIT_CARD_TOKEN;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
 
 /**
@@ -56,5 +56,25 @@ public class CtpPaymentWithCart {
     @Nonnull
     public String getCreditCardToken() {
         return getCustomFieldStringOrEmpty(payment, CREDIT_CARD_TOKEN);
+    }
+
+    /**
+     * @return Return URL (success URL) value from
+     * {@link com.commercetools.payment.constants.ctp.CtpPaymentCustomFields#SUCCESS_URL_FIELD} custom field, if exists.
+     * Otherwise return empty string.
+     */
+    @Nonnull
+    public String getReturnUrl() {
+        return getCustomFieldStringOrEmpty(payment, SUCCESS_URL_FIELD);
+    }
+
+    /**
+     * @return Cancel URL value from
+     * {@link com.commercetools.payment.constants.ctp.CtpPaymentCustomFields#CANCEL_URL_FIELD} custom field, if exists.
+     * Otherwise return empty string.
+     */
+    @Nonnull
+    public String getCancelUrl() {
+        return getCustomFieldStringOrEmpty(payment, CANCEL_URL_FIELD);
     }
 }

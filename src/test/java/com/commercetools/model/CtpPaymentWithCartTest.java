@@ -62,4 +62,28 @@ public class CtpPaymentWithCartTest {
         assertThat(paymentWithCart.getCreditCardToken()).isEqualTo("blah-blah");
     }
 
+    @Test
+    public void getReturnUrl() throws Exception {
+        assertThat(paymentWithCart.getReturnUrl()).isEmpty();
+        CustomFields customFields = mock(CustomFields.class);
+
+        when(payment.getCustom()).thenReturn(customFields);
+        assertThat(paymentWithCart.getReturnUrl()).isEmpty();
+
+        when(customFields.getFieldAsString(CREDIT_CARD_TOKEN)).thenReturn("super-mario");
+        assertThat(paymentWithCart.getReturnUrl()).isEqualTo("super-mario");
+    }
+
+    @Test
+    public void getCancelUrl() throws Exception {
+        assertThat(paymentWithCart.getCancelUrl()).isEmpty();
+        CustomFields customFields = mock(CustomFields.class);
+
+        when(payment.getCustom()).thenReturn(customFields);
+        assertThat(paymentWithCart.getCancelUrl()).isEmpty();
+
+        when(customFields.getFieldAsString(CREDIT_CARD_TOKEN)).thenReturn("WTF");
+        assertThat(paymentWithCart.getCancelUrl()).isEqualTo("WTF");
+    }
+
 }

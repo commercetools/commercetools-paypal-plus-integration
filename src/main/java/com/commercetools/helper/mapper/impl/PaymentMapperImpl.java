@@ -4,7 +4,6 @@ import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.paypal.api.payments.*;
-import io.sphere.sdk.carts.CartLike;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -60,7 +59,9 @@ public class PaymentMapperImpl implements PaymentMapper {
 
     @Nonnull
     protected RedirectUrls getRedirectUrls(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        return new RedirectUrls();
+        return new RedirectUrls()
+                .setReturnUrl(paymentWithCartLike.getReturnUrl())
+                .setCancelUrl(paymentWithCartLike.getCancelUrl());
     }
 
     @Nonnull
@@ -85,20 +86,17 @@ public class PaymentMapperImpl implements PaymentMapper {
 
     @Nonnull
     protected Amount getTransactionAmount(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        final CartLike cartLike = paymentWithCartLike.getCart();
-//        MonetaryAmount totalPrice = cartLike.getTotalPrice();
-
         // looks like could be skipped, in this case it won't be validated against amount.total
 //        Details details = new Details()
 //                .setShipping()
 //                .setSubtotal()
 //                .setTax();
 //
-        final MonetaryAmount totalPrice = cartLike.getTotalPrice();
+        final MonetaryAmount amountPlanned = paymentWithCartLike.getPayment().getAmountPlanned();
         return new Amount()
-                .setCurrency(totalPrice.getCurrency().getCurrencyCode())
+                .setCurrency(amountPlanned.getCurrency().getCurrencyCode())
                 // Total must be equal to the sum of shipping, tax and subtotal, if they are specified
-                .setTotal(paypalPlusFormatter.monetaryAmountToString(totalPrice))
+                .setTotal(paypalPlusFormatter.monetaryAmountToString(amountPlanned))
 //                .setDetails(details);
                 ;
     }

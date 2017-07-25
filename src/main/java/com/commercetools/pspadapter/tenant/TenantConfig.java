@@ -1,6 +1,6 @@
 package com.commercetools.pspadapter.tenant;
 
-import com.commercetools.pspadapter.util.ClientConfigurationUtils;
+import com.commercetools.pspadapter.util.CtpClientConfigurationUtils;
 import com.paypal.base.rest.APIContext;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
@@ -59,7 +59,7 @@ public class TenantConfig {
     }
 
     public SphereClient createSphereClient () {
-        return ClientConfigurationUtils.createClient(createCtpConfig());
+        return CtpClientConfigurationUtils.createClient(createCtpConfig());
     }
 
     public SphereClientConfig createCtpConfig() {

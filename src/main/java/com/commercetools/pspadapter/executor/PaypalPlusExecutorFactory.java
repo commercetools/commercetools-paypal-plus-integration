@@ -20,7 +20,7 @@ public class PaypalPlusExecutorFactory {
         this.config = config;
     }
 
-    public Optional<PaypalPlusExecutor> getPayPalPlusExecutor(@Nonnull String tenantName) {
+    public Optional<PaypalPlusExecutor> getPaypalPlusExecutor(@Nonnull String tenantName) {
         Optional<TenantConfig> tenantConfigOpt = config.getTenantConfig(tenantName);
         if (tenantConfigOpt.isPresent()) {
             TenantConfig tenantConfig = tenantConfigOpt.get();

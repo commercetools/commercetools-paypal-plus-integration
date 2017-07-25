@@ -27,7 +27,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
     @Override
     public Optional<PaymentHandler> getPaymentHandler(@Nonnull String tenantName) {
         Optional<CtpExecutor> ctpExecutorOpt = ctpFactory.getCtpExecutor(tenantName);
-        Optional<PaypalPlusExecutor> payPalPlusExecutorOpt = pPPFactory.getPayPalPlusExecutor(tenantName);
+        Optional<PaypalPlusExecutor> payPalPlusExecutorOpt = pPPFactory.getPaypalPlusExecutor(tenantName);
         if (ctpExecutorOpt.isPresent() && payPalPlusExecutorOpt.isPresent()) {
             CtpExecutor ctpExecutor = ctpExecutorOpt.get();
             PaypalPlusExecutor paypalPlusExecutor = payPalPlusExecutorOpt.get();

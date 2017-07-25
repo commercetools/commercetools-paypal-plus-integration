@@ -1,5 +1,9 @@
 package com.commercetools.config;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
+import com.commercetools.helper.mapper.PaymentMapper;
+import com.commercetools.helper.mapper.impl.PaymentMapperImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.client.SphereClientFactory;
@@ -18,6 +22,17 @@ public class ApplicationConfiguration {
     @Autowired
     public SphereClient sphereClient(SphereClientConfig sphereClientConfig) {
         return SphereClientFactory.of().createClient(sphereClientConfig);
+    }
+
+    @Bean
+    public PaypalPlusFormatter paypalPlusFormatter() {
+        return new PaypalPlusFormatterImpl();
+    }
+
+    @Bean
+    @Autowired
+    public PaymentMapper paymentMapper(PaypalPlusFormatter paypalPlusFormatter) {
+        return new PaymentMapperImpl(paypalPlusFormatter);
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.commercetools.pspadapter.executor;
+package com.commercetools.pspadapter.facade;
 
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
@@ -11,21 +11,21 @@ import javax.annotation.Nonnull;
 import java.util.Optional;
 
 @Component
-public class PaypalPlusExecutorFactory {
+public class PaypalPlusFacadeFactory {
 
     private final TenantConfigFactory config;
 
     @Autowired
-    public PaypalPlusExecutorFactory(@Nonnull TenantConfigFactory config) {
+    public PaypalPlusFacadeFactory(@Nonnull TenantConfigFactory config) {
         this.config = config;
     }
 
-    public Optional<PaypalPlusExecutor> getPaypalPlusExecutor(@Nonnull String tenantName) {
+    public Optional<PaypalPlusFacade> getPaypalPlusFacade(@Nonnull String tenantName) {
         Optional<TenantConfig> tenantConfigOpt = config.getTenantConfig(tenantName);
         if (tenantConfigOpt.isPresent()) {
             TenantConfig tenantConfig = tenantConfigOpt.get();
             PaypalPlusPaymentService paypalPlusPaymentService = new PaypalPlusPaymentServiceImpl(tenantConfig.createAPIContext());
-            return Optional.of(new PaypalPlusExecutor(paypalPlusPaymentService));
+            return Optional.of(new PaypalPlusFacade(paypalPlusPaymentService));
         } else {
             return Optional.empty();
         }

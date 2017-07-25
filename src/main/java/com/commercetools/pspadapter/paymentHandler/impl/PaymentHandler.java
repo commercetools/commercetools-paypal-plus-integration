@@ -1,7 +1,7 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
-import com.commercetools.pspadapter.executor.CtpExecutor;
-import com.commercetools.pspadapter.executor.PaypalPlusExecutor;
+import com.commercetools.pspadapter.facade.CtpFacade;
+import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
@@ -12,21 +12,21 @@ import javax.annotation.Nonnull;
  */
 public class PaymentHandler {
 
-    private final CtpExecutor ctpExecutor;
-    private final PaypalPlusExecutor paypalPlusExecutor;
+    private final CtpFacade ctpFacade;
+    private final PaypalPlusFacade paypalPlusFacade;
 
-    public PaymentHandler(@Nonnull CtpExecutor ctpExecutor,
-                          @Nonnull PaypalPlusExecutor paypalPlusExecutor) {
-        this.ctpExecutor = ctpExecutor;
-        this.paypalPlusExecutor = paypalPlusExecutor;
+    public PaymentHandler(@Nonnull CtpFacade ctpFacade,
+                          @Nonnull PaypalPlusFacade paypalPlusFacade) {
+        this.ctpFacade = ctpFacade;
+        this.paypalPlusFacade = paypalPlusFacade;
     }
 
     public PaymentHandleResult handlePayment(@Nonnull String paymentId){
         //TODO: @andrii.kovalenko
         try {
-            ctpExecutor.getCartService().getByPaymentId(paymentId);
+            ctpFacade.getCartService().getByPaymentId(paymentId);
             // mapping
-            paypalPlusExecutor.getPaymentService().create(null);
+            paypalPlusFacade.getPaymentService().create(null);
             return new PaymentHandleResult(HttpStatus.OK);
         } catch (Exception e) {
             return new PaymentHandleResult(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());

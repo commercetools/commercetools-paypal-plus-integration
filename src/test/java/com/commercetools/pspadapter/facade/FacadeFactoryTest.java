@@ -1,4 +1,4 @@
-package com.commercetools.pspadapter.executor;
+package com.commercetools.pspadapter.facade;
 
 import com.commercetools.Application;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
@@ -15,24 +15,24 @@ import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-public class ExecutorFactoryTest {
+public class FacadeFactoryTest {
 
     @Test
     public void whenTenantHasNoConfig_shouldReturnEmptyOptional() {
         TenantConfigFactory tenantConfigFactory = mock(TenantConfigFactory.class);
         when(tenantConfigFactory.getTenantConfig(anyString())).thenReturn(Optional.empty());
 
-        CtpExecutorFactory ctpExecutorFactory = new CtpExecutorFactory(tenantConfigFactory);
-        Optional<CtpExecutor> ctTenant = ctpExecutorFactory.getCtpExecutor("nonExistingTenant");
-        assertThat(ctTenant).isEmpty();
+        CtpFacadeFactory ctpFacadeFactory = new CtpFacadeFactory(tenantConfigFactory);
+        Optional<CtpFacade> ctFacade = ctpFacadeFactory.getCtpFacade("nonExistingTenant");
+        assertThat(ctFacade).isEmpty();
 
-        PaypalPlusExecutorFactory pPExecutorFactory = new PaypalPlusExecutorFactory(tenantConfigFactory);
-        Optional<PaypalPlusExecutor> pPtenant = pPExecutorFactory.getPaypalPlusExecutor("nonExistingTenant");
+        PaypalPlusFacadeFactory pPFacadeFactory = new PaypalPlusFacadeFactory(tenantConfigFactory);
+        Optional<PaypalPlusFacade> pPtenant = pPFacadeFactory.getPaypalPlusFacade("nonExistingTenant");
         assertThat(pPtenant).isEmpty();
     }
 
     @Test
-    public void whenTenantHasConfig_shouldReturnCtpExecutor() {
+    public void whenTenantHasConfig_shouldReturnFacades() {
         MockEnvironment mockEnv = new MockEnvironment();
         mockEnv.setProperty("existingTenant.ctp.client.projectKey", "ctpClientId");
         mockEnv.setProperty("existingTenant.ctp.client.clientId", "ctpClientSecret");
@@ -43,12 +43,12 @@ public class ExecutorFactoryTest {
 
         TenantConfigFactory tenantConfigFactory = new TenantConfigFactory(mockEnv);
 
-        CtpExecutorFactory ctpExecutorFactory = new CtpExecutorFactory(tenantConfigFactory);
-        Optional<CtpExecutor> ctTenant = ctpExecutorFactory.getCtpExecutor("existingTenant");
+        CtpFacadeFactory ctpFacadeFactory = new CtpFacadeFactory(tenantConfigFactory);
+        Optional<CtpFacade> ctTenant = ctpFacadeFactory.getCtpFacade("existingTenant");
         assertThat(ctTenant).isNotEmpty();
 
-        PaypalPlusExecutorFactory pPExecutorFactory = new PaypalPlusExecutorFactory(tenantConfigFactory);
-        Optional<PaypalPlusExecutor> pPTenant = pPExecutorFactory.getPaypalPlusExecutor("existingTenant");
+        PaypalPlusFacadeFactory pPFacadeFactory = new PaypalPlusFacadeFactory(tenantConfigFactory);
+        Optional<PaypalPlusFacade> pPTenant = pPFacadeFactory.getPaypalPlusFacade("existingTenant");
         assertThat(pPTenant).isNotEmpty();
     }
 

@@ -1,4 +1,4 @@
-package com.commercetools.pspadapter.executor;
+package com.commercetools.pspadapter.facade;
 
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
@@ -9,14 +9,14 @@ import javax.annotation.Nonnull;
 /**
  * A wrapper class for all services that communicate with CT platform
  */
-public class CtpExecutor {
+public class CtpFacade {
     private final PaymentService paymentService;
     private final CartService cartService;
     private final OrderService orderService;
 
-    public CtpExecutor(@Nonnull CartService cartService,
-                       @Nonnull OrderService orderService,
-                       @Nonnull PaymentService paymentService) {
+    public CtpFacade(@Nonnull CartService cartService,
+                     @Nonnull OrderService orderService,
+                     @Nonnull PaymentService paymentService) {
         this.cartService = cartService;
         this.orderService = orderService;
         this.paymentService = paymentService;

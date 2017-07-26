@@ -25,4 +25,10 @@ public class PaymentHandlerProviderTest {
         Optional<PaymentHandler> paymentClientOpt = paymentHandlerProvider.getPaymentHandler("paypalplus-integration-test");
         assertThat(paymentClientOpt).isNotEmpty();
     }
+
+    @Test
+    public void shouldReturnEmptyOptionalWhenTenantDoesNotExist() {
+        Optional<PaymentHandler> paymentClientOpt = paymentHandlerProvider.getPaymentHandler("");
+        assertThat(paymentClientOpt).isEmpty();
+    }
 }

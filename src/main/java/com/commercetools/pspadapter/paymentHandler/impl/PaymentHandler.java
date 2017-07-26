@@ -26,7 +26,6 @@ public class PaymentHandler {
         try {
             ctpFacade.getCartService().getByPaymentId(paymentId);
             // mapping
-            paypalPlusFacade.getPaymentService().create(null);
             return new PaymentHandleResult(HttpStatus.OK);
         } catch (Exception e) {
             return new PaymentHandleResult(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());

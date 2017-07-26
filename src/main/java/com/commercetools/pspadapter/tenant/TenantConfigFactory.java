@@ -24,7 +24,7 @@ public class TenantConfigFactory {
         return tenantOpt.map(tenant -> {
             TenantProperties.Tenant.Ctp ctp = tenant.getCtp();
             TenantProperties.Tenant.PaypalPlus paypalPlus = tenant.getPaypalPlus();
-            return new TenantConfig(ctp.getProjectKey(), ctp.getProjectKey(), ctp.getClientId(),
+            return new TenantConfig(ctp.getProjectKey(), ctp.getClientId(), ctp.getClientSecret(),
                     paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
         });
     }

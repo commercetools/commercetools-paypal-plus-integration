@@ -1,5 +1,6 @@
 package com.commercetools.testUtil.customTestConfigs;
 
+import com.commercetools.pspadapter.tenant.TenantProperties;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
 import com.commercetools.service.ctp.PaymentService;
@@ -10,6 +11,8 @@ import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.commercetools.service.paypalPlus.impl.PaypalPlusPaymentServiceImpl;
 import com.paypal.base.rest.APIContext;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.SphereClientFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,11 +20,10 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
 
 @Configuration
-@DependsOn({"ctpClientConfig"})
 public class ServiceConfig {
 
     @Autowired
-    private Environment env;
+    TenantProperties tenantProperties;
 
     @Bean
     @Autowired
@@ -48,10 +50,15 @@ public class ServiceConfig {
     }
 
     @Bean
+    public SphereClient sphereClient() {
+        TenantProperties.Tenant.Ctp ctp = tenantProperties.getTenants().get(0).getCtp();
+        SphereClientConfig sphereClientConfig = SphereClientConfig.of(ctp.getProjectKey(), ctp.getClientId(), ctp.getClientSecret());
+        return SphereClientFactory.of().createClient(sphereClientConfig);
+    }
+
+    @Bean
     public APIContext apiContext(){
-        String ppPClientId = env.getProperty("paypalplus-integration-test.paypalPlus.client.clientId");
-        String ppPClientSecret = env.getProperty("paypalplus-integration-test.paypalPlus.client.clientSecret");
-        String ppPClientMode = env.getProperty("paypalplus-integration-test.paypalPlus.client.mode");
-        return new APIContext(ppPClientId, ppPClientSecret, ppPClientMode);
+        TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().get(0).getPaypalPlus();
+        return new APIContext(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
     }
 }

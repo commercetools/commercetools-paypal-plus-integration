@@ -7,6 +7,8 @@ public final class CtpPaymentCustomFields {
 
     public static final String CREDIT_CARD_TOKEN = "cardDataPlaceholder";
 
+    public static final String LANGUAGE_CODE_FIELD = "languageCode";
+
     private CtpPaymentCustomFields() {
     }
 }

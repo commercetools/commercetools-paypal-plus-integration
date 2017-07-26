@@ -10,7 +10,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.CREDIT_CARD_TOKEN;
+import java.util.Locale;
+
+import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -25,7 +28,7 @@ public class CtpPaymentWithCartTest {
     @Mock
     private Cart cart;
 
-    CtpPaymentWithCart paymentWithCart;
+    private CtpPaymentWithCart paymentWithCart;
 
     @Before
     public void setUp() throws Exception {
@@ -70,7 +73,7 @@ public class CtpPaymentWithCartTest {
         when(payment.getCustom()).thenReturn(customFields);
         assertThat(paymentWithCart.getReturnUrl()).isEmpty();
 
-        when(customFields.getFieldAsString(CREDIT_CARD_TOKEN)).thenReturn("super-mario");
+        when(customFields.getFieldAsString(SUCCESS_URL_FIELD)).thenReturn("super-mario");
         assertThat(paymentWithCart.getReturnUrl()).isEqualTo("super-mario");
     }
 
@@ -82,8 +85,32 @@ public class CtpPaymentWithCartTest {
         when(payment.getCustom()).thenReturn(customFields);
         assertThat(paymentWithCart.getCancelUrl()).isEmpty();
 
-        when(customFields.getFieldAsString(CREDIT_CARD_TOKEN)).thenReturn("WTF");
+        when(customFields.getFieldAsString(CANCEL_URL_FIELD)).thenReturn("WTF");
         assertThat(paymentWithCart.getCancelUrl()).isEqualTo("WTF");
     }
 
+    @Test
+    public void getLocaleOrDefault() throws Exception {
+        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(DEFAULT_LOCALE);
+
+        CustomFields customFields = mock(CustomFields.class);
+
+        // custom field is still empty - fallback to default.
+        when(payment.getCustom()).thenReturn(customFields);
+        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(DEFAULT_LOCALE);
+
+        when(cart.getLocale()).thenReturn(Locale.forLanguageTag("ua"));
+        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(Locale.forLanguageTag("ua"));
+
+        when(cart.getLocale()).thenReturn(Locale.CHINESE);
+        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(Locale.CHINESE);
+
+        // payment locale has higher priority than cart locale
+        when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn("de");
+        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(Locale.GERMAN);
+
+        when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn("xx");
+        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(Locale.forLanguageTag("xx"));
+
+    }
 }

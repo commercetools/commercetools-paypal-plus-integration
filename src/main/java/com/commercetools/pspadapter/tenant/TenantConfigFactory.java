@@ -1,39 +1,31 @@
 package com.commercetools.pspadapter.tenant;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Component
 public class TenantConfigFactory {
 
-    private final Environment env;
+    private final TenantProperties tenantProperties;
 
     @Autowired
-    public TenantConfigFactory(@Nonnull Environment env) {
-        this.env = env;
+    public TenantConfigFactory(TenantProperties tenantProperties) {
+        this.tenantProperties = tenantProperties;
     }
 
     public Optional<TenantConfig> getTenantConfig(@Nonnull String tenantName) {
-        String projectKey = env.getProperty(tenantName + ".ctp.client.projectKey");
-        String clientId = env.getProperty(tenantName + ".ctp.client.clientId");
-        String clientSecret = env.getProperty(tenantName + ".ctp.client.clientSecret");
-        String ppPClientId = env.getProperty(tenantName + ".paypalPlus.client.clientId");
-        String ppPClientSecret = env.getProperty(tenantName + ".paypalPlus.client.clientSecret");
-        String ppPClientMode = env.getProperty(tenantName + ".paypalPlus.client.mode");
+        Optional<TenantProperties.Tenant> tenantOpt = tenantProperties.getTenants().stream()
+                .filter(t -> tenantName.equals(t.getName()))
+                .findAny();
 
-        if (StringUtils.isAnyBlank(projectKey, clientId, clientSecret,
-                ppPClientId, ppPClientSecret, ppPClientMode)) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new TenantConfig(projectKey, clientId, clientSecret,
-                ppPClientId, ppPClientSecret, ppPClientMode));
+        return tenantOpt.map(tenant -> {
+            TenantProperties.Tenant.Ctp ctp = tenant.getCtp();
+            TenantProperties.Tenant.PaypalPlus paypalPlus = tenant.getPaypalPlus();
+            return new TenantConfig(ctp.getProjectKey(), ctp.getProjectKey(), ctp.getClientId(),
+                    paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
+        });
     }
 }

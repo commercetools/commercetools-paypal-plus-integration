@@ -5,6 +5,8 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +15,8 @@ import java.util.Optional;
 
 @Component
 public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
+
+    private static final Logger logger = LoggerFactory.getLogger(PaymentHandlerProviderImpl.class);
 
     private final CtpFacadeFactory ctpFactory;
     private final PaypalPlusFacadeFactory pPPFactory;
@@ -33,6 +37,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
             PaypalPlusFacade paypalPlusFacade = payPalPlusExecutorOpt.get();
             return Optional.of(new PaymentHandler(ctpFacade, paypalPlusFacade));
         } else {
+            logger.warn("No tenants found for {}", tenantName);
             return Optional.empty();
         }
     }

@@ -62,7 +62,7 @@ public class TenantConfig {
         return CtpClientConfigurationUtils.createClient(createCtpConfig());
     }
 
-    public SphereClientConfig createCtpConfig() {
+    private SphereClientConfig createCtpConfig() {
         return SphereClientConfig.of(
                 this.ctpProjectKey,
                 this.ctpClientId,

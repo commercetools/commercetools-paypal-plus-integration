@@ -1,8 +1,6 @@
-package com.commercetools.service.main;
+package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.Application;
-import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandler;
-import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandlerProviderImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-public class PaymentHandlerProviderTest {
+public class PaymentHandlerProviderImplTest {
 
     @Autowired
     private PaymentHandlerProviderImpl paymentHandlerProvider;
@@ -27,7 +25,7 @@ public class PaymentHandlerProviderTest {
     }
 
     @Test
-    public void shouldReturnEmptyOptionalWhenTenantDoesNotExist() {
+    public void whenTenantDoesNotExist_shouldReturnEmptyOptional() {
         Optional<PaymentHandler> paymentClientOpt = paymentHandlerProvider.getPaymentHandler("");
         assertThat(paymentClientOpt).isEmpty();
     }

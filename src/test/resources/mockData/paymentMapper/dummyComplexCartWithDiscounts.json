@@ -24,7 +24,7 @@
         "prices": [
           {
             "value": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 12999
             },
             "id": "5c3bba8e-ffdf-4e33-9c6a-803e92bb34d7"
@@ -43,7 +43,7 @@
       },
       "price": {
         "value": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 12999
         },
         "id": "5c3bba8e-ffdf-4e33-9c6a-803e92bb34d7"
@@ -51,7 +51,7 @@
       "quantity": 4,
       "discountedPrice": {
         "value": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 11524
         },
         "includedDiscounts": [
@@ -61,7 +61,7 @@
               "id": "59ae8cb2-26e4-411e-96b5-a13265d334e2"
             },
             "discountedAmount": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 194
             }
           },
@@ -71,7 +71,7 @@
               "id": "f710cf37-4817-40ed-ae1a-8dc09bf2c397"
             },
             "discountedAmount": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 1281
             }
           }
@@ -82,7 +82,7 @@
           "quantity": 1,
           "discountedPrice": {
             "value": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 11524
             },
             "includedDiscounts": [
@@ -92,7 +92,7 @@
                   "id": "59ae8cb2-26e4-411e-96b5-a13265d334e2"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 194
                 }
               },
@@ -102,7 +102,7 @@
                   "id": "f710cf37-4817-40ed-ae1a-8dc09bf2c397"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 1281
                 }
               }
@@ -113,7 +113,7 @@
           "quantity": 3,
           "discountedPrice": {
             "value": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 11524
             },
             "includedDiscounts": [
@@ -123,7 +123,7 @@
                   "id": "59ae8cb2-26e4-411e-96b5-a13265d334e2"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 195
                 }
               },
@@ -133,7 +133,7 @@
                   "id": "f710cf37-4817-40ed-ae1a-8dc09bf2c397"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 1280
                 }
               }
@@ -160,16 +160,16 @@
       ],
       "priceMode": "Platform",
       "totalPrice": {
-        "currencyCode": "EUR",
+        "currencyCode": "USD",
         "centAmount": 46096
       },
       "taxedPrice": {
         "totalNet": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 38736
         },
         "totalGross": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 46096
         }
       }
@@ -193,7 +193,7 @@
         "prices": [
           {
             "value": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 0
             },
             "id": "cc9ffb9f-1433-4707-aaca-74d3365139af"
@@ -205,7 +205,7 @@
       },
       "price": {
         "value": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 0
         },
         "id": "cc9ffb9f-1433-4707-aaca-74d3365139af"
@@ -213,7 +213,7 @@
       "quantity": 1,
       "discountedPrice": {
         "value": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 0
         },
         "includedDiscounts": [
@@ -223,7 +223,7 @@
               "id": "59ae8cb2-26e4-411e-96b5-a13265d334e2"
             },
             "discountedAmount": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 0
             }
           },
@@ -233,7 +233,7 @@
               "id": "f710cf37-4817-40ed-ae1a-8dc09bf2c397"
             },
             "discountedAmount": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 0
             }
           }
@@ -244,7 +244,7 @@
           "quantity": 1,
           "discountedPrice": {
             "value": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 0
             },
             "includedDiscounts": [
@@ -254,7 +254,7 @@
                   "id": "59ae8cb2-26e4-411e-96b5-a13265d334e2"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 0
                 }
               },
@@ -264,7 +264,7 @@
                   "id": "f710cf37-4817-40ed-ae1a-8dc09bf2c397"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 0
                 }
               }
@@ -291,16 +291,16 @@
       ],
       "priceMode": "Platform",
       "totalPrice": {
-        "currencyCode": "EUR",
+        "currencyCode": "USD",
         "centAmount": 0
       },
       "taxedPrice": {
         "totalNet": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 0
         },
         "totalGross": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 0
         }
       }
@@ -324,7 +324,7 @@
         "prices": [
           {
             "value": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 4923
             },
             "id": "8ee4277f-91f2-4ee7-b5bc-fa1988b56e14"
@@ -343,7 +343,7 @@
       },
       "price": {
         "value": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 4923
         },
         "id": "8ee4277f-91f2-4ee7-b5bc-fa1988b56e14"
@@ -351,7 +351,7 @@
       "quantity": 3,
       "discountedPrice": {
         "value": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 4365
         },
         "includedDiscounts": [
@@ -361,7 +361,7 @@
               "id": "59ae8cb2-26e4-411e-96b5-a13265d334e2"
             },
             "discountedAmount": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 73
             }
           },
@@ -371,7 +371,7 @@
               "id": "f710cf37-4817-40ed-ae1a-8dc09bf2c397"
             },
             "discountedAmount": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 485
             }
           }
@@ -382,7 +382,7 @@
           "quantity": 2,
           "discountedPrice": {
             "value": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 4365
             },
             "includedDiscounts": [
@@ -392,7 +392,7 @@
                   "id": "59ae8cb2-26e4-411e-96b5-a13265d334e2"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 73
                 }
               },
@@ -402,7 +402,7 @@
                   "id": "f710cf37-4817-40ed-ae1a-8dc09bf2c397"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 485
                 }
               }
@@ -413,7 +413,7 @@
           "quantity": 1,
           "discountedPrice": {
             "value": {
-              "currencyCode": "EUR",
+              "currencyCode": "USD",
               "centAmount": 4364
             },
             "includedDiscounts": [
@@ -423,7 +423,7 @@
                   "id": "59ae8cb2-26e4-411e-96b5-a13265d334e2"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 74
                 }
               },
@@ -433,7 +433,7 @@
                   "id": "f710cf37-4817-40ed-ae1a-8dc09bf2c397"
                 },
                 "discountedAmount": {
-                  "currencyCode": "EUR",
+                  "currencyCode": "USD",
                   "centAmount": 485
                 }
               }
@@ -460,16 +460,16 @@
       ],
       "priceMode": "Platform",
       "totalPrice": {
-        "currencyCode": "EUR",
+        "currencyCode": "USD",
         "centAmount": 13094
       },
       "taxedPrice": {
         "totalNet": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 11003
         },
         "totalGross": {
-          "currencyCode": "EUR",
+          "currencyCode": "USD",
           "centAmount": 13094
         }
       }

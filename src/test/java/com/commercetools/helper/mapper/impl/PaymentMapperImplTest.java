@@ -2,14 +2,14 @@ package com.commercetools.helper.mapper.impl;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
-import com.paypal.api.payments.Amount;
-import com.paypal.api.payments.Payment;
-import com.paypal.api.payments.Transaction;
+import com.paypal.api.payments.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.math.BigDecimal;
 
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.CREDIT_CARD;
@@ -58,6 +58,23 @@ public class PaymentMapperImplTest {
 
         assertThat(amount.getCurrency()).isEqualTo("USD");
         assertThat(amount.getTotal()).isEqualTo("596.85");
+
+        Details details = amount.getDetails();
+        assertThat(details.getSubtotal()).isEqualTo("496.60");
+        assertThat(details.getShipping()).isEqualTo("4.95");
+        assertThat(details.getTax()).isEqualTo("95.30");
+
+        ItemList itemList = transaction.getItemList();
+        assertThat(itemList).isNotNull();
+        assertThat(itemList.getItems().size()).isEqualTo(5);
+
+        assertItem(getItemBySkuQuqntityPrice(itemList, "123454323454667", "1", "115.24"), "Halskette", "1", "115.24", "USD");
+        assertItem(getItemBySkuQuqntityPrice(itemList, "123454323454667", "3", "115.24"), "Halskette", "3", "115.24", "USD");
+        assertItem(getItemBySku(itemList, "2345234523"), "Kasten", "1", "0.00", "USD");
+        assertItem(getItemBySkuQuqntityPrice(itemList, "456786468866578", "2", "43.65"), "Ringe", "USD");
+        assertItem(getItemBySkuQuqntityPrice(itemList, "456786468866578", "1", "43.64"), "Ringe", "USD");
+
+        assertTransactionAmounts(transaction);
     }
 
     @Test
@@ -87,6 +104,78 @@ public class PaymentMapperImplTest {
         Amount amount = transaction.getAmount();
         assertThat(amount.getCurrency()).isEqualTo("EUR");
         assertThat(amount.getTotal()).isEqualTo("309.00");
+
+        Details details = amount.getDetails();
+        assertThat(details.getSubtotal()).isEqualTo("259.66");
+        assertThat(details.getShipping()).isEqualTo("0.00");
+        assertThat(details.getTax()).isEqualTo("49.34");
+
+        ItemList itemList = transaction.getItemList();
+        assertThat(itemList).isNotNull();
+        assertThat(itemList.getItems().size()).isEqualTo(3);
+        assertItem(getItemBySku(itemList, "123456"), "Necklace Swarovski", "1", "129.00", "EUR");
+        assertItem(getItemBySku(itemList, "776655"), "Every piece", "1", "0.00", "EUR");
+        assertItem(getItemBySku(itemList, "998877665544"), "Earrings", "4", "45.00", "EUR");
+
+        assertTransactionAmounts(transaction);
+    }
+
+    private Item getItemBySku(ItemList itemList, String sku) {
+        return itemList.getItems().stream()
+                .filter(item -> sku.equals(item.getSku()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Some items with the same SKU may be duplicated, because they have complex discounted price, thus one line item
+     * is split to several. See
+     * {@link PaymentMapperImpl#mapLineItemToPaypalPlusItem(io.sphere.sdk.carts.LineItem, java.util.Locale)}
+     */
+    private Item getItemBySkuQuqntityPrice(ItemList itemList, String sku, String quantity, String price) {
+        return itemList.getItems().stream()
+                .filter(item -> sku.equals(item.getSku()))
+                .filter(item -> quantity.equals(item.getQuantity()))
+                .filter(item -> price.equals(item.getPrice()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void assertItem(Item item, String name, String quantity, String price, String currency) {
+        assertItem(item, name, currency);
+        assertThat(item.getQuantity()).isEqualTo(quantity);
+        assertThat(item.getPrice()).isEqualTo(price);
+    }
+
+    private void assertItem(Item item, String name, String currency) {
+        assertThat(item).isNotNull();
+        assertThat(item.getName()).isEqualTo(name);
+        assertThat(item.getCurrency()).isEqualTo(currency);
+    }
+
+    /**
+     * Validate:<ul>
+     * <li>{@link Amount#details} sum is equal to {@link Amount#total}</li>
+     * <li>{@link Transaction#getItemList()} (prices * quantity) sum equal to {@link Amount#total}</li>
+     * </ul>
+     *
+     * @param transaction {@link Transaction} to validate.
+     */
+    private void assertTransactionAmounts(Transaction transaction) {
+        BigDecimal total = new BigDecimal(transaction.getAmount().getTotal());
+        Details details = transaction.getAmount().getDetails();
+        BigDecimal shippingCost = new BigDecimal(details.getShipping());
+        BigDecimal detailsTotal = shippingCost
+                .add(new BigDecimal(details.getTax()))
+                .add(new BigDecimal(details.getSubtotal()));
+
+        assertThat(detailsTotal).isEqualTo(total);
+
+        BigDecimal totalLineItems = transaction.getItemList().getItems().stream()
+                .map(item -> new BigDecimal(item.getPrice()).multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        assertThat(totalLineItems.add(shippingCost)).isEqualTo(total);
     }
 
 }

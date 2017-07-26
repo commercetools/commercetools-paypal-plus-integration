@@ -35,17 +35,28 @@ public final class PaypalPlusPaymentTestUtil {
 
         Details details = new Details()
                 .setShipping("1.23")
-                .setSubtotal("6.10")
+                .setSubtotal("84.68")
                 .setTax("1.45");
 
         Amount amount = new Amount()
-                .setCurrency("USD")
-                .setTotal("8.78") // Total must be equal to sum of shipping, tax and subtotal.
+                .setCurrency("CAD")
+                .setTotal("87.36") // Total must be equal to sum of shipping, tax and subtotal.
                 .setDetails(details);
 
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setDescription("This is the payment transaction description.");
+
+        Item item = new Item()
+                .setName("T-shirt XXL")
+                .setQuantity("4")
+                .setCurrency("CAD")
+                .setPrice("21.17");
+
+        ItemList itemList = new ItemList();
+        itemList.setItems(singletonList(item));
+
+        transaction.setItemList(itemList);
 
         List<Transaction> transactions = singletonList(transaction);
 
@@ -68,22 +79,35 @@ public final class PaypalPlusPaymentTestUtil {
      * @param creditCardTokenId secure token of preliminary stored customer's credit card.
      * @return new instance of dummy payment where credit card is specified over the token.
      */
+
     public static Payment dummyCreditCardSecurePayment(String creditCardTokenId) {
         CreditCardToken creditCardToken = new CreditCardToken(creditCardTokenId);
 
         Details details = new Details()
                 .setShipping("1.01")
-                .setSubtotal("5.23")
+                .setSubtotal("12.03")
                 .setTax("1.99");
 
         Amount amount = new Amount()
-                .setCurrency("USD")
-                .setTotal("8.23") // Total must be equal to the sum of shipping, tax and subtotal.
+                .setCurrency("EUR")
+                .setTotal("15.03") // Total must be equal to the sum of shipping, tax and subtotal.
                 .setDetails(details);
 
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setDescription("This is the payment transaction description.");
+
+        Item item = new Item()
+                .setName("Black Tee 100 bags")
+                .setQuantity("3")
+                .setCurrency("EUR")
+                .setPrice("4.01");
+
+        ItemList itemList = new ItemList();
+        itemList.setItems(singletonList(item));
+
+        transaction.setItemList(itemList);
+
 
         List<Transaction> transactions = singletonList(transaction);
 
@@ -105,12 +129,12 @@ public final class PaypalPlusPaymentTestUtil {
     public static Payment dummyPaypalPayment() {
         Details details = new Details()
                 .setShipping("3.22")
-                .setSubtotal("5.33")
+                .setSubtotal("10.66")
                 .setTax("1.44");
 
         Amount amount = new Amount()
                 .setCurrency("USD")
-                .setTotal("9.99")
+                .setTotal("15.32")
                 .setDetails(details);
 
         Transaction transaction = new Transaction();
@@ -119,7 +143,7 @@ public final class PaypalPlusPaymentTestUtil {
 
         Item item = new Item()
                 .setName("Ground Coffee 40 oz")
-                .setQuantity("1")
+                .setQuantity("2")
                 .setCurrency("USD")
                 .setPrice("5.33");
 

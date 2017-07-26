@@ -12,12 +12,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 
-import static com.commercetools.service.paypalPlus.PaypalPlusPaymentTestUtil.*;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentLinkRel.APPROVAL_URL;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.CREDIT_CARD;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates.APPROVED;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates.CREATED;
+import static com.commercetools.service.paypalPlus.PaypalPlusPaymentTestUtil.*;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Java6Assertions.assertThat;

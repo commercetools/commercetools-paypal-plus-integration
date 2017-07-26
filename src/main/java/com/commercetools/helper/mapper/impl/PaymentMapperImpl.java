@@ -58,7 +58,6 @@ public class PaymentMapperImpl implements PaymentMapper {
     protected Payer getPayer(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         return new Payer()
                 .setFundingInstruments(getFundingInstrumentList(paymentWithCartLike))
-                // TODO: or always "paypal"?
                 .setPaymentMethod(paymentWithCartLike.getPaymentMethod());
     }
 

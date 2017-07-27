@@ -17,11 +17,11 @@ public class PaymentHandleResult {
         this(statusCode, "");
     }
 
-    public HttpStatus statusCode() {
+    public HttpStatus getStatusCode() {
         return statusCode;
     }
 
-    public String body() {
+    public String getBody() {
         return body;
     }
 }

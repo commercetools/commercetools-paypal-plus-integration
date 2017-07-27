@@ -25,7 +25,7 @@ public class TenantConfigFactoryTest {
 
     @Test
     public void whenTenantNameExists_shouldReturnConfig () {
-        TenantProperties tenantProperties = TenantPropertiesMock.setUpMockTenantProperties(EXISTING_TENANT_NAME);
+        TenantProperties tenantProperties = TenantPropertiesMock.setUpMockTenantProperties(EXISTING_TENANT_NAME, "Tenant 2", "Tenant 3");
 
         TenantConfigFactory tenantConfigFactory = new TenantConfigFactory(tenantProperties);
         Optional<TenantConfig> nonExistingTenant = tenantConfigFactory.getTenantConfig(EXISTING_TENANT_NAME);

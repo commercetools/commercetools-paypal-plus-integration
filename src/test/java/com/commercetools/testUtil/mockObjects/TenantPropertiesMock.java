@@ -2,11 +2,23 @@ package com.commercetools.testUtil.mockObjects;
 
 import com.commercetools.pspadapter.tenant.TenantProperties;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TenantPropertiesMock {
 
-    public static TenantProperties setUpMockTenantProperties(String tenantName) {
+    public static TenantProperties setUpMockTenantProperties(String... tenantNames) {
+        List<TenantProperties.Tenant> tenants = Arrays.stream(tenantNames)
+                .map(TenantPropertiesMock::createTenant)
+                .collect(Collectors.toList());
+
+        TenantProperties tenantProperties = new TenantProperties();
+        tenantProperties.setTenants(tenants);
+        return tenantProperties;
+    }
+
+    private static TenantProperties.Tenant createTenant(String tenantName) {
         TenantProperties.Tenant.Ctp ctp = new TenantProperties.Tenant.Ctp();
         ctp.setClientId("testClientId");
         ctp.setClientSecret("testClientSecret");
@@ -17,13 +29,10 @@ public class TenantPropertiesMock {
         paypalPlus.setMode("sandbox");
         paypalPlus.setSecret("ppSecret");
 
-        TenantProperties.Tenant tenant = new TenantProperties.Tenant();
-        tenant.setName(tenantName);
-        tenant.setCtp(ctp);
-        tenant.setPaypalPlus(paypalPlus);
-
-        TenantProperties tenantProperties = new TenantProperties();
-        tenantProperties.setTenants(Collections.singletonList(tenant));
-        return tenantProperties;
+        TenantProperties.Tenant tenant1 = new TenantProperties.Tenant();
+        tenant1.setName(tenantName);
+        tenant1.setCtp(ctp);
+        tenant1.setPaypalPlus(paypalPlus);
+        return tenant1;
     }
 }

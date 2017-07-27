@@ -37,7 +37,7 @@ public class CommercetoolsHandlePaymentsController {
                 .getPaymentHandler(tenantName)
                 .map(paymentHandler -> paymentHandler.handlePayment(paymentId))
                 .orElseGet(() -> new PaymentHandleResult(HttpStatus.NOT_FOUND, "Tenant " + tenantName + " not found"));
-        return new ResponseEntity<>(paymentHandleResult.getStatusCode());
+        return new ResponseEntity<>(paymentHandleResult.getBody(), paymentHandleResult.getStatusCode());
     }
 
     @InitBinder

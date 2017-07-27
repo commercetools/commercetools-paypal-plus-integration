@@ -47,18 +47,18 @@ public class CustomFieldUtilTest {
 
     @Test
     public void getCustomFieldStringOrDefault_defaultCases() throws Exception {
-        assertThat(getCustomFieldStringOrDefault(null, null, "x")).contains("x");
-        assertThat(getCustomFieldStringOrDefault(null, "foo", "y")).contains("y");
+        assertThat(getCustomFieldStringOrDefault(null, null, "x")).isEqualTo("x");
+        assertThat(getCustomFieldStringOrDefault(null, "foo", "y")).isEqualTo("y");
 
         when(customFieldsHolder.getCustom()).thenReturn(customFields);
-        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "foo", "woot")).contains("woot");
+        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "foo", "woot")).isEqualTo("woot");
 
         when(customFields.getFieldAsString("foo")).thenReturn(null);
-        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "foo", "hack")).contains("hack");
+        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "foo", "hack")).isEqualTo("hack");
 
         when(customFields.getFieldAsString("foo")).thenReturn("");
-        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "foo", "ha-ha")).contains("");
-        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, null, "ha-ha")).contains("ha-ha");
+        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "foo", "ha-ha")).isEqualTo("");
+        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, null, "ha-ha")).isEqualTo("ha-ha");
     }
 
     @Test
@@ -66,25 +66,25 @@ public class CustomFieldUtilTest {
         when(customFieldsHolder.getCustom()).thenReturn(customFields);
         when(customFields.getFieldAsString("foo")).thenReturn("bar");
         when(customFields.getFieldAsString("bar")).thenReturn("woot");
-        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "foo", "no no David Blaine")).contains("bar");
-        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "bar", "no no David Blaine")).contains("woot");
-        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "batman", "YES David Blaine")).contains("YES David Blaine");
+        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "foo", "no no David Blaine")).isEqualTo("bar");
+        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "bar", "no no David Blaine")).isEqualTo("woot");
+        assertThat(getCustomFieldStringOrDefault(customFieldsHolder, "batman", "YES David Blaine")).isEqualTo("YES David Blaine");
     }
 
     @Test
     public void getCustomFieldStringOrEmpty_defaultCases() throws Exception {
-        assertThat(getCustomFieldStringOrEmpty(null, null)).contains("");
-        assertThat(getCustomFieldStringOrEmpty(null, "foo")).contains("");
+        assertThat(getCustomFieldStringOrEmpty(null, null)).isEqualTo("");
+        assertThat(getCustomFieldStringOrEmpty(null, "foo")).isEqualTo("");
 
         when(customFieldsHolder.getCustom()).thenReturn(customFields);
-        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "foo")).contains("");
+        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "foo")).isEqualTo("");
 
         when(customFields.getFieldAsString("foo")).thenReturn(null);
-        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "foo")).contains("");
+        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "foo")).isEqualTo("");
 
         when(customFields.getFieldAsString("foo")).thenReturn("");
-        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "foo")).contains("");
-        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, null)).contains("");
+        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "foo")).isEqualTo("");
+        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, null)).isEqualTo("");
     }
 
     @Test
@@ -92,9 +92,9 @@ public class CustomFieldUtilTest {
         when(customFieldsHolder.getCustom()).thenReturn(customFields);
         when(customFields.getFieldAsString("foo")).thenReturn("bar");
         when(customFields.getFieldAsString("bar")).thenReturn("woot");
-        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "foo")).contains("bar");
-        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "bar")).contains("woot");
-        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "spider-man")).contains("");
+        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "foo")).isEqualTo("bar");
+        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "bar")).isEqualTo("woot");
+        assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "spider-man")).isEqualTo("");
     }
 
 }

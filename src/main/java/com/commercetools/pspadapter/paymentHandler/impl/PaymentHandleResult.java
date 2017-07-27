@@ -2,18 +2,20 @@ package com.commercetools.pspadapter.paymentHandler.impl;
 
 import org.springframework.http.HttpStatus;
 
+import javax.annotation.Nonnull;
+
 public class PaymentHandleResult {
 
     private final HttpStatus statusCode;
 
     private final String body;
 
-    public PaymentHandleResult(final HttpStatus statusCode, final String body) {
+    public PaymentHandleResult(@Nonnull HttpStatus statusCode, @Nonnull String body) {
         this.statusCode = statusCode;
         this.body = body;
     }
 
-    public PaymentHandleResult(final HttpStatus statusCode) {
+    public PaymentHandleResult(@Nonnull HttpStatus statusCode) {
         this(statusCode, "");
     }
 

@@ -25,11 +25,11 @@ public class CtpFacadeFactory {
         Optional<TenantConfig> tenantConfigOpt = this.config.getTenantConfig(tenantName);
         return tenantConfigOpt
                 .map(TenantConfig::createSphereClient)
-                .flatMap(sphereClient -> {
+                .map(sphereClient -> {
                     CartServiceImpl cartService = new CartServiceImpl(sphereClient);
                     OrderServiceImpl orderService = new OrderServiceImpl(sphereClient);
                     PaymentServiceImpl paymentService = new PaymentServiceImpl(sphereClient);
-                    return Optional.of(new CtpFacade(cartService, orderService, paymentService));
+                    return new CtpFacade(cartService, orderService, paymentService);
                 });
     }
 }

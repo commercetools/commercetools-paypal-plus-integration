@@ -6,8 +6,6 @@ import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
@@ -17,8 +15,6 @@ import java.util.concurrent.CompletionStage;
  * <b>Note:</b> since {@link APIContext} caches <i>PayPal-Request-Id</i> one should not reuse the same instance of
  * {@link PaypalPlusPaymentServiceImpl} for multiple Paypal requests.
  */
-@Service
-@Scope("prototype")
 public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implements PaypalPlusPaymentService {
 
     @Autowired

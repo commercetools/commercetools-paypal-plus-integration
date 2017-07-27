@@ -6,8 +6,6 @@ import io.sphere.sdk.carts.queries.CartQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,11 +13,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-@Service
 public class CartServiceImpl extends BaseSphereService implements CartService {
 
-    @Autowired
-    protected CartServiceImpl(@Nonnull SphereClient sphereClient) {
+    public CartServiceImpl(@Nonnull SphereClient sphereClient) {
         super(sphereClient);
     }
 

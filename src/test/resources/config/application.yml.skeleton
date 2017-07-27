@@ -2,12 +2,14 @@
 # rename to application.yml and fill-in to use it in local run/debug mode
 
 # NOTE: THE INTEGRATION TESTS WILL CLEAN-UP THE CTP PROJECT TABLES
-ctp.client:
-  projectKey: paypalplus-integration-test
-  clientId:
-  clientSecret:
-
-paypalPlus.client:
-  id:
-  secret:
-  mode: sandbox
+tenantConfig:
+  tenants:
+    paypalplus-integration-test:
+       ctp:
+         projectKey: paypalplus-integration-test
+         clientId:
+         clientSecret:
+       paypalPlus:
+         id:
+         secret:
+         mode: sandbox

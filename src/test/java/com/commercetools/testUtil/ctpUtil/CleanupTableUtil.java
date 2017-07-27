@@ -60,7 +60,7 @@ public final class CleanupTableUtil {
             @Nonnull final Supplier<SphereRequest<PagedQueryResult<EntityType>>> querySupplier,
             @Nonnull final Function<EntityType, SphereRequest<EntityType>> deleteFunction,
             @Nonnull String resourceName) {
-        logger.debug("Cleanup " + resourceName + " table");
+        logger.debug("Cleanup {} table", resourceName);
 
         Supplier<CompletionStage<Integer>> readDeleteStage = () -> client.execute(querySupplier.get())
                 .thenApply(PagedQueryResult::getResults)

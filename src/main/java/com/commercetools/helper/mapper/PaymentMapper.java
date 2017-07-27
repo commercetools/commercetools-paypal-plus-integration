@@ -10,8 +10,8 @@ public interface PaymentMapper {
     /**
      * See Chapter <b><code>04. Payments</code></b> of <i>Integrating PayPal PLUS</i> guide.
      *
-     * @param ctpPaymentWithCart
-     * @return
+     * @param ctpPaymentWithCart commercetools cart and payment to map
+     * @return Paypal Plus {@link Payment} with respective values from {@link CtpPaymentWithCart}
      * @see <a href="https://www.paypalobjects.com/webstatic/downloads/PayPal-PLUS-IntegrationGuide.pdf">
      * Integrating PayPal PLUS</a>
      */

@@ -4,7 +4,11 @@ import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.paypal.api.payments.*;
-import io.sphere.sdk.carts.CartLike;
+import io.sphere.sdk.cartdiscounts.DiscountedLineItemPriceForQuantity;
+import io.sphere.sdk.carts.CustomLineItem;
+import io.sphere.sdk.carts.LineItem;
+import io.sphere.sdk.models.LocalizedString;
+import org.javamoney.moneta.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,10 +16,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Stream;
 
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
-import static java.util.Collections.emptyList;
+import static com.commercetools.util.MoneyUtil.getActualShippingCost;
+import static com.commercetools.util.MoneyUtil.getActualTax;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.concat;
 
 @Component
 public class PaymentMapperImpl implements PaymentMapper {
@@ -49,7 +58,6 @@ public class PaymentMapperImpl implements PaymentMapper {
     protected Payer getPayer(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         return new Payer()
                 .setFundingInstruments(getFundingInstrumentList(paymentWithCartLike))
-                // TODO: or always "paypal"?
                 .setPaymentMethod(paymentWithCartLike.getPaymentMethod());
     }
 
@@ -60,7 +68,9 @@ public class PaymentMapperImpl implements PaymentMapper {
 
     @Nonnull
     protected RedirectUrls getRedirectUrls(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        return new RedirectUrls();
+        return new RedirectUrls()
+                .setReturnUrl(paymentWithCartLike.getReturnUrl())
+                .setCancelUrl(paymentWithCartLike.getCancelUrl());
     }
 
     @Nonnull
@@ -85,22 +95,24 @@ public class PaymentMapperImpl implements PaymentMapper {
 
     @Nonnull
     protected Amount getTransactionAmount(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        final CartLike cartLike = paymentWithCartLike.getCart();
-//        MonetaryAmount totalPrice = cartLike.getTotalPrice();
+        final MonetaryAmount totalPrice = paymentWithCartLike.getPayment().getAmountPlanned();
+        final String currencyCode = totalPrice.getCurrency().getCurrencyCode();
+        final Money ZERO = Money.of(0, currencyCode);
 
-        // looks like could be skipped, in this case it won't be validated against amount.total
-//        Details details = new Details()
-//                .setShipping()
-//                .setSubtotal()
-//                .setTax();
-//
-        final MonetaryAmount totalPrice = cartLike.getTotalPrice();
+        // Total must be equal to the sum of shipping, tax and subtotal, if they are specified
+        final MonetaryAmount shipping = getActualShippingCost(paymentWithCartLike.getCart()).orElse(ZERO);
+        final MonetaryAmount tax = getActualTax(paymentWithCartLike.getCart()).orElse(ZERO);
+        final MonetaryAmount subtotal = totalPrice.subtract(shipping).subtract(tax);
+
+        Details details = new Details()
+                .setSubtotal(paypalPlusFormatter.monetaryAmountToString(subtotal))
+                .setShipping(paypalPlusFormatter.monetaryAmountToString(shipping))
+                .setTax(paypalPlusFormatter.monetaryAmountToString(tax));
+
         return new Amount()
-                .setCurrency(totalPrice.getCurrency().getCurrencyCode())
-                // Total must be equal to the sum of shipping, tax and subtotal, if they are specified
+                .setCurrency(currencyCode)
                 .setTotal(paypalPlusFormatter.monetaryAmountToString(totalPrice))
-//                .setDetails(details);
-                ;
+                .setDetails(details);
     }
 
     @Nonnull
@@ -115,14 +127,83 @@ public class PaymentMapperImpl implements PaymentMapper {
     }
 
     /**
-     * So far not implemented, but might be required in the future for some methods like
-     *
-     * @param paymentWithCartLike
-     * @return empty list so far
+     * @param paymentWithCartLike cart holder which to map.
+     * @return Aggregated list of {@link LineItem} and {@link CustomLineItem} mapped to Paypal Plus {@link Item}.
      */
     @Nonnull
     protected List<Item> getLineItems(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        // TODO: fill line items, because they are mandatory
-        return emptyList();
+
+        final Locale locale = paymentWithCartLike.getLocaleOrDefault();
+
+        Stream<Item> lineItemStream = paymentWithCartLike.getCart().getLineItems().stream()
+                .flatMap(lineItem -> mapLineItemToPaypalPlusItem(lineItem, locale));
+
+        Stream<Item> customLineItemStream = paymentWithCartLike.getCart().getCustomLineItems().stream()
+                .flatMap(customLineItem -> mapCustomLineItemToPaypalPlusItem(customLineItem, locale));
+
+        return concat(lineItemStream, customLineItemStream)
+                .collect(toList());
+    }
+
+    /**
+     * Map {@link LineItem} properties to {@link Item} instance.
+     * <p>
+     * <b>Note:</b> The result of the mapping could be one-to-many, if the {@code lineItem} has complex discount applied.
+     * In this case it might be split to separate items with different quantity and price. Although keep in mind,
+     * the different entries still could have the same price, they just split because they have different discounts
+     * applied.
+     *
+     * @param lineItem line item to map.
+     * @param locale   {@link Locale} to resolve localized line item properties, like {@link LineItem#getName()}
+     * @return stream of single item, if discounts are not applied, or multiple items, if discounts are applied.
+     * @see #mapCustomLineItemToPaypalPlusItem(CustomLineItem, Locale)
+     */
+    protected Stream<Item> mapLineItemToPaypalPlusItem(@Nonnull LineItem lineItem, @Nonnull Locale locale) {
+        if (lineItem.getDiscountedPricePerQuantity().size() > 0) {
+            return lineItem.getDiscountedPricePerQuantity().stream()
+                    .map(dlipfq -> createPaypalPlusItem(lineItem.getName(), locale, dlipfq))
+                    .map(item -> item.setSku(lineItem.getVariant().getSku()));
+        }
+
+        MonetaryAmount actualLineItemPrice = lineItem.getPrice().getValue();
+        return Stream.of(createPaypalPlusItem(lineItem.getName(), locale, lineItem.getQuantity(), actualLineItemPrice))
+                .map(item -> item.setSku(lineItem.getVariant().getSku()));
+    }
+
+    /**
+     * Similar to {@link #mapLineItemToPaypalPlusItem(LineItem, Locale)}, but for {@link CustomLineItem}.
+     * This entity type has a bit different signature for some properties, like price, name, sku and so on.
+     * <p>
+     * (Note about the name: unfortunately {@link CustomLineItem#getName()} and {@link LineItem#getName()} are different
+     * interface methods, but have the same signature, and common method is not represented in base
+     * {@link io.sphere.sdk.carts.LineItemLike} interface, but might be if future)
+     *
+     * @param customLineItem line item to map
+     * @param locale         {@link Locale} to resolve localized line item properties, like {@link LineItem#getName()}
+     * @return stream of single item, if discounts are not applied, or multiple items, if discounts are applied.
+     * @see #mapCustomLineItemToPaypalPlusItem(CustomLineItem, Locale)
+     */
+    protected Stream<Item> mapCustomLineItemToPaypalPlusItem(@Nonnull CustomLineItem customLineItem, @Nonnull Locale locale) {
+        if (customLineItem.getDiscountedPricePerQuantity().size() > 0) {
+            return customLineItem.getDiscountedPricePerQuantity().stream()
+                    .map(dlipfq -> createPaypalPlusItem(customLineItem.getName(), locale, dlipfq));
+        }
+
+        MonetaryAmount actualCustomLineItemPrice = customLineItem.getMoney();
+        return Stream.of(createPaypalPlusItem(customLineItem.getName(), locale,
+                customLineItem.getQuantity(), actualCustomLineItemPrice));
+    }
+
+    protected Item createPaypalPlusItem(@Nonnull LocalizedString itemName, @Nonnull Locale locale,
+                                        @Nonnull DiscountedLineItemPriceForQuantity dlipfq) {
+        return createPaypalPlusItem(itemName, locale, dlipfq.getQuantity(), dlipfq.getDiscountedPrice().getValue());
+    }
+
+    protected Item createPaypalPlusItem(@Nonnull LocalizedString itemName, @Nonnull Locale locale,
+                                        @Nonnull Long quantity, @Nonnull MonetaryAmount price) {
+        return new Item(itemName.get(locale),
+                String.valueOf(quantity),
+                paypalPlusFormatter.monetaryAmountToString(price),
+                price.getCurrency().getCurrencyCode());
     }
 }

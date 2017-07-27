@@ -106,7 +106,7 @@ public class PaypalPlusPaymentServiceImplIntegrationTest {
                 .findFirst()
                 .orElse("");
 
-        assertThat(approvalUrl).contains("https://www.sandbox.paypal.com/");
+        assertThat(approvalUrl).startsWith("https://www.sandbox.paypal.com/");
     }
 
 }

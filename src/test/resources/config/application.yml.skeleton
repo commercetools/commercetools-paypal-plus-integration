@@ -4,14 +4,12 @@
 # NOTE: THE INTEGRATION TESTS WILL CLEAN-UP THE CTP PROJECT TABLES
 tenantConfig:
   tenants:
-    -
-       name: paypalplus-integration-test
-       ctp.client:
+    paypalplus-integration-test:
+       ctp:
          projectKey: paypalplus-integration-test
          clientId:
          clientSecret:
-
-       paypalPlus.client:
+       paypalPlus:
          id:
          secret:
          mode: sandbox

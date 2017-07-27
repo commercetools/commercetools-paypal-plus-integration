@@ -3,13 +3,12 @@
 
 tenantConfig:
   tenants:
-    -
-      name: paypalplus-dev
-      ctp.client:
+    paypalplus-dev:
+      ctp:
         projectKey: paypalplus-dev
         clientId:
         clientSecret:
-      paypalPlus.client:
+      paypalPlus:
         id:
         secret:
         mode: sandbox

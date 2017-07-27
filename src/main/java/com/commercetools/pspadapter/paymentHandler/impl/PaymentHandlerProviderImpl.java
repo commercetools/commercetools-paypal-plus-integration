@@ -35,7 +35,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
         if (ctpExecutorOpt.isPresent() && payPalPlusExecutorOpt.isPresent()) {
             CtpFacade ctpFacade = ctpExecutorOpt.get();
             PaypalPlusFacade paypalPlusFacade = payPalPlusExecutorOpt.get();
-            return Optional.of(new PaymentHandler(ctpFacade, paypalPlusFacade));
+            return Optional.of(new PaymentHandler(ctpFacade, paypalPlusFacade, tenantName));
         } else {
             logger.warn("No tenants found for {}", tenantName);
             return Optional.empty();

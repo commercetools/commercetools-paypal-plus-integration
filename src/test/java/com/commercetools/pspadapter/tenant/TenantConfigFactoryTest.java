@@ -2,11 +2,14 @@ package com.commercetools.pspadapter.tenant;
 
 import com.commercetools.testUtil.mockObjects.TenantPropertiesMock;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(BlockJUnit4ClassRunner.class)
 public class TenantConfigFactoryTest {
 
     private static final String EXISTING_TENANT_NAME = "existingTenant";

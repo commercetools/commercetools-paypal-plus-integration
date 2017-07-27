@@ -3,6 +3,8 @@ package com.commercetools.pspadapter.facade;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.pspadapter.tenant.TenantProperties;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 import java.util.Optional;
 
@@ -12,6 +14,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@RunWith(BlockJUnit4ClassRunner.class)
 public class PaypalPlusFacadeFactoryTest {
 
     @Test

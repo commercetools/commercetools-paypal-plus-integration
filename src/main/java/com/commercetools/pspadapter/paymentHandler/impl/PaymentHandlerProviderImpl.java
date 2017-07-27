@@ -15,24 +15,20 @@ import java.util.Optional;
 @Component
 public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
 
-    private final CtpFacadeFactory ctpFactory;
-    private final PaypalPlusFacadeFactory pPPFactory;
-    private final TenantConfigFactory config;
+    private final TenantConfigFactory configFactory;
 
     @Autowired
-    public PaymentHandlerProviderImpl(@Nonnull CtpFacadeFactory ctpFactory,
-                                      @Nonnull PaypalPlusFacadeFactory pPPFactory) {
-        this.ctpFactory = ctpFactory;
-        this.pPPFactory = pPPFactory;
+    public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory) {
+        this.configFactory = configFactory;
     }
 
     @Override
     public Optional<PaymentHandler> getPaymentHandler(@Nonnull String tenantName) {
-        return config.getTenantConfig(tenantName)
+        return configFactory.getTenantConfig(tenantName)
                 .map(tenantConfig -> {
-                    CtpFacade ctpExecutor = ctpFactory.getCtpFacade(tenantConfig);
-                    PaypalPlusFacade payPalPlusExecutor = pPPFactory.getPaypalPlusFacade(tenantConfig);
-                    return new PaymentHandler(ctpExecutor, payPalPlusExecutor, tenantName);
+                    CtpFacade ctpFacade = CtpFacadeFactory.getCtpFacade(tenantConfig);
+                    PaypalPlusFacade payPalPlusFacade = PaypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
+                    return new PaymentHandler(ctpFacade, payPalPlusFacade, tenantName);
                 });
     }
 

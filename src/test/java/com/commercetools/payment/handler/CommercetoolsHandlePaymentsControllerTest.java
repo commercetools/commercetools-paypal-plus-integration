@@ -30,7 +30,7 @@ public class CommercetoolsHandlePaymentsControllerTest {
 
     @Before
     public void setUp() {
-        this.existingProjectName = tenantProperties.getTenants().get(0).getName();
+        this.existingProjectName = tenantProperties.getTenants().keySet().iterator().next();
     }
 
     @Test

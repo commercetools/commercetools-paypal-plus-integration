@@ -51,14 +51,14 @@ public class ServiceConfig {
 
     @Bean
     public SphereClient sphereClient() {
-        TenantProperties.Tenant.Ctp ctp = tenantProperties.getTenants().get(0).getCtp();
+        TenantProperties.Tenant.Ctp ctp = tenantProperties.getTenants().values().iterator().next().getCtp();
         SphereClientConfig sphereClientConfig = SphereClientConfig.of(ctp.getProjectKey(), ctp.getClientId(), ctp.getClientSecret());
         return SphereClientFactory.of().createClient(sphereClientConfig);
     }
 
     @Bean
     public APIContext apiContext(){
-        TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().get(0).getPaypalPlus();
+        TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().values().iterator().next().getPaypalPlus();
         return new APIContext(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
     }
 }

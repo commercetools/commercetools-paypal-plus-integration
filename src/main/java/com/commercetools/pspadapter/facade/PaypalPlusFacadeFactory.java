@@ -10,20 +10,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-@Component
 public class PaypalPlusFacadeFactory {
 
-    private final TenantConfigFactory config;
-
-    @Autowired
-    public PaypalPlusFacadeFactory(@Nonnull TenantConfigFactory config) {
-        this.config = config;
-    }
-
-    public Optional<PaypalPlusFacade> getPaypalPlusFacade(@Nonnull String tenantName) {
-        Optional<TenantConfig> tenantConfigOpt = config.getTenantConfig(tenantName);
-        return tenantConfigOpt
-                .map(tenantConfig -> new PaypalPlusPaymentServiceImpl(tenantConfig.createAPIContext()))
-                .map(PaypalPlusFacade::new);
+    public static PaypalPlusFacade getPaypalPlusFacade(@Nonnull TenantConfig tenantConfig) {
+        PaypalPlusPaymentServiceImpl service = new PaypalPlusPaymentServiceImpl(tenantConfig.createAPIContext());
+        return new PaypalPlusFacade(service);
     }
 }

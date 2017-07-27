@@ -3,15 +3,15 @@ package com.commercetools.testUtil.mockObjects;
 import com.commercetools.pspadapter.tenant.TenantProperties;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class TenantPropertiesMock {
 
     public static TenantProperties setUpMockTenantProperties(String... tenantNames) {
-        List<TenantProperties.Tenant> tenants = Arrays.stream(tenantNames)
-                .map(TenantPropertiesMock::createTenant)
-                .collect(Collectors.toList());
+        Map<String, TenantProperties.Tenant> tenants = Arrays.stream(tenantNames)
+                .collect(Collectors.toMap(Function.identity(), TenantPropertiesMock::createTenant));
 
         TenantProperties tenantProperties = new TenantProperties();
         tenantProperties.setTenants(tenants);
@@ -30,7 +30,6 @@ public class TenantPropertiesMock {
         paypalPlus.setSecret("ppSecret");
 
         TenantProperties.Tenant tenant1 = new TenantProperties.Tenant();
-        tenant1.setName(tenantName);
         tenant1.setCtp(ctp);
         tenant1.setPaypalPlus(paypalPlus);
         return tenant1;

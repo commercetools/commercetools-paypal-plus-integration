@@ -10,15 +10,11 @@ import javax.annotation.Nonnull;
 
 public class CtpFacadeFactory {
 
-    public CtpFacadeFactory() {
-    }
-
-    public CtpFacade getCtpFacade(@Nonnull TenantConfig tenantConfig) {
+    public static CtpFacade getCtpFacade(@Nonnull TenantConfig tenantConfig) {
         SphereClient sphereClient = tenantConfig.createSphereClient();
         CartServiceImpl cartService = new CartServiceImpl(sphereClient);
         OrderServiceImpl orderService = new OrderServiceImpl(sphereClient);
         PaymentServiceImpl paymentService = new PaymentServiceImpl(sphereClient);
         return new CtpFacade(cartService, orderService, paymentService);
-
     }
 }

@@ -49,6 +49,7 @@ public class ServiceConfig {
 
     @Bean
     public SphereClient sphereClient() {
+        // TODO: avoid explicit string config "paypalplus-integration-test"
         TenantProperties.Tenant.Ctp ctp = tenantProperties.getTenants().get("paypalplus-integration-test").getCtp();
         SphereClientConfig sphereClientConfig = SphereClientConfig.of(ctp.getProjectKey(), ctp.getClientId(), ctp.getClientSecret());
         return SphereClientFactory.of().createClient(sphereClientConfig);
@@ -56,6 +57,7 @@ public class ServiceConfig {
 
     @Bean
     public APIContext apiContext() {
+        // TODO: avoid explicit string config "paypalplus-integration-test"
         TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().get("paypalplus-integration-test").getPaypalPlus();
         return new APIContext(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
     }

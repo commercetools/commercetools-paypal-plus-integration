@@ -6,7 +6,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.util.Map;
 
 @Configuration
 @ConfigurationProperties("tenantConfig")
@@ -14,20 +14,17 @@ import java.util.List;
 public class TenantProperties {
 
     @Valid
-    private List<Tenant> tenants;
+    private Map<String, Tenant> tenants;
 
-    public List<Tenant> getTenants() {
+    public Map<String, Tenant> getTenants() {
         return tenants;
     }
 
-    public void setTenants(List<Tenant> tenants) {
+    public void setTenants(Map<String, Tenant> tenants) {
         this.tenants = tenants;
     }
 
     public static class Tenant {
-
-        @NotNull
-        private String name;
 
         @Valid
         @NotNull
@@ -85,7 +82,7 @@ public class TenantProperties {
 
             @NotNull
             private String mode;
-            
+
             public String getId() {
                 return id;
             }
@@ -109,14 +106,6 @@ public class TenantProperties {
             public void setMode(String mode) {
                 this.mode = mode;
             }
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
         }
 
         public Ctp getCtp() {

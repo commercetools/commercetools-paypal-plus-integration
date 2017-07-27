@@ -4,12 +4,12 @@
 tenantConfig:
   tenants:
     -
-       name: paypalplus-dev
-       ctp.client:
-         projectKey: paypalplus-dev
-         clientId:
-         clientSecret:
-       paypalPlus.client:
-         id:
-         secret:
-         mode: sandbox
+      name: paypalplus-dev
+      ctp.client:
+        projectKey: paypalplus-dev
+        clientId:
+        clientSecret:
+      paypalPlus.client:
+        id:
+        secret:
+        mode: sandbox

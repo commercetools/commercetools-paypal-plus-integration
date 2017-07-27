@@ -43,7 +43,7 @@ public class PaymentMapperImpl implements PaymentMapper {
             return null;
         }
 
-        final Payment mappedPayment = new Payment();
+        Payment mappedPayment = new Payment();
 
         mappedPayment.setCart(paymentWithCartLike.getCart().getId());
         mappedPayment.setIntent(SALE);
@@ -95,14 +95,14 @@ public class PaymentMapperImpl implements PaymentMapper {
 
     @Nonnull
     protected Amount getTransactionAmount(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        final MonetaryAmount totalPrice = paymentWithCartLike.getPayment().getAmountPlanned();
-        final String currencyCode = totalPrice.getCurrency().getCurrencyCode();
-        final Money ZERO = Money.of(0, currencyCode);
+        MonetaryAmount totalPrice = paymentWithCartLike.getPayment().getAmountPlanned();
+        String currencyCode = totalPrice.getCurrency().getCurrencyCode();
+        Money ZERO = Money.of(0, currencyCode);
 
         // Total must be equal to the sum of shipping, tax and subtotal, if they are specified
-        final MonetaryAmount shipping = getActualShippingCost(paymentWithCartLike.getCart()).orElse(ZERO);
-        final MonetaryAmount tax = getActualTax(paymentWithCartLike.getCart()).orElse(ZERO);
-        final MonetaryAmount subtotal = totalPrice.subtract(shipping).subtract(tax);
+        MonetaryAmount shipping = getActualShippingCost(paymentWithCartLike.getCart()).orElse(ZERO);
+        MonetaryAmount tax = getActualTax(paymentWithCartLike.getCart()).orElse(ZERO);
+        MonetaryAmount subtotal = totalPrice.subtract(shipping).subtract(tax);
 
         Details details = new Details()
                 .setSubtotal(paypalPlusFormatter.monetaryAmountToString(subtotal))

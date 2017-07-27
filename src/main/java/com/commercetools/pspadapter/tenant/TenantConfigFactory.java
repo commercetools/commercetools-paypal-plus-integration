@@ -4,26 +4,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class TenantConfigFactory {
 
-    private final TenantProperties tenantProperties;
+    private final Map<String, TenantProperties.Tenant> tenatNameToTenantMap;
 
     @Autowired
     public TenantConfigFactory(TenantProperties tenantProperties) {
-        this.tenantProperties = tenantProperties;
+        this.tenatNameToTenantMap = tenantProperties.getTenants().stream()
+                .collect(Collectors.toMap(TenantProperties.Tenant::getName, Function.identity()));
     }
 
     public Optional<TenantConfig> getTenantConfig(@Nonnull String tenantName) {
-        Optional<TenantProperties.Tenant> tenantOpt = tenantProperties.getTenants().stream()
-                .filter(t -> tenantName.equals(t.getName()))
-                .findAny();
+        TenantProperties.Tenant tenant = this.tenatNameToTenantMap.get(tenantName);
 
-        return tenantOpt.map(tenant -> {
-            TenantProperties.Tenant.Ctp ctp = tenant.getCtp();
-            TenantProperties.Tenant.PaypalPlus paypalPlus = tenant.getPaypalPlus();
+        return Optional.ofNullable(tenant).map(t -> {
+            TenantProperties.Tenant.Ctp ctp = t.getCtp();
+            TenantProperties.Tenant.PaypalPlus paypalPlus = t.getPaypalPlus();
             return new TenantConfig(ctp.getProjectKey(), ctp.getClientId(), ctp.getClientSecret(),
                     paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
         });

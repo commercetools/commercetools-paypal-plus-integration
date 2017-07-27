@@ -18,8 +18,6 @@ import javax.annotation.Nonnull;
 @RestController
 public class CommercetoolsHandlePaymentsController {
 
-    private static final String template = "Hello, payment [%s]!";
-
     private final StringTrimmerEditor stringTrimmerEditor;
     private final PaymentHandlerProvider paymentHandlerProvider;
 

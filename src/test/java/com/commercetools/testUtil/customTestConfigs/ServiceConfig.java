@@ -16,8 +16,6 @@ import io.sphere.sdk.client.SphereClientFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.env.Environment;
 
 @Configuration
 public class ServiceConfig {
@@ -51,14 +49,14 @@ public class ServiceConfig {
 
     @Bean
     public SphereClient sphereClient() {
-        TenantProperties.Tenant.Ctp ctp = tenantProperties.getTenants().values().iterator().next().getCtp();
+        TenantProperties.Tenant.Ctp ctp = tenantProperties.getTenants().get("paypalplus-integration-test").getCtp();
         SphereClientConfig sphereClientConfig = SphereClientConfig.of(ctp.getProjectKey(), ctp.getClientId(), ctp.getClientSecret());
         return SphereClientFactory.of().createClient(sphereClientConfig);
     }
 
     @Bean
-    public APIContext apiContext(){
-        TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().values().iterator().next().getPaypalPlus();
+    public APIContext apiContext() {
+        TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().get("paypalplus-integration-test").getPaypalPlus();
         return new APIContext(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
     }
 }

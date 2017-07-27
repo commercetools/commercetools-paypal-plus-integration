@@ -35,13 +35,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
- @Import(value = {
+@Import(value = {
         CartsCleanupConfiguration.class,
         PaymentsCleanupConfiguration.class,
         TaxSetupConfig.class
 })
 public class CartServiceImplTest {
-    
+
     @Autowired
     private SphereClient sphereClient;
 

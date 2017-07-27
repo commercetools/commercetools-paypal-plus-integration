@@ -10,7 +10,7 @@ public class TenantPropertiesMock {
         TenantProperties.Tenant.Ctp ctp = new TenantProperties.Tenant.Ctp();
         ctp.setClientId("testClientId");
         ctp.setClientSecret("testClientSecret");
-        ctp.setProjectKey("testProjectKey");
+        ctp.setProjectKey(tenantName);
 
         TenantProperties.Tenant.PaypalPlus paypalPlus = new TenantProperties.Tenant.PaypalPlus();
         paypalPlus.setId("ppId");

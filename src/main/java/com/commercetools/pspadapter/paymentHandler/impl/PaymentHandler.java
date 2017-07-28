@@ -65,22 +65,18 @@ public class PaymentHandler {
         }
     }
 
-    public PaymentHandleResult handlePayment(@Nonnull String paypalPlusPaymentId,
-                                             @Nonnull String paypalPlusPayerId) {
+    public PaymentHandleResult executePayment(@Nonnull String paypalPlusPaymentId,
+                                              @Nonnull String paypalPlusPayerId) {
         try {
-
             return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
                     new PaymentExecution().setPayerId(paypalPlusPayerId))
                     .thenApply(payment -> new PaymentHandleResult(HttpStatus.OK,
                             payment.getTransactions().get(0).getRelatedResources().get(0).toJSON()))
                     // TODO: re-factor join!!!
                     .toCompletableFuture().join();
-
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return new PaymentHandleResult(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
 }

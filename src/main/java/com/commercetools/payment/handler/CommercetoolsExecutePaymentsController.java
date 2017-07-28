@@ -29,7 +29,7 @@ public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPay
                                                  @RequestParam String paypalPlusPayerId) {
         PaymentHandleResult paymentHandleResult = paymentHandlerProvider
                 .getPaymentHandler(tenantName)
-                .map(paymentHandler -> paymentHandler.handlePayment(paypalPlusPaymentId, paypalPlusPayerId))
+                .map(paymentHandler -> paymentHandler.executePayment(paypalPlusPaymentId, paypalPlusPayerId))
                 .orElseGet(() -> new PaymentHandleResult(HttpStatus.NOT_FOUND, format("Tenant [%s] not found", tenantName)));
         return new ResponseEntity<>(paymentHandleResult.getBody(), paymentHandleResult.getStatusCode());
     }

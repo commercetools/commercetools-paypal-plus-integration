@@ -9,6 +9,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Optional;
 
+import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -20,7 +21,7 @@ public class PaymentHandlerProviderImplTest {
 
     @Test
     public void shouldReturnCorrectHandlerByTenantName() {
-        Optional<PaymentHandler> paymentClientOpt = paymentHandlerProvider.getPaymentHandler("paypalplus-integration-test");
+        Optional<PaymentHandler> paymentClientOpt = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME);
         assertThat(paymentClientOpt).isNotEmpty();
     }
 

@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
  */
 public class PaypalPlusFacade {
 
-    public final PaypalPlusPaymentService paymentService;
+    private final PaypalPlusPaymentService paymentService;
 
     public PaypalPlusFacade(@Nonnull PaypalPlusPaymentService paymentService) {
         this.paymentService = paymentService;

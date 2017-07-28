@@ -3,7 +3,7 @@ package com.commercetools.helper.mapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.paypal.api.payments.Payment;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 public interface PaymentMapper {
 
@@ -12,11 +12,10 @@ public interface PaymentMapper {
      *
      * @param ctpPaymentWithCart commercetools cart and payment to map
      * @return Paypal Plus {@link Payment} with respective values from {@link CtpPaymentWithCart}.
-     * If {@code ctpPaymentWithCart} is <b>null</b> - return <b>null</b>.
      * @see <a href="https://www.paypalobjects.com/webstatic/downloads/PayPal-PLUS-IntegrationGuide.pdf">
      * Integrating PayPal PLUS</a>
      */
-    @Nullable
-    Payment ctpPaymentToPaypalPlus(@Nullable CtpPaymentWithCart ctpPaymentWithCart);
+    @Nonnull
+    Payment ctpPaymentToPaypalPlus(@Nonnull CtpPaymentWithCart ctpPaymentWithCart);
 
 }

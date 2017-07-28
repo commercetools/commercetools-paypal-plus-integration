@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-public class CommercetoolsHandlePaymentsControllerTest {
+public class CommercetoolsCreatePaymentsControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,14 +35,14 @@ public class CommercetoolsHandlePaymentsControllerTest {
 
     @Test
     public void shouldReturnTenantAndPayment() throws Exception {
-        this.mockMvc.perform(get("/" + this.existingProjectName + "/commercetools/handle/payments/XXX-YYY"))
+        this.mockMvc.perform(get("/" + this.existingProjectName + "/commercetools/create/payments/XXX-YYY"))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
 
     @Test
     public void finalSlashIsProcessedToo() throws Exception {
-        this.mockMvc.perform(get("/asdhfasdfasf/commercetools/handle/payments/6753324-23]452-sgsfgd/"))
+        this.mockMvc.perform(get("/asdhfasdfasf/commercetools/create/payments/6753324-23452-sgsfgd/"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
     }

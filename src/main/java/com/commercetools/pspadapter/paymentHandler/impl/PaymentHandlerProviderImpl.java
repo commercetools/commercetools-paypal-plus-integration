@@ -1,5 +1,6 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
+import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
@@ -16,10 +17,12 @@ import java.util.Optional;
 public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
 
     private final TenantConfigFactory configFactory;
+    private final PaymentMapper paymentMapper;
 
     @Autowired
-    public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory) {
+    public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory, @Nonnull PaymentMapper paymentMapper) {
         this.configFactory = configFactory;
+        this.paymentMapper = paymentMapper;
     }
 
     @Override
@@ -28,7 +31,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = CtpFacadeFactory.getCtpFacade(tenantConfig);
                     PaypalPlusFacade payPalPlusFacade = PaypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
-                    return new PaymentHandler(ctpFacade, payPalPlusFacade, tenantName);
+                    return new PaymentHandler(ctpFacade, paymentMapper, payPalPlusFacade, tenantName);
                 });
     }
 

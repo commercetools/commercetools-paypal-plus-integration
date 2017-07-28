@@ -2,6 +2,7 @@ package com.commercetools.service.paypalPlus;
 
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.PaymentExecution;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletionStage;
@@ -17,4 +18,6 @@ public interface PaypalPlusPaymentService {
      * @return {@link CompletionStage<Payment>} of the same <i>updated</i> payment.
      */
     CompletionStage<Payment> create(@Nonnull Payment payment);
+
+    CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution);
 }

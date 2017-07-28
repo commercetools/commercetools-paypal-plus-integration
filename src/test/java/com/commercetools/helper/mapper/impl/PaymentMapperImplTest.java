@@ -26,12 +26,6 @@ public class PaymentMapperImplTest {
     private PaymentMapperImpl paymentMapper;
 
     @Test
-    public void nullCase() throws Exception {
-        assertThat(paymentMapper.ctpPaymentToPaypalPlus(null)).isNull();
-
-    }
-
-    @Test
     public void ctpPaymentToPaypalPlus_withDiscount() throws Exception {
         CtpPaymentWithCart paymentWithCart = getPaymentWithCart_complexAndDiscount();
         Payment ppPayment = paymentMapper.ctpPaymentToPaypalPlus(paymentWithCart);

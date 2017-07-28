@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 import java.util.List;
 import java.util.Locale;
@@ -37,12 +36,8 @@ public class PaymentMapperImpl implements PaymentMapper {
     }
 
     @Override
-    @Nullable
-    public Payment ctpPaymentToPaypalPlus(@Nullable CtpPaymentWithCart paymentWithCartLike) {
-        if (paymentWithCartLike == null) {
-            return null;
-        }
-
+    @Nonnull
+    public Payment ctpPaymentToPaypalPlus(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         Payment mappedPayment = new Payment();
 
         mappedPayment.setCart(paymentWithCartLike.getCart().getId());

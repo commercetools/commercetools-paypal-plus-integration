@@ -3,6 +3,7 @@ package com.commercetools.service.paypalPlus.impl;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.PaymentExecution;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,19 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
 
     @Override
     public CompletionStage<Payment> create(@Nonnull Payment payment) {
-        return createPaymentStage(payment);
+        return paymentStageWrapper(() -> payment.create(paypalPlusApiContext));
+    }
+
+
+    /**
+     * TODO: not tested!!!
+     * @param payment
+     * @param paymentExecution
+     * @return
+     */
+    @Override
+    public CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution) {
+        return paymentStageWrapper(() -> payment.execute(paypalPlusApiContext, paymentExecution));
     }
 
     /**
@@ -37,17 +50,22 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
      * exception to <i>unchecked</i> {@link PaypalPlusServiceException}</li>
      * </ol>
      *
-     * @param preparedPayment Paypal Plus payment to store.
+     * @param supplier which call the necessary functions.
      * @return a {@link CompletionStage<Payment>} with new stored Paypal Plus payment.
      */
-    private CompletionStage<Payment> createPaymentStage(@Nonnull Payment preparedPayment)
+    private <R> CompletionStage<R> paymentStageWrapper(@Nonnull PayPalRESTExceptionSupplier<R> supplier)
             throws PaypalPlusServiceException {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return preparedPayment.create(paypalPlusApiContext);
+                return supplier.apply();
             } catch (PayPalRESTException e) {
                 throw new PaypalPlusServiceException("Create Paypal Plus payment exception", e);
             }
         });
+    }
+
+    @FunctionalInterface
+    private interface PayPalRESTExceptionSupplier<R> {
+        R apply() throws PayPalRESTException;
     }
 }

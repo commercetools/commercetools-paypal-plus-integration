@@ -1,16 +1,21 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
-import com.commercetools.pspadapter.tenant.TenantProperties;
+import com.commercetools.pspadapter.tenant.TenantConfig;
+import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
+import io.sphere.sdk.client.SphereClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,26 +23,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
+@Import(OrdersCartsPaymentsCleanupConfiguration.class)
+// completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
 public class CommercetoolsCreatePaymentsControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private TenantProperties tenantProperties;
+    private TenantConfigFactory tenantConfigFactory;
 
-    private String existingProjectName;
+    private SphereClient sphereClient;
 
     @Before
     public void setUp() {
-        this.existingProjectName = tenantProperties.getTenants().keySet().iterator().next();
-    }
-
-    @Test
-    public void shouldReturnTenantAndPayment() throws Exception {
-        this.mockMvc.perform(get("/" + this.existingProjectName + "/commercetools/create/payments/XXX-YYY"))
-                .andDo(print())
-                .andExpect(status().isOk());
+        sphereClient = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
+                .map(TenantConfig::createSphereClient).orElse(null);
     }
 
     @Test
@@ -47,5 +48,21 @@ public class CommercetoolsCreatePaymentsControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
+    @Test
+    public void shouldReturnNewPaypalPaymentId() throws Exception {
+        //createCartAndPayment();
+        // TODO: akovalenko - complete the test
+//        this.mockMvc.perform(get("/" + MAIN_TEST_TENANT_NAME + "/commercetools/create/payments/XXX-YYY"))
+//                .andDo(print())
+//                .andExpect(status().isOk());
+    }
+
+//    private void createCartAndPayment() {
+//        CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
+//                .currency(USD)
+//                .build();
+//
+//        executeBlocking(sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts)));
+//    }
 
 }

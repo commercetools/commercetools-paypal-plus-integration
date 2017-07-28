@@ -10,6 +10,13 @@ import javax.annotation.Nonnull;
 
 public class CtpFacadeFactory {
 
+    /**
+     * TODO: Lam: static method is a wrong approach here. The class should have a constructor, which accepts TenantConfig
+     * and then on demand generates CtpFacade.
+     *
+     * @param tenantConfig
+     * @return
+     */
     public static CtpFacade getCtpFacade(@Nonnull TenantConfig tenantConfig) {
         SphereClient sphereClient = tenantConfig.createSphereClient();
         CartServiceImpl cartService = new CartServiceImpl(sphereClient);

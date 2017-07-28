@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
+import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -25,8 +26,11 @@ public class PaymentServiceImpl extends BaseSphereService implements PaymentServ
     }
 
     @Override
-    public CompletionStage<Payment> getById(@Nullable String id) {
-        return isBlank(id) ? completedFuture(null) : sphereClient.execute(PaymentByIdGet.of(id));
+    public CompletionStage<Optional<Payment>> getById(@Nullable String id) {
+        return isBlank(id)
+                ? completedFuture(empty())
+                : sphereClient.execute(PaymentByIdGet.of(id))
+                .thenApply(Optional::ofNullable);
     }
 
     @Override

@@ -2,14 +2,10 @@ package com.commercetools.service.ctp.impl;
 
 import com.commercetools.Application;
 import com.commercetools.service.ctp.PaymentService;
-import com.commercetools.testUtil.customTestConfigs.PaymentsCleanupConfiguration;
+import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.PaymentDraftBuilder;
-import io.sphere.sdk.payments.PaymentDraftDsl;
-import io.sphere.sdk.payments.PaymentMethodInfo;
-import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
+import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.commands.updateactions.ChangeAmountPlanned;
 import io.sphere.sdk.payments.commands.updateactions.SetKey;
@@ -34,7 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-@Import(PaymentsCleanupConfiguration.class) // completely wipe-out CTP project Payment endpoint before the test cases
+@Import(OrdersCartsPaymentsCleanupConfiguration.class)
+// completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
 public class PaymentServiceImplIntegrationTest {
 
 
@@ -52,7 +49,7 @@ public class PaymentServiceImplIntegrationTest {
                 .build();
 
         Payment paymentCreated = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(eur)));
-        Payment paymentRead = executeBlocking(paymentService.getById(paymentCreated.getId()));
+        Payment paymentRead = executeBlocking(paymentService.getById(paymentCreated.getId())).orElse(null);
 
         assertThat(paymentCreated).isEqualTo(paymentRead);
         assertThat(paymentRead.getAmountPlanned()).isEqualTo(Money.of(22.33, EUR));
@@ -65,10 +62,10 @@ public class PaymentServiceImplIntegrationTest {
                 .build();
 
         executeBlocking(sphereClient.execute(PaymentCreateCommand.of(eur)));
-        assertThat(executeBlocking(paymentService.getById(null))).isNull();
-        assertThat(executeBlocking(paymentService.getById(""))).isNull();
-        assertThat(executeBlocking(paymentService.getById(" "))).isNull();
-        assertThat(executeBlocking(paymentService.getById("asdfadsfasdf"))).isNull();
+        assertThat(executeBlocking(paymentService.getById(null))).isEmpty();
+        assertThat(executeBlocking(paymentService.getById(""))).isEmpty();
+        assertThat(executeBlocking(paymentService.getById(" "))).isEmpty();
+        assertThat(executeBlocking(paymentService.getById("asdfadsfasdf"))).isEmpty();
     }
 
     @Test
@@ -103,8 +100,8 @@ public class PaymentServiceImplIntegrationTest {
         List<UpdateAction<Payment>> updateActions = Collections.singletonList(ChangeAmountPlanned.of(amountAfter));
         Payment updatedPayment = executeBlocking(
                 paymentService.updatePayment(payment, updateActions)
-                .thenCompose(p -> paymentService.getById(p.getId()))
-        );
+                        .thenCompose(p -> paymentService.getById(p.getId())))
+                .orElse(null);
         assertThat(updatedPayment).isNotEqualTo(payment);
         assertThat(updatedPayment.getKey()).isEqualTo(paymentKey);
         assertThat(updatedPayment.getAmountPlanned()).isEqualTo(amountAfter);
@@ -125,15 +122,15 @@ public class PaymentServiceImplIntegrationTest {
         );
         Payment updatedPayment = executeBlocking(
                 paymentService.updatePayment(payment, updateActions)
-                        .thenCompose(p -> paymentService.getById(p.getId()))
-        );
+                        .thenCompose(p -> paymentService.getById(p.getId())))
+                .orElse(null);
         assertThat(updatedPayment).isNotEqualTo(payment);
         assertThat(updatedPayment.getKey()).isEqualTo(paymentKey);
         assertThat(updatedPayment.getAmountPlanned()).isEqualTo(amountAfter);
     }
 
     @Test
-    public void whenUpdateActionsIsNullOrEmpty_shouldNotUpdateAnything () {
+    public void whenUpdateActionsIsNullOrEmpty_shouldNotUpdateAnything() {
         PaymentDraftDsl draft = PaymentDraftBuilder.of(Money.of(1, EUR))
                 .build();
         Payment payment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));

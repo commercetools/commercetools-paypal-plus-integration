@@ -12,7 +12,7 @@ import java.util.concurrent.CompletionStage;
 
 public interface PaymentService {
 
-    CompletionStage<Payment> getById(@Nullable String id);
+    CompletionStage<Optional<Payment>> getById(@Nullable String id);
 
     /**
      * Fetch payment with by its {@link Payment#getInterfaceId()} and {@link PaymentMethodInfo#getPaymentInterface()}.

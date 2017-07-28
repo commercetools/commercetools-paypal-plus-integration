@@ -57,6 +57,7 @@ public class CtpPaymentWithCart {
      * @return Credit card token value from
      * {@link com.commercetools.payment.constants.ctp.CtpPaymentCustomFields#CREDIT_CARD_TOKEN} custom field, if exists.
      * Otherwise return empty string.
+     * @deprecated looks like should be avoided for Paypal Plus payment, cos hidden in iframe
      */
     @Nonnull
     public String getCreditCardToken() {

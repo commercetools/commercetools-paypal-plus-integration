@@ -3,8 +3,7 @@ package com.commercetools.service.ctp.impl;
 import com.commercetools.Application;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.testUtil.ctpUtil.CtpResourcesUtil;
-import com.commercetools.testUtil.customTestConfigs.CartsCleanupConfiguration;
-import com.commercetools.testUtil.customTestConfigs.PaymentsCleanupConfiguration;
+import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.commercetools.testUtil.customTestConfigs.TaxSetupConfig;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
@@ -36,8 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
 @Import(value = {
-        CartsCleanupConfiguration.class,
-        PaymentsCleanupConfiguration.class,
+        OrdersCartsPaymentsCleanupConfiguration.class,
         TaxSetupConfig.class
 })
 public class CartServiceImplTest {

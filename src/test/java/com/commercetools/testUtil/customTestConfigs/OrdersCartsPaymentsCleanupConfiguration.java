@@ -16,7 +16,7 @@ import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupPayment
  * <b>NEVER put {@code @Configuration}, {@code @Component}, {@code @*AutoConfiguration*} and related annotations to this class to avoid
  * database cleanup on every context loading (e.g. every test class)</b>
  */
-public class PaymentsCleanupConfiguration {
+public class OrdersCartsPaymentsCleanupConfiguration {
 
     @Autowired
     private SphereClient sphereClient;

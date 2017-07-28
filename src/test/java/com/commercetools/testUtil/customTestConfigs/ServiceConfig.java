@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
+
 @Configuration
 public class ServiceConfig {
 
@@ -50,7 +52,7 @@ public class ServiceConfig {
     @Bean
     public SphereClient sphereClient() {
         // TODO: avoid explicit string config "paypalplus-integration-test"
-        TenantProperties.Tenant.Ctp ctp = tenantProperties.getTenants().get("paypalplus-integration-test").getCtp();
+        TenantProperties.Tenant.Ctp ctp = tenantProperties.getTenants().get(MAIN_TEST_TENANT_NAME).getCtp();
         SphereClientConfig sphereClientConfig = SphereClientConfig.of(ctp.getProjectKey(), ctp.getClientId(), ctp.getClientSecret());
         return SphereClientFactory.of().createClient(sphereClientConfig);
     }
@@ -58,7 +60,7 @@ public class ServiceConfig {
     @Bean
     public APIContext apiContext() {
         // TODO: avoid explicit string config "paypalplus-integration-test"
-        TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().get("paypalplus-integration-test").getPaypalPlus();
+        TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().get(MAIN_TEST_TENANT_NAME).getPaypalPlus();
         return new APIContext(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
     }
 }

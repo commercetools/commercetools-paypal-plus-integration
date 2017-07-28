@@ -40,25 +40,35 @@ public class PaymentHandler {
 
     public PaymentHandleResult createPayment(@Nonnull String ctpPaymentId) {
         try {
-//            ctpFacade.getPaymentService().getById(ctpPaymentId)
-//                    .thenCombine(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
-//                            (payment, optCart) -> {
-//                                if (payment == null || !optCart.isPresent()) {
-//                                    return completedFuture(new PaymentHandleResult(HttpStatus.BAD_REQUEST,
-//                                            format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
-//                                }
-//
-//                                Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(
-//                                        new CtpPaymentWithCart(payment, optCart.get()));
-//
-//                                paypalPlusFacade.getPaymentService().create(paypalPlusPayment)
-//                                        .thenApply(PPPUti);
-//                            })
-//                    // TODO: re-factor join
-//                    .toCompletableFuture().join();
+            return ctpFacade.getPaymentService().getById(ctpPaymentId)
+                    .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
+                            // TODO: re-factor this wasps nest!!!
+                            (payment, optCart) -> {
+                                if (!(payment.isPresent() && optCart.isPresent())) {
+                                    return completedFuture(new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                            format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
+                                }
 
-            //paymentMapper.ctpPaymentToPaypalPlus()
-            return new PaymentHandleResult(HttpStatus.OK, "");
+                                Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(
+                                        new CtpPaymentWithCart(payment.get(), optCart.get()));
+
+                                return paypalPlusFacade.getPaymentService().create(paypalPlusPayment)
+                                        .thenApply(PaymentMapper::getApprovalUrl)
+                                        .thenApply(approvalUrlOpt -> approvalUrlOpt
+                                                .map(approvalUrl ->
+                                                        new PaymentHandleResult(HttpStatus.CREATED, approvalUrl))
+                                                .orElse(new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                                        format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId))));
+                            })
+                    // TODO: re-factor compose !!!!
+                    .thenCompose(stage -> stage)
+                    .exceptionally(throwable -> {
+                        logger.error("Unexpected exception handling payment [{}]:", ctpPaymentId, throwable);
+                        return new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                format("Payment or cart for ctpPaymentId=[%s] can't be processed, see the logs", ctpPaymentId));
+                    })
+                    // TODO: re-factor join !!!!
+                    .toCompletableFuture().join();
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", ctpPaymentId, e);
             return new PaymentHandleResult(HttpStatus.INTERNAL_SERVER_ERROR);

@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
 // completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
-public class CommercetoolsCreatePaymentsControllerTest {
+public class CommercetoolsCreatePaymentsControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

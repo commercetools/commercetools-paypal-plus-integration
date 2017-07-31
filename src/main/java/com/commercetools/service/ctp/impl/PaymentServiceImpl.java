@@ -1,5 +1,6 @@
 package com.commercetools.service.ctp.impl;
 
+import com.commercetools.exception.CtpServiceException;
 import com.commercetools.service.ctp.PaymentService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
+import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -53,4 +55,11 @@ public class PaymentServiceImpl extends BaseSphereService implements PaymentServ
         return sphereClient.execute(PaymentUpdateCommand.of(payment, updateActions));
     }
 
+    @Override
+    public CompletionStage<Payment> updatePayment(@Nonnull String paymentId, @Nullable List<UpdateAction<Payment>> updateActions) {
+        return getById(paymentId)
+                .thenApply(optPayment -> optPayment.orElseThrow(() ->
+                        new CtpServiceException(format("Update payment error: payment [%s] has not found", paymentId))))
+                .thenCompose(payment -> updatePayment(payment, updateActions));
+    }
 }

@@ -31,4 +31,14 @@ public interface PaymentService {
      * @return Completion stage with an instance of the updated payment
      */
     CompletionStage<Payment> updatePayment(@Nonnull Payment payment, @Nullable List<UpdateAction<Payment>> updateActions);
+
+    /**
+     * Fetch and update payment by {@code paymentId}. If such payment does not exists -
+     * throw {@link com.commercetools.exception.CtpServiceException}.
+     *
+     * @param paymentId     payment to update
+     * @param updateActions list of actions to apply if such a payment exists
+     * @return stage with new update payment
+     */
+    CompletionStage<Payment> updatePayment(@Nonnull String paymentId, @Nullable List<UpdateAction<Payment>> updateActions);
 }

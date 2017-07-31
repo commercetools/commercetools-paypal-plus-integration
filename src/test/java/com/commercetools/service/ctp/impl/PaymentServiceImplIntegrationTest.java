@@ -1,6 +1,7 @@
 package com.commercetools.service.ctp.impl;
 
 import com.commercetools.Application;
+import com.commercetools.exception.CtpServiceException;
 import com.commercetools.service.ctp.PaymentService;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import io.sphere.sdk.client.SphereClient;
@@ -20,11 +21,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.CompletionException;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 // TODO: move to separate integration test
 
@@ -80,11 +83,17 @@ public class PaymentServiceImplIntegrationTest {
                 .interfaceId(interfaceId)
                 .build();
 
-        executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
-        Optional<Payment> payment = executeBlocking(
-                paymentService.getByPaymentMethodAndInterfaceId(paymentInterface, interfaceId)
-        );
-        assertThat(payment).isNotEmpty();
+        Payment createdPayment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
+
+        Payment fetchedPayment = executeBlocking(
+                paymentService.getByPaymentMethodAndInterfaceId(paymentInterface, interfaceId))
+                .orElse(null);
+
+        assertThat(fetchedPayment).isNotNull();
+        assertThat(fetchedPayment.getId()).isEqualTo(createdPayment.getId());
+        assertThat(fetchedPayment.getAmountPlanned()).isEqualTo(Money.of(22.33, EUR));
+        assertThat(fetchedPayment.getPaymentMethodInfo().getPaymentInterface()).isEqualTo("testPaymentInterface");
+        assertThat(fetchedPayment.getInterfaceId()).isEqualTo("testInterfaceId");
     }
 
     @Test
@@ -140,5 +149,54 @@ public class PaymentServiceImplIntegrationTest {
 
         paymentAfterUpdate = executeBlocking(paymentService.updatePayment(payment, null));
         assertThat(paymentAfterUpdate).isEqualTo(payment);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked") // for any(List.class) with generics
+    public void updatePaymentByStringIdWhenPaymentExists() {
+        Money amountBefore = Money.of(1, EUR);
+        PaymentDraftDsl draft = PaymentDraftBuilder.of(amountBefore)
+                .build();
+        final Payment originalPayment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
+
+        Money amountAfter = Money.of(2, EUR);
+        String paymentKey = "testPaymentByStringId";
+        List<UpdateAction<Payment>> updateActions = Arrays.asList(
+                ChangeAmountPlanned.of(amountAfter),
+                SetKey.of(paymentKey)
+        );
+
+        PaymentService spiedPaymentService = spy(paymentService);
+
+        Payment updatedPayment = executeBlocking(
+                spiedPaymentService.updatePayment(originalPayment.getId(), updateActions)
+                        .thenCompose(p -> paymentService.getById(p.getId())))
+                .orElse(null);
+
+        // verify the serice re-uses get/update payment functions
+        verify(spiedPaymentService, times(1)).getById(originalPayment.getId());
+
+        verify(spiedPaymentService, times(1))
+                .updatePayment(any(Payment.class), any(List.class));
+
+        assertThat(updatedPayment).isNotEqualTo(originalPayment);
+        assertThat(updatedPayment.getKey()).isEqualTo(paymentKey);
+        assertThat(updatedPayment.getAmountPlanned()).isEqualTo(amountAfter);
+    }
+
+    @Test
+    public void throwsExceptionWhenUpdatePaymentByStringIdWhenPaymentIsMissing() {
+        Money amountAfter = Money.of(2, EUR);
+        String paymentKey = "testPaymentByStringIdWithException";
+        List<UpdateAction<Payment>> updateActions = Arrays.asList(
+                ChangeAmountPlanned.of(amountAfter),
+                SetKey.of(paymentKey)
+        );
+        assertThatThrownBy(() -> executeBlocking(
+                paymentService.updatePayment("11111111-1111-1111-1111-111111111111", updateActions)
+                        .thenCompose(p -> paymentService.getById(p.getId()))))
+                .isInstanceOf(CompletionException.class)
+                .hasCauseExactlyInstanceOf(CtpServiceException.class)
+                .hasMessageContaining("11111111-1111-1111-1111-111111111111");
     }
 }

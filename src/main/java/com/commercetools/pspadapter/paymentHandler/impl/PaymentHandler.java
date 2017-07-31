@@ -1,11 +1,14 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.helper.mapper.PaymentMapper;
+import com.commercetools.helper.mapper.ShippingAddressMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
+import com.paypal.api.payments.Patch;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentExecution;
+import com.paypal.api.payments.ShippingAddress;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.commands.updateactions.SetCustomField;
 import io.sphere.sdk.payments.commands.updateactions.SetInterfaceId;
@@ -35,15 +38,18 @@ public class PaymentHandler {
     private final CtpFacade ctpFacade;
     private final PaypalPlusFacade paypalPlusFacade;
     private final PaymentMapper paymentMapper;
+    private final ShippingAddressMapper shippingAddressMapper;
 
     private final Logger logger;
 
     public PaymentHandler(@Nonnull CtpFacade ctpFacade,
                           @Nonnull PaymentMapper paymentMapper,
+                          @Nonnull ShippingAddressMapper shippingAddressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName) {
         this.ctpFacade = ctpFacade;
         this.paymentMapper = paymentMapper;
+        this.shippingAddressMapper = shippingAddressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
     }
@@ -94,6 +100,35 @@ public class PaymentHandler {
             return of500InternalServerError("See the logs");
         }
     }
+
+    public PaymentHandleResult patchAddress(@Nonnull String ctpPaymentId, @Nonnull String paypalPlusPaymentId) {
+        try {
+            return ctpFacade.getPaymentService().getById(ctpPaymentId)
+                    .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
+                            (paymentOpt, cartOpt) -> {
+                                if (!(paymentOpt.isPresent() && cartOpt.isPresent())) {
+                                    return completedFuture(new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                            format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
+                                }
+                                Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
+                                ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cartOpt.get());
+                                Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
+                                return paypalPlusFacade.getPaymentService().patch(paypalPlusPayment, replace)
+                                        .thenApply(payment -> new PaymentHandleResult(HttpStatus.OK));
+                            })
+                    .thenCompose(paymentHandleResultCompletionStage -> paymentHandleResultCompletionStage)
+                    .exceptionally(throwable -> {
+                        logger.error("Unexpected exception handling payment [{}]:", ctpPaymentId, throwable);
+                        return new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                format("Payment or cart for ctpPaymentId=[%s] can't be processed, see the logs", ctpPaymentId));
+                    })
+                    .toCompletableFuture().join();
+        } catch (Exception e) {
+            logger.error("Error while processing payment ID {}", ctpPaymentId, e);
+            return new PaymentHandleResult(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     public PaymentHandleResult executePayment(@Nonnull String paypalPlusPaymentId,
                                               @Nonnull String paypalPlusPayerId) {

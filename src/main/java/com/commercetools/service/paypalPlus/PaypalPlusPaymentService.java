@@ -1,6 +1,7 @@
 package com.commercetools.service.paypalPlus;
 
 import com.commercetools.exception.PaypalPlusServiceException;
+import com.paypal.api.payments.Patch;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentExecution;
 
@@ -19,5 +20,9 @@ public interface PaypalPlusPaymentService {
      */
     CompletionStage<Payment> create(@Nonnull Payment payment);
 
+    CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull Patch patch);
+
     CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution);
+
+    CompletionStage<Payment> lookUp(@Nonnull Payment payment);
 }

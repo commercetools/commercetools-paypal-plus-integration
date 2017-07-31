@@ -18,14 +18,15 @@ public interface PaymentService {
      * Fetch payment with by its {@link Payment#getInterfaceId()} and {@link PaymentMethodInfo#getPaymentInterface()}.
      *
      * @param paymentMethodInterface name of payment interface, like "PAYONE"
-     * @param interfaceId the payment's {@link Payment#getInterfaceId()}
+     * @param interfaceId            the payment's {@link Payment#getInterfaceId()}
      * @return completion stage with optional found payment.
      */
     CompletionStage<Optional<Payment>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface, @Nullable String interfaceId);
 
     /**
      * Apply {@code updateActions} to the {@code payment}
-     * @param payment <b>non-null</b> {@link Payment} to update
+     *
+     * @param payment       <b>non-null</b> {@link Payment} to update
      * @param updateActions <b>non-null</b> list of {@link UpdateAction <Payment>} to apply to the {@code payment}
      * @return Completion stage with an instance of the updated payment
      */

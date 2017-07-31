@@ -57,7 +57,7 @@ public class PaymentHandler {
                                         .thenApply(approvalUrlOpt -> approvalUrlOpt
                                                 .map(approvalUrl ->
                                                         new PaymentHandleResult(HttpStatus.CREATED, approvalUrl))
-                                                .orElse(new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                                .orElseGet(() ->new PaymentHandleResult(HttpStatus.BAD_REQUEST,
                                                         format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId))));
                             })
                     // TODO: re-factor compose !!!!

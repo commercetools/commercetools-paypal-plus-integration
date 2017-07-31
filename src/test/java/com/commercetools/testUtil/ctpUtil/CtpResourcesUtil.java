@@ -59,6 +59,10 @@ public class CtpResourcesUtil {
         return getCartFromResource(resolveMockDataResource("paymentMapper/dummyComplexCartWithoutDiscounts.json"));
     }
 
+    public static CartDraft getDummyComplexCartDraftWithDiscounts() {
+        return getCartDraftFromResource(resolveMockDataResource("paymentHandler/dummyCartDraftWithDiscounts.json"));
+    }
+
     public static CtpPaymentWithCart getPaymentWithCart_complexAndDiscount() {
         return new CtpPaymentWithCart(getDummyPaymentForComplexCartWithDiscounts(), getDummyComplexCartWithDiscounts());
     }

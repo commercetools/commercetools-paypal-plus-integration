@@ -40,7 +40,6 @@ public class PaymentMapperImpl implements PaymentMapper {
     public Payment ctpPaymentToPaypalPlus(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         Payment mappedPayment = new Payment();
 
-        mappedPayment.setCart(paymentWithCartLike.getCart().getId());
         mappedPayment.setIntent(SALE);
         mappedPayment.setPayer(getPayer(paymentWithCartLike));
         mappedPayment.setTransactions(getTransactions(paymentWithCartLike));
@@ -52,7 +51,6 @@ public class PaymentMapperImpl implements PaymentMapper {
     @Nonnull
     protected Payer getPayer(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         return new Payer()
-                .setFundingInstruments(getFundingInstrumentList(paymentWithCartLike))
                 .setPaymentMethod(paymentWithCartLike.getPaymentMethod());
     }
 
@@ -66,17 +64,6 @@ public class PaymentMapperImpl implements PaymentMapper {
         return new RedirectUrls()
                 .setReturnUrl(paymentWithCartLike.getReturnUrl())
                 .setCancelUrl(paymentWithCartLike.getCancelUrl());
-    }
-
-    @Nonnull
-    protected List<FundingInstrument> getFundingInstrumentList(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        return singletonList(new FundingInstrument()
-                .setCreditCardToken(getCreditCardToken(paymentWithCartLike)));
-    }
-
-    @Nonnull
-    protected CreditCardToken getCreditCardToken(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        return new CreditCardToken(paymentWithCartLike.getCreditCardToken());
     }
 
     @Nonnull
@@ -128,13 +115,13 @@ public class PaymentMapperImpl implements PaymentMapper {
     @Nonnull
     protected List<Item> getLineItems(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
 
-        final Locale locale = paymentWithCartLike.getLocaleOrDefault();
+        final List<Locale> locales = paymentWithCartLike.getLocalesWithDefault();
 
         Stream<Item> lineItemStream = paymentWithCartLike.getCart().getLineItems().stream()
-                .flatMap(lineItem -> mapLineItemToPaypalPlusItem(lineItem, locale));
+                .flatMap(lineItem -> mapLineItemToPaypalPlusItem(lineItem, locales));
 
         Stream<Item> customLineItemStream = paymentWithCartLike.getCart().getCustomLineItems().stream()
-                .flatMap(customLineItem -> mapCustomLineItemToPaypalPlusItem(customLineItem, locale));
+                .flatMap(customLineItem -> mapCustomLineItemToPaypalPlusItem(customLineItem, locales));
 
         return concat(lineItemStream, customLineItemStream)
                 .collect(toList());
@@ -149,24 +136,24 @@ public class PaymentMapperImpl implements PaymentMapper {
      * applied.
      *
      * @param lineItem line item to map.
-     * @param locale   {@link Locale} to resolve localized line item properties, like {@link LineItem#getName()}
+     * @param locales  List of {@link Locale} to resolve localized line item properties, like {@link LineItem#getName()}
      * @return stream of single item, if discounts are not applied, or multiple items, if discounts are applied.
-     * @see #mapCustomLineItemToPaypalPlusItem(CustomLineItem, Locale)
+     * @see #mapCustomLineItemToPaypalPlusItem(CustomLineItem, List)
      */
-    protected Stream<Item> mapLineItemToPaypalPlusItem(@Nonnull LineItem lineItem, @Nonnull Locale locale) {
+    protected Stream<Item> mapLineItemToPaypalPlusItem(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
         if (lineItem.getDiscountedPricePerQuantity().size() > 0) {
             return lineItem.getDiscountedPricePerQuantity().stream()
-                    .map(dlipfq -> createPaypalPlusItem(lineItem.getName(), locale, dlipfq))
+                    .map(dlipfq -> createPaypalPlusItem(lineItem.getName(), locales, dlipfq))
                     .map(item -> item.setSku(lineItem.getVariant().getSku()));
         }
 
         MonetaryAmount actualLineItemPrice = lineItem.getPrice().getValue();
-        return Stream.of(createPaypalPlusItem(lineItem.getName(), locale, lineItem.getQuantity(), actualLineItemPrice))
+        return Stream.of(createPaypalPlusItem(lineItem.getName(), locales, lineItem.getQuantity(), actualLineItemPrice))
                 .map(item -> item.setSku(lineItem.getVariant().getSku()));
     }
 
     /**
-     * Similar to {@link #mapLineItemToPaypalPlusItem(LineItem, Locale)}, but for {@link CustomLineItem}.
+     * Similar to {@link #mapLineItemToPaypalPlusItem(LineItem, List)}, but for {@link CustomLineItem}.
      * This entity type has a bit different signature for some properties, like price, name, sku and so on.
      * <p>
      * (Note about the name: unfortunately {@link CustomLineItem#getName()} and {@link LineItem#getName()} are different
@@ -174,29 +161,30 @@ public class PaymentMapperImpl implements PaymentMapper {
      * {@link io.sphere.sdk.carts.LineItemLike} interface, but might be if future)
      *
      * @param customLineItem line item to map
-     * @param locale         {@link Locale} to resolve localized line item properties, like {@link LineItem#getName()}
+     * @param locales        List of {@link Locale} to resolve localized line item properties,
+     *                       like {@link LineItem#getName()}
      * @return stream of single item, if discounts are not applied, or multiple items, if discounts are applied.
-     * @see #mapCustomLineItemToPaypalPlusItem(CustomLineItem, Locale)
+     * @see #mapCustomLineItemToPaypalPlusItem(CustomLineItem, List)
      */
-    protected Stream<Item> mapCustomLineItemToPaypalPlusItem(@Nonnull CustomLineItem customLineItem, @Nonnull Locale locale) {
+    protected Stream<Item> mapCustomLineItemToPaypalPlusItem(@Nonnull CustomLineItem customLineItem, @Nonnull List<Locale> locales) {
         if (customLineItem.getDiscountedPricePerQuantity().size() > 0) {
             return customLineItem.getDiscountedPricePerQuantity().stream()
-                    .map(dlipfq -> createPaypalPlusItem(customLineItem.getName(), locale, dlipfq));
+                    .map(dlipfq -> createPaypalPlusItem(customLineItem.getName(), locales, dlipfq));
         }
 
         MonetaryAmount actualCustomLineItemPrice = customLineItem.getMoney();
-        return Stream.of(createPaypalPlusItem(customLineItem.getName(), locale,
+        return Stream.of(createPaypalPlusItem(customLineItem.getName(), locales,
                 customLineItem.getQuantity(), actualCustomLineItemPrice));
     }
 
-    protected Item createPaypalPlusItem(@Nonnull LocalizedString itemName, @Nonnull Locale locale,
+    protected Item createPaypalPlusItem(@Nonnull LocalizedString itemName, @Nonnull List<Locale> locales,
                                         @Nonnull DiscountedLineItemPriceForQuantity dlipfq) {
-        return createPaypalPlusItem(itemName, locale, dlipfq.getQuantity(), dlipfq.getDiscountedPrice().getValue());
+        return createPaypalPlusItem(itemName, locales, dlipfq.getQuantity(), dlipfq.getDiscountedPrice().getValue());
     }
 
-    protected Item createPaypalPlusItem(@Nonnull LocalizedString itemName, @Nonnull Locale locale,
+    protected Item createPaypalPlusItem(@Nonnull LocalizedString itemName, @Nonnull List<Locale> locales,
                                         @Nonnull Long quantity, @Nonnull MonetaryAmount price) {
-        return new Item(itemName.get(locale),
+        return new Item(itemName.get(locales),
                 String.valueOf(quantity),
                 paypalPlusFormatter.monetaryAmountToString(price),
                 price.getCurrency().getCurrencyCode());

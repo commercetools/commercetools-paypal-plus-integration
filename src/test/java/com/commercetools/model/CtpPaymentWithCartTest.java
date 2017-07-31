@@ -10,10 +10,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Locale;
-
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
+import static java.util.Locale.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -54,18 +53,6 @@ public class CtpPaymentWithCartTest {
     }
 
     @Test
-    public void getCreditCardToken() throws Exception {
-        assertThat(paymentWithCart.getCreditCardToken()).isEmpty();
-        CustomFields customFields = mock(CustomFields.class);
-
-        when(payment.getCustom()).thenReturn(customFields);
-        assertThat(paymentWithCart.getCreditCardToken()).isEmpty();
-
-        when(customFields.getFieldAsString(CREDIT_CARD_TOKEN)).thenReturn("blah-blah");
-        assertThat(paymentWithCart.getCreditCardToken()).isEqualTo("blah-blah");
-    }
-
-    @Test
     public void getReturnUrl() throws Exception {
         assertThat(paymentWithCart.getReturnUrl()).isEmpty();
         CustomFields customFields = mock(CustomFields.class);
@@ -90,27 +77,71 @@ public class CtpPaymentWithCartTest {
     }
 
     @Test
-    public void getLocaleOrDefault() throws Exception {
-        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(DEFAULT_LOCALE);
+    public void getLocalesWithDefault() throws Exception {
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(DEFAULT_LOCALE);
 
         CustomFields customFields = mock(CustomFields.class);
 
         // custom field is still empty - fallback to default.
         when(payment.getCustom()).thenReturn(customFields);
-        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(DEFAULT_LOCALE);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(DEFAULT_LOCALE);
 
-        when(cart.getLocale()).thenReturn(Locale.forLanguageTag("ua"));
-        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(Locale.forLanguageTag("ua"));
+        when(cart.getLocale()).thenReturn(forLanguageTag("ua"));
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(forLanguageTag("ua"), DEFAULT_LOCALE);
 
-        when(cart.getLocale()).thenReturn(Locale.CHINESE);
-        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(Locale.CHINESE);
+        when(cart.getLocale()).thenReturn(CHINESE);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(CHINESE, DEFAULT_LOCALE);
 
         // payment locale has higher priority than cart locale
         when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn("de");
-        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(Locale.GERMAN);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(GERMAN, CHINESE, DEFAULT_LOCALE);
+
+        when(cart.getLocale()).thenReturn(GERMAN);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(GERMAN, DEFAULT_LOCALE);
+    }
+
+    @Test
+    public void getLocalesWithDefault_doesNotHaveDuplicates() throws Exception {
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(DEFAULT_LOCALE);
+
+        CustomFields customFields = mock(CustomFields.class);
+        when(payment.getCustom()).thenReturn(customFields);
+
+        when(cart.getLocale()).thenReturn(DEFAULT_LOCALE);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(DEFAULT_LOCALE);
+
+        // both
+        when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn(DEFAULT_LOCALE.getLanguage());
+        when(cart.getLocale()).thenReturn(DEFAULT_LOCALE);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(DEFAULT_LOCALE);
 
         when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn("xx");
-        assertThat(paymentWithCart.getLocaleOrDefault()).isEqualTo(Locale.forLanguageTag("xx"));
+        when(cart.getLocale()).thenReturn(DEFAULT_LOCALE);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(forLanguageTag("xx"), DEFAULT_LOCALE);
 
+        when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn("en");
+        when(cart.getLocale()).thenReturn(DEFAULT_LOCALE);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(DEFAULT_LOCALE);
+
+        // both cart and payment contain the same locale:
+        when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn("xx");
+        when(cart.getLocale()).thenReturn(forLanguageTag("xx"));
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(forLanguageTag("xx"), DEFAULT_LOCALE);
+
+        when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn("xx");
+        when(cart.getLocale()).thenReturn(DEFAULT_LOCALE);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(forLanguageTag("xx"), DEFAULT_LOCALE); // payment has xx, cart is default
+
+        when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn("xx");
+        when(cart.getLocale()).thenReturn(FRENCH);
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(forLanguageTag("xx"), FRENCH, DEFAULT_LOCALE);
+
+        when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn(ENGLISH.getLanguage());
+        when(cart.getLocale()).thenReturn(forLanguageTag("xx"));
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(ENGLISH, forLanguageTag("xx")); // payment has en (default), cart has xx
+
+        when(customFields.getFieldAsString(LANGUAGE_CODE_FIELD)).thenReturn(CHINESE.getLanguage());
+        when(cart.getLocale()).thenReturn(forLanguageTag("xx"));
+        assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(CHINESE, forLanguageTag("xx"), DEFAULT_LOCALE);
     }
 }

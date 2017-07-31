@@ -6,15 +6,22 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentExecution;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.payments.commands.updateactions.SetCustomField;
+import io.sphere.sdk.payments.commands.updateactions.SetInterfaceId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.pspadapter.tenant.TenantLoggerUtil.createLoggerName;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 /**
@@ -64,6 +71,7 @@ public class PaymentHandler {
                                         new CtpPaymentWithCart(optPayment.get(), optCart.get()));
 
                                 return paypalPlusFacade.getPaymentService().create(paypalPlusPayment)
+                                        .thenCompose(createdPpPayment -> updateCtpPayment(createdPpPayment, ctpPaymentId))
                                         .thenApply(PaymentMapper::getApprovalUrl)
                                         .thenApply(approvalUrlOpt -> approvalUrlOpt
                                                 .map(approvalUrl ->
@@ -99,5 +107,13 @@ public class PaymentHandler {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return new PaymentHandleResult(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    protected CompletionStage<Payment> updateCtpPayment(Payment newPpPayment, String ctpPaymentId) {
+        List<UpdateAction<io.sphere.sdk.payments.Payment>> updateActions = asList(
+                SetCustomField.ofObject(APPROVAL_URL, PaymentMapper.getApprovalUrl(newPpPayment).orElse("")),
+                SetInterfaceId.of(newPpPayment.getId()));
+        return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, updateActions)
+                .thenApply(ignore -> newPpPayment);
     }
 }

@@ -12,7 +12,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.math.BigDecimal;
 
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
-import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.CREDIT_CARD;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getPaymentWithCart_complexAndDiscount;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getPaymentWithCart_complexWithoutDiscount;
@@ -32,13 +31,10 @@ public class PaymentMapperImplTest {
 
         assertThat(ppPayment).isNotNull();
 
-        assertThat(ppPayment.getCart()).isEqualTo("0756a2bb-f1c6-4a96-bcbb-7624f12b9c1a");
-
         assertThat(ppPayment.getIntent()).isEqualTo(SALE);
 
         assertThat(ppPayment.getPayer()).isNotNull();
         assertThat(ppPayment.getPayer().getPaymentMethod()).isEqualTo(PAYPAL);
-        assertThat(ppPayment.getPayer().getFundingInstruments().get(0).getCreditCardToken().getCreditCardId()).isEmpty();
 
         assertThat(ppPayment.getState()).isNull();
 
@@ -78,14 +74,10 @@ public class PaymentMapperImplTest {
 
         assertThat(ppPayment).isNotNull();
 
-        assertThat(ppPayment.getCart()).isEqualTo("1236a456-7890-4a96-aaaa-abcd12b9ceee");
-
         assertThat(ppPayment.getIntent()).isEqualTo(SALE);
 
         assertThat(ppPayment.getPayer()).isNotNull();
-        assertThat(ppPayment.getPayer().getPaymentMethod()).isEqualTo(CREDIT_CARD);
-        assertThat(ppPayment.getPayer().getFundingInstruments().get(0).getCreditCardToken().getCreditCardId())
-                .isEqualTo("CARD-2CP65563W6136533VLF3XGWQ");
+        assertThat(ppPayment.getPayer().getPaymentMethod()).isEqualTo(PAYPAL);
 
         assertThat(ppPayment.getState()).isNull();
 

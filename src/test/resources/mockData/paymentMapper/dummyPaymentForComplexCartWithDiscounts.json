@@ -22,18 +22,7 @@
     }
   },
   "paymentStatus": {},
-  "transactions": [
-    {
-      "id": "65c7cb5e-63b2-4b0c-911e-d94f8b828317",
-      "timestamp": "2017-05-29T08:14:36.931Z",
-      "type": "Authorization",
-      "amount": {
-        "currencyCode": "USD",
-        "centAmount": 59685
-      },
-      "state": "Pending"
-    }
-  ],
+  "transactions": [],
   "interfaceInteractions": [],
   "lastMessageSequenceNumber": 1
 }

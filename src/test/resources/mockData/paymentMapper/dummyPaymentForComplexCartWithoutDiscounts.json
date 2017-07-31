@@ -6,7 +6,7 @@
   },
   "paymentMethodInfo": {
     "paymentInterface": "PAYPAL_PLUS",
-    "method": "credit_card"
+    "method": "paypal"
   },
   "custom": {
     "type": {
@@ -16,14 +16,8 @@
       "reference": "556677884433",
       "cancelUrl": "https://www.sparta.de/cancel/556677884433",
       "successUrl": "https://www.sparta.de/success/556677884433",
-      "cardDataPlaceholder": "CARD-2CP65563W6136533VLF3XGWQ",
-      "truncatedCardNumber": "xxxxxxxxxxxx0779",
       "languageCode": "en"
     }
-  },
-  "paymentStatus": {
-    "interfaceCode": "appointed",
-    "interfaceText": "appointed"
   },
   "transactions": [],
   "interfaceInteractions": [],

@@ -86,6 +86,21 @@ public class CommercetoolsCreatePaymentsControllerIntegrationTest {
         assertThat(url.getQuery()).containsPattern("(^|&)token=");
     }
 
+    @Test
+    public void shouldReturnErrorIfPaymentIsMissing() throws Exception {
+        // TODO: andrii.kovalenko
+    }
+
+    @Test
+    public void shouldReturnErrorIfCartIsMissing() throws Exception {
+        // TODO: andrii.kovalenko
+    }
+
+    @Test
+    public void shouldReturnErrorIfPaymentInterfaceIsIncorrect() throws Exception {
+        // TODO: andrii.kovalenko
+    }
+
     private String createCartAndPayment() {
         CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
                 .currency(EUR)

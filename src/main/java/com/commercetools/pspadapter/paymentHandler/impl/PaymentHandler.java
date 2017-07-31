@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
 
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.pspadapter.tenant.TenantLoggerUtil.createLoggerName;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -43,21 +44,31 @@ public class PaymentHandler {
             return ctpFacade.getPaymentService().getById(ctpPaymentId)
                     .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
                             // TODO: re-factor this wasps nest!!!
-                            (payment, optCart) -> {
-                                if (!(payment.isPresent() && optCart.isPresent())) {
+                            (optPayment, optCart) -> {
+                                if (!(optPayment.isPresent() && optCart.isPresent())) {
                                     return completedFuture(new PaymentHandleResult(HttpStatus.BAD_REQUEST,
                                             format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
                                 }
 
+                                io.sphere.sdk.payments.Payment ctpPayment = optPayment.get();
+
+                                // TODO: andrii.kovalenko: this should be a common solution across all the controllers
+                                if (!PAYPAL_PLUS.equals(ctpPayment.getPaymentMethodInfo().getPaymentInterface())) {
+                                    completedFuture(new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                            format("Payment ctpPaymentId=[%s] has incorrect payment interface: " +
+                                                            "expected [%s], found [%s]", ctpPaymentId, PAYPAL_PLUS,
+                                                    ctpPayment.getPaymentMethodInfo().getPaymentInterface())));
+                                }
+
                                 Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(
-                                        new CtpPaymentWithCart(payment.get(), optCart.get()));
+                                        new CtpPaymentWithCart(optPayment.get(), optCart.get()));
 
                                 return paypalPlusFacade.getPaymentService().create(paypalPlusPayment)
                                         .thenApply(PaymentMapper::getApprovalUrl)
                                         .thenApply(approvalUrlOpt -> approvalUrlOpt
                                                 .map(approvalUrl ->
                                                         new PaymentHandleResult(HttpStatus.CREATED, approvalUrl))
-                                                .orElseGet(() ->new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                                .orElseGet(() -> new PaymentHandleResult(HttpStatus.BAD_REQUEST,
                                                         format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId))));
                             })
                     // TODO: re-factor compose !!!!

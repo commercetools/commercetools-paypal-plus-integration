@@ -3,6 +3,7 @@
 set -e
 
 export SCRIPT_DIR=$(dirname "$0")
+export COMMIT="${TRAVIS_COMMIT::8}"
 
 export REPO="commercetoolsps/commercetools-paypal-plus-integration"
 export DOCKER_TAG=`if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" = "false"  ]; then echo "latest"; else echo "wip-${TRAVIS_BRANCH//\//-}" ; fi`

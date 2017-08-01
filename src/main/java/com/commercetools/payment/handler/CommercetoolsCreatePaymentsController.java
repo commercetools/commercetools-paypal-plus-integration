@@ -25,7 +25,7 @@ public class CommercetoolsCreatePaymentsController extends BaseCommercetoolsPaym
     }
 
     @RequestMapping(
-            method = RequestMethod.GET,
+            method = RequestMethod.POST,
             value = "/{tenantName}/commercetools/create/payments/{ctpPaymentId}")
     public ResponseEntity<String> handlePayments(@PathVariable String tenantName,
                                                  @PathVariable String ctpPaymentId) {

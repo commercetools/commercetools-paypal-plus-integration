@@ -2,6 +2,8 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.pspadapter.facade.CtpFacade;
+import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
@@ -12,6 +14,7 @@ import io.sphere.sdk.carts.commands.CartCreateCommand;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
 import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
@@ -28,7 +31,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static com.commercetools.helper.mapper.PaymentMapper.getApprovalUrl;
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
@@ -36,11 +42,14 @@ import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMe
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
+import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.lang.String.format;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -57,12 +66,18 @@ public class CommercetoolsCreatePaymentsControllerIntegrationTest {
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
 
+    private TenantConfig tenantConfig;
     private SphereClient sphereClient;
+    private CtpFacade ctpFacade;
 
     @Before
-    public void setUp() {
-        sphereClient = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
-                .map(TenantConfig::createSphereClient).orElse(null);
+    public void setUp() throws Exception {
+        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
+                .orElseThrow(IllegalStateException::new);
+
+        ctpFacade = CtpFacadeFactory.getCtpFacade(tenantConfig);
+
+        sphereClient = tenantConfig.createSphereClient();
     }
 
     @Test
@@ -74,16 +89,43 @@ public class CommercetoolsCreatePaymentsControllerIntegrationTest {
 
     @Test
     public void shouldReturnNewPaypalPaymentId() throws Exception {
-        String paymentId = createCartAndPayment();
-        MvcResult mvcResult = this.mockMvc.perform(get(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
+        final String paymentId = createCartAndPayment();
+        MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        URL url = new URL(mvcResult.getResponse().getContentAsString());
+        final String returnedApprovalUrl = mvcResult.getResponse().getContentAsString();
+        URL url = new URL(returnedApprovalUrl);
         assertThat(url.getProtocol()).isEqualTo("https");
         assertThat(url.getAuthority()).isEqualTo("www.sandbox.paypal.com");
-        assertThat(url.getQuery()).containsPattern("(^|&)token=");
+
+        String pPPaymentToken = of(Pattern.compile("(?:^|&)token=([^&=?\\s]+)").matcher(url.getQuery()))
+                .filter(Matcher::find)
+                .map(matcher -> matcher.group(1))
+                .orElse(null);
+        assertThat(pPPaymentToken).isNotBlank();
+
+        // verify CTP payment values: approval url + interfaceId
+        Payment updatedPayment = executeBlocking(ctpFacade.getPaymentService().getById(paymentId)).orElse(null);
+        assertThat(updatedPayment).isNotNull();
+
+        assertThat(getCustomFieldStringOrEmpty(updatedPayment, APPROVAL_URL)).isEqualTo(returnedApprovalUrl);
+
+        String ppPaymentId = updatedPayment.getInterfaceId();
+        assertThat(ppPaymentId).isNotNull();
+
+        // try to fetch payment from PP and verify it
+        // this line could be change if PaypalPlusPaymentService is extended to have "getById" functionality
+        com.paypal.api.payments.Payment createdPpPayment =
+                com.paypal.api.payments.Payment.get(tenantConfig.createAPIContext(), ppPaymentId);
+
+        assertThat(createdPpPayment).isNotNull();
+        assertThat(createdPpPayment.getState()).isEqualTo("created");
+        assertThat(createdPpPayment.getRedirectUrls().getCancelUrl()).startsWith("http://example.com/cancel/23456789");
+        assertThat(createdPpPayment.getRedirectUrls().getReturnUrl()).startsWith("http://example.com/success/23456789");
+
+        assertThat(getApprovalUrl(createdPpPayment)).contains(returnedApprovalUrl);
     }
 
     @Test

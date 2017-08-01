@@ -13,7 +13,7 @@ public class CtpFacadeFactory {
     /**
      * TODO: Lam: static method is a wrong approach here. The class should have a constructor, which accepts TenantConfig
      * and then on demand generates CtpFacade.
-     *
+     * Same in {@link PaypalPlusFacadeFactory#getPaypalPlusFacade(com.commercetools.pspadapter.tenant.TenantConfig)}
      * @param tenantConfig
      * @return
      */

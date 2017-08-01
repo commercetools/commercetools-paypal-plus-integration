@@ -14,8 +14,8 @@ import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
 public class CtpClientConfigurationUtils {
-    private static final long DEFAULT_TIMEOUT = 30;
-    private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
+    public static final long DEFAULT_TIMEOUT = 30;
+    public static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
     /**
      * Creates a {@link BlockingSphereClient} with a custom {@code timeout} with a custom {@link TimeUnit}.

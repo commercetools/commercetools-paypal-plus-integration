@@ -10,13 +10,19 @@ import com.commercetools.service.ctp.impl.PaymentServiceImpl;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.commercetools.service.paypalPlus.impl.PaypalPlusPaymentServiceImpl;
 import com.paypal.base.rest.APIContext;
+import io.sphere.sdk.client.SphereAccessTokenSupplier;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
-import io.sphere.sdk.client.SphereClientFactory;
+import io.sphere.sdk.http.AsyncHttpClientAdapter;
+import io.sphere.sdk.http.HttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static com.commercetools.pspadapter.util.CtpClientConfigurationUtils.DEFAULT_TIMEOUT;
+import static com.commercetools.pspadapter.util.CtpClientConfigurationUtils.DEFAULT_TIMEOUT_TIME_UNIT;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 
 @Configuration
@@ -54,7 +60,15 @@ public class ServiceConfig {
         // TODO: avoid explicit string config "paypalplus-integration-test"
         TenantProperties.Tenant.Ctp ctp = tenantProperties.getTenants().get(MAIN_TEST_TENANT_NAME).getCtp();
         SphereClientConfig sphereClientConfig = SphereClientConfig.of(ctp.getProjectKey(), ctp.getClientId(), ctp.getClientSecret());
-        return SphereClientFactory.of().createClient(sphereClientConfig);
+
+        // to avoid annoying handshake timeout exception extend the waiting time to DEFAULT_TIMEOUT seconds
+        HttpClient httpClient = AsyncHttpClientAdapter.of(new DefaultAsyncHttpClient(
+                new DefaultAsyncHttpClientConfig.Builder()
+                        .setHandshakeTimeout((int) DEFAULT_TIMEOUT_TIME_UNIT.toMillis(DEFAULT_TIMEOUT)).build()));
+
+        final SphereAccessTokenSupplier tokenSupplier =
+                SphereAccessTokenSupplier.ofAutoRefresh(sphereClientConfig, httpClient, false);
+        return SphereClient.of(sphereClientConfig, httpClient, tokenSupplier);
     }
 
     @Bean

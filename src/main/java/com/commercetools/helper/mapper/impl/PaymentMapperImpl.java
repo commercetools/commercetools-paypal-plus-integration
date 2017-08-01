@@ -79,22 +79,11 @@ public class PaymentMapperImpl implements PaymentMapper {
     protected Amount getTransactionAmount(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         MonetaryAmount totalPrice = paymentWithCartLike.getPayment().getAmountPlanned();
         String currencyCode = totalPrice.getCurrency().getCurrencyCode();
-        Money ZERO = Money.of(0, currencyCode);
-
-        // Total must be equal to the sum of shipping, tax and subtotal, if they are specified
-        MonetaryAmount shipping = getActualShippingCost(paymentWithCartLike.getCart()).orElse(ZERO);
-        MonetaryAmount tax = getActualTax(paymentWithCartLike.getCart()).orElse(ZERO);
-        MonetaryAmount subtotal = totalPrice.subtract(shipping).subtract(tax);
-
-        Details details = new Details()
-                .setSubtotal(paypalPlusFormatter.monetaryAmountToString(subtotal))
-                .setShipping(paypalPlusFormatter.monetaryAmountToString(shipping))
-                .setTax(paypalPlusFormatter.monetaryAmountToString(tax));
 
         return new Amount()
+                .setDetails(getTransactionDetails(paymentWithCartLike))
                 .setCurrency(currencyCode)
-                .setTotal(paypalPlusFormatter.monetaryAmountToString(totalPrice))
-                .setDetails(details);
+                .setTotal(paypalPlusFormatter.monetaryAmountToString(totalPrice));
     }
 
     @Nonnull
@@ -106,6 +95,23 @@ public class PaymentMapperImpl implements PaymentMapper {
     protected ItemList getTransactionItemList(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         return new ItemList()
                 .setItems(getLineItems(paymentWithCartLike));
+    }
+
+    @Nonnull
+    protected Details getTransactionDetails(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
+        MonetaryAmount totalPrice = paymentWithCartLike.getPayment().getAmountPlanned();
+        String currencyCode = totalPrice.getCurrency().getCurrencyCode();
+        Money ZERO = Money.of(0, currencyCode);
+
+        // Total must be equal to the sum of shipping, tax and subtotal, if they are specified
+        MonetaryAmount shipping = getActualShippingCost(paymentWithCartLike.getCart()).orElse(ZERO);
+        MonetaryAmount tax = getActualTax(paymentWithCartLike.getCart()).orElse(ZERO);
+        MonetaryAmount subtotal = totalPrice.subtract(shipping).subtract(tax);
+
+        return new Details()
+                .setSubtotal(paypalPlusFormatter.monetaryAmountToString(subtotal))
+                .setShipping(paypalPlusFormatter.monetaryAmountToString(shipping))
+                .setTax(paypalPlusFormatter.monetaryAmountToString(tax));
     }
 
     /**

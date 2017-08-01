@@ -24,5 +24,5 @@ public interface PaypalPlusPaymentService {
 
     CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution);
 
-    CompletionStage<Payment> lookUp(@Nonnull Payment payment);
+    CompletionStage<Payment> lookUp(@Nonnull String paymentId);
 }

@@ -49,10 +49,12 @@ public class PaymentMapperImplTest {
         assertThat(amount.getCurrency()).isEqualTo("USD");
         assertThat(amount.getTotal()).isEqualTo("596.85");
 
-        Details details = amount.getDetails();
-        assertThat(details.getSubtotal()).isEqualTo("496.60");
-        assertThat(details.getShipping()).isEqualTo("4.95");
-        assertThat(details.getTax()).isEqualTo("95.30");
+//        todo: as a temporary solution, we disable the details at all to avoid error from PayPal Plus
+//          https://github.com/commercetools/commercetools-paypal-plus-integration/issues/28
+//        Details details = amount.getDetails();
+//        assertThat(details.getSubtotal()).isEqualTo("496.60");
+//        assertThat(details.getShipping()).isEqualTo("4.95");
+//        assertThat(details.getTax()).isEqualTo("95.30");
 
         ItemList itemList = transaction.getItemList();
         assertThat(itemList).isNotNull();
@@ -64,7 +66,9 @@ public class PaymentMapperImplTest {
         assertItem(getItemBySkuQuqntityPrice(itemList, "456786468866578", "2", "43.65"), "Ringe", "USD");
         assertItem(getItemBySkuQuqntityPrice(itemList, "456786468866578", "1", "43.64"), "Ringe", "USD");
 
-        assertTransactionAmounts(transaction);
+//        todo: as a temporary solution, we disable the details at all to avoid error from PayPal Plus
+//        https://github.com/commercetools/commercetools-paypal-plus-integration/issues/28
+//        assertTransactionAmounts(transaction);
     }
 
     @Test
@@ -91,10 +95,12 @@ public class PaymentMapperImplTest {
         assertThat(amount.getCurrency()).isEqualTo("EUR");
         assertThat(amount.getTotal()).isEqualTo("309.00");
 
-        Details details = amount.getDetails();
-        assertThat(details.getSubtotal()).isEqualTo("259.66");
-        assertThat(details.getShipping()).isEqualTo("0.00");
-        assertThat(details.getTax()).isEqualTo("49.34");
+//        todo: as a temporary solution, we disable the details at all to avoid error from PayPal Plus
+//        https://github.com/commercetools/commercetools-paypal-plus-integration/issues/28
+//        Details details = amount.getDetails();
+//        assertThat(details.getSubtotal()).isEqualTo("259.66");
+//        assertThat(details.getShipping()).isEqualTo("0.00");
+//        assertThat(details.getTax()).isEqualTo("49.34");
 
         ItemList itemList = transaction.getItemList();
         assertThat(itemList).isNotNull();
@@ -103,7 +109,9 @@ public class PaymentMapperImplTest {
         assertItem(getItemBySku(itemList, "776655"), "Every piece", "1", "0.00", "EUR");
         assertItem(getItemBySku(itemList, "998877665544"), "Earrings", "4", "45.00", "EUR");
 
-        assertTransactionAmounts(transaction);
+//        todo: as a temporary solution, we disable the details at all to avoid error from PayPal Plus
+//        https://github.com/commercetools/commercetools-paypal-plus-integration/issues/28
+//        assertTransactionAmounts(transaction);
     }
 
     private Item getItemBySku(ItemList itemList, String sku) {

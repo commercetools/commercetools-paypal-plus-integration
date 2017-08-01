@@ -1,12 +1,15 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
-import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResult;
+import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nonnull;
 
@@ -23,15 +26,15 @@ public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPay
 
     @RequestMapping(
             method = RequestMethod.POST,
-            value = "/{tenantName}/commercetools/execute/payments/{paypalPlusPaymentId}")
-    public ResponseEntity<String> executePayments(@PathVariable String tenantName,
-                                                 @PathVariable String paypalPlusPaymentId,
+            value = "/{tenantName}/commercetools/execute/payments/")
+    public ResponseEntity executePayments(@PathVariable String tenantName,
+                                                 @RequestParam String paypalPlusPaymentId,
                                                  @RequestParam String paypalPlusPayerId) {
-        PaymentHandleResult paymentHandleResult = paymentHandlerProvider
+        PaymentHandleResponse paymentHandleResponse = paymentHandlerProvider
                 .getPaymentHandler(tenantName)
                 .map(paymentHandler -> paymentHandler.executePayment(paypalPlusPaymentId, paypalPlusPayerId))
-                .orElseGet(() -> new PaymentHandleResult(HttpStatus.NOT_FOUND, format("Tenant [%s] not found", tenantName)));
-        return new ResponseEntity<>(paymentHandleResult.getBody(), paymentHandleResult.getStatusCode());
+                .orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Tenant [%s] not found", tenantName)));
+        return paymentHandleResponse.toResponseEntity();
     }
 
 }

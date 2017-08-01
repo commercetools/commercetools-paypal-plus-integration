@@ -93,8 +93,10 @@ public class PaymentMapperImpl implements PaymentMapper {
 
         return new Amount()
                 .setCurrency(currencyCode)
-                .setTotal(paypalPlusFormatter.monetaryAmountToString(totalPrice))
-                .setDetails(details);
+                .setTotal(paypalPlusFormatter.monetaryAmountToString(totalPrice));
+//        todo: as a temporary solution, we disable the details at all to avoid error from PayPal Plus
+//        https://github.com/commercetools/commercetools-paypal-plus-integration/issues/28
+//                .setDetails(details);
     }
 
     @Nonnull

@@ -21,6 +21,19 @@
       "quantity": 3
     }
   ],
+  "shippingAddress": {
+    "salutation": "mr",
+    "firstName": "Marc",
+    "lastName": " Tester",
+    "streetName": "Teststr.",
+    "streetNumber": "30",
+    "postalCode": "11111",
+    "city": "Testcity",
+    "country": "DE",
+    "phone": "0123456789",
+    "email": "test@test.de",
+    "additionalAddressInfo": ""
+  },
   "shippingInfo": {
     "shippingMethodName": "DHL",
     "price": {

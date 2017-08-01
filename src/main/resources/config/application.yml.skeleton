@@ -1,7 +1,14 @@
 # settings from /config/application.yml re-write settings from /application.yml
 # rename to application.yml and fill-in to use it in local run/debug mode
 
-ctp.client:
-  projectKey:
-  clientId:
-  clientSecret:
+tenantConfig:
+  tenants:
+    paypalplus-dev:
+      ctp:
+        projectKey: paypalplus-dev
+        clientId:
+        clientSecret:
+      paypalPlus:
+        id:
+        secret:
+        mode: sandbox

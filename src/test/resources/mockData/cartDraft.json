@@ -1,0 +1,17 @@
+{
+  "currency" : "EUR",
+  "country" : "DE",
+  "customerEmail" : "test@test.com",
+  "lineItems" : [],
+  "customLineItems" : [],
+  "shippingAddress" : {
+    "country" : "DE",
+    "firstName" : "FN",
+    "lastName" : "LN",
+    "streetName" : "sname",
+    "streetNumber" : "1",
+    "postalCode" : "12345",
+    "city" : "city"
+  },
+  "locale" : "en"
+}

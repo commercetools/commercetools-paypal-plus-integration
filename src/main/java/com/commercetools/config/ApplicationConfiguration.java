@@ -1,23 +1,27 @@
 package com.commercetools.config;
 
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.client.SphereClientConfig;
-import io.sphere.sdk.client.SphereClientFactory;
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
+import com.commercetools.helper.mapper.PaymentMapper;
+import com.commercetools.helper.mapper.impl.PaymentMapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 @Configuration
-@DependsOn({"sphereConfig"})
 public class ApplicationConfiguration {
 
     @Bean
+    public PaypalPlusFormatter paypalPlusFormatter() {
+        return new PaypalPlusFormatterImpl();
+    }
+
+    @Bean
     @Autowired
-    public SphereClient sphereClient(SphereClientConfig sphereClientConfig) {
-        return SphereClientFactory.of().createClient(sphereClientConfig);
+    public PaymentMapper paymentMapper(PaypalPlusFormatter paypalPlusFormatter) {
+        return new PaymentMapperImpl(paypalPlusFormatter);
     }
 
     /**

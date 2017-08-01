@@ -1,0 +1,96 @@
+{
+  "type": "CartDraft",
+  "currency": "EUR",
+  "country": "DE",
+  "locale": "de",
+  "customerEmail": "cartDraft@test.com",
+  "lineItems": [
+    {
+      "productId": "82666d86-1350-4be1-8d59-37f396213810",
+      "variantId": "1",
+      "quantity": 1
+    },
+    {
+      "productId": "2abcb845-75bd-420b-ac4f-c35155f5cdd2",
+      "variantId": "1",
+      "quantity": 2
+    },
+    {
+      "productId": "77cb1b26-d225-4cc4-9208-8d56bf0bfe5c",
+      "variantId": "1",
+      "quantity": 3
+    }
+  ],
+  "shippingAddress": {
+    "salutation": "mr",
+    "firstName": "Marc",
+    "lastName": " Tester",
+    "streetName": "Teststr.",
+    "streetNumber": "30",
+    "postalCode": "11111",
+    "city": "Testcity",
+    "country": "DE",
+    "phone": "0123456789",
+    "email": "test@test.de",
+    "additionalAddressInfo": ""
+  },
+  "shippingInfo": {
+    "shippingMethodName": "DHL",
+    "price": {
+      "currencyCode": "EUR",
+      "centAmount": 0
+    },
+    "shippingRate": {
+      "price": {
+        "currencyCode": "EUR",
+        "centAmount": 495
+      },
+      "freeAbove": {
+        "currencyCode": "EUR",
+        "centAmount": 15000
+      }
+    },
+    "taxRate": {
+      "name": "DE",
+      "amount": 0.19,
+      "includedInPrice": true,
+      "country": "DE",
+      "id": "cp110K8t",
+      "subRates": []
+    },
+    "taxCategory": {
+      "typeId": "tax-category",
+      "id": "d33d1a20-159f-40f7-8d54-e01edd026345"
+    },
+    "deliveries": [],
+    "shippingMethod": {
+      "typeId": "shipping-method"
+    },
+    "taxedPrice": {
+      "totalNet": {
+        "currencyCode": "EUR",
+        "centAmount": 0
+      },
+      "totalGross": {
+        "currencyCode": "EUR",
+        "centAmount": 0
+      }
+    }
+  },
+  "shippingAddress": {
+    "salutation": "mr",
+    "firstName": "Marc",
+    "lastName": " Tester",
+    "streetName": "Teststr.",
+    "streetNumber": "30",
+    "postalCode": "11111",
+    "city": "Testcity",
+    "country": "DE",
+    "phone": "0123456789",
+    "email": "test@test.de",
+    "additionalAddressInfo": ""
+  },
+  "inventoryMode": "None",
+  "taxMode": "Platform",
+  "taxRoundingMode": "HalfEven"
+}

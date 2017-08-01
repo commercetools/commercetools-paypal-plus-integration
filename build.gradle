@@ -8,6 +8,7 @@ buildscript {
 }
 
 repositories {
+    jcenter()
     mavenCentral()
 }
 
@@ -20,28 +21,53 @@ sourceCompatibility = 1.8
 
 
 jar {
-    version =  '0.1.0-DEV'
+    version = '0.1.0-DEV'
     archiveName = "${rootProject.name}.jar"
     manifest {
         attributes("Implementation-Title": rootProject.name,
-                   "Implementation-Version": version)
+                "Implementation-Version": version)
     }
 }
 
 final depVersions = [
-        springBoot: '1.5.4.RELEASE',
-        commercetoolsSdkJvm: '1.20.0'
+        springBoot         : '1.5.4.RELEASE',
+        commercetoolsSdkJvm: '1.20.0',
+        paypalPlusSdk      : '1.13.1',
+        assertJ            : '3.8.0'
 ]
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web:${depVersions.springBoot}")
 
+    compile "com.paypal.sdk:rest-api-sdk:${depVersions.paypalPlusSdk}"
+
     compile "com.commercetools.sdk.jvm.core:commercetools-models:${depVersions.commercetoolsSdkJvm}"
     compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${depVersions.commercetoolsSdkJvm}"
 
-    testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile("org.springframework.boot:spring-boot-starter-test:${depVersions.springBoot}") {
+        exclude group: 'org.assertj', module: 'assertj-core' // below override the default outdated one with the latest
+    }
+
+    testCompile "org.assertj:assertj-core:${depVersions.assertJ}"
 }
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+test {
+    testLogging {
+        // set options for log level LIFECYCLE
+        events "passed", "skipped", "failed"
+        displayGranularity 2
+        exceptionFormat "full"
+        showCauses true
+        showExceptions true
+        showStackTraces true
+
+        maxGranularity 3
+
+        minGranularity 0
+
+    }
 }

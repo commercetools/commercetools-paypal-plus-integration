@@ -1,0 +1,27 @@
+{
+  "interfaceId": "225763737",
+  "amountPlanned": {
+    "currencyCode": "EUR",
+    "centAmount": 30900
+  },
+  "paymentMethodInfo": {
+    "paymentInterface": "PAYPAL_PLUS",
+    "method": "paypal"
+  },
+  "custom": {
+    "type": {
+      "typeId": "type"
+    },
+    "fields": {
+      "reference": "556677884433",
+      "cancelUrl": "https://www.sparta.de/cancel/556677884433",
+      "successUrl": "https://www.sparta.de/success/556677884433",
+      "languageCode": "en"
+    }
+  },
+  "transactions": [],
+  "interfaceInteractions": [],
+  "createdAt": "2017-05-23T15:49:04.320Z",
+  "lastModifiedAt": "2017-05-23T15:51:20.459Z",
+  "lastMessageSequenceNumber": 7
+}

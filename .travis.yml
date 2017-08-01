@@ -5,6 +5,9 @@ addons:
     packages:
       - oracle-java8-installer
 
+services:
+  - docker
+
 language: java
 
 dist: trusty

@@ -37,11 +37,11 @@ public class CommercetoolsHealthController extends BaseCommercetoolsPaymentsCont
             method = RequestMethod.GET,
             value = "/health",
             produces = APPLICATION_JSON_VALUE)
-    public Map checkHealth() {
-        Map<String, Object> t = new HashMap<>();
-        t.put("tenants", this.tenantProperties.getTenants().keySet());
-        t.put("statusCode", HttpStatus.OK.value());
-        return t;
+    public Map<String, Object> checkHealth() {
+        Map<String, Object> tenantResponse = new HashMap<>();
+        tenantResponse.put("tenants", this.tenantProperties.getTenants().keySet());
+        tenantResponse.put("statusCode", HttpStatus.OK.value());
+        return tenantResponse;
     }
 
 }

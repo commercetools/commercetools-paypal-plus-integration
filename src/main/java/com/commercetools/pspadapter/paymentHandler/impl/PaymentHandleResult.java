@@ -4,6 +4,10 @@ import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @deprecated use {@link PaymentHandleResponse}
+ */
+@Deprecated
 public class PaymentHandleResult {
 
     private final HttpStatus statusCode;

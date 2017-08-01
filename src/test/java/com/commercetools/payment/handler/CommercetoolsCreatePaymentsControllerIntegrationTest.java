@@ -7,6 +7,7 @@ import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
 import io.sphere.sdk.carts.CartDraftBuilder;
@@ -14,6 +15,7 @@ import io.sphere.sdk.carts.commands.CartCreateCommand;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
 import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
@@ -48,9 +50,12 @@ import static java.lang.String.format;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -93,9 +98,16 @@ public class CommercetoolsCreatePaymentsControllerIntegrationTest {
         MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
                 .andExpect(status().isCreated())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
                 .andReturn();
 
-        final String returnedApprovalUrl = mvcResult.getResponse().getContentAsString();
+        // validate response json: statusCode and approvalUrl
+        JsonNode responseBody = SphereJsonUtils.parse(mvcResult.getResponse().getContentAsString());
+
+        assertThat(responseBody.get("statusCode").asInt()).isEqualTo(CREATED.value());
+
+        String returnedApprovalUrl = responseBody.get(APPROVAL_URL).asText();
+        assertThat(returnedApprovalUrl).isNotBlank();
         URL url = new URL(returnedApprovalUrl);
         assertThat(url.getProtocol()).isEqualTo("https");
         assertThat(url.getAuthority()).isEqualTo("www.sandbox.paypal.com");

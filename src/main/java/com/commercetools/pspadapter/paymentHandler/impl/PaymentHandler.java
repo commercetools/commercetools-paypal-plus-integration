@@ -19,6 +19,8 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
+import static com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse.of400BadRequest;
+import static com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse.of500InternalServerError;
 import static com.commercetools.pspadapter.tenant.TenantLoggerUtil.createLoggerName;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -46,14 +48,14 @@ public class PaymentHandler {
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
     }
 
-    public PaymentHandleResult createPayment(@Nonnull String ctpPaymentId) {
+    public PaymentHandleResponse createPayment(@Nonnull String ctpPaymentId) {
         try {
             return ctpFacade.getPaymentService().getById(ctpPaymentId)
                     .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
                             // TODO: re-factor this wasps nest!!!
                             (optPayment, optCart) -> {
                                 if (!(optPayment.isPresent() && optCart.isPresent())) {
-                                    return completedFuture(new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                    return completedFuture(of400BadRequest(
                                             format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
                                 }
 
@@ -61,7 +63,7 @@ public class PaymentHandler {
 
                                 // TODO: andrii.kovalenko: this should be a common solution across all the controllers
                                 if (!PAYPAL_PLUS.equals(ctpPayment.getPaymentMethodInfo().getPaymentInterface())) {
-                                    completedFuture(new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                    completedFuture(of400BadRequest(
                                             format("Payment ctpPaymentId=[%s] has incorrect payment interface: " +
                                                             "expected [%s], found [%s]", ctpPaymentId, PAYPAL_PLUS,
                                                     ctpPayment.getPaymentMethodInfo().getPaymentInterface())));
@@ -74,23 +76,22 @@ public class PaymentHandler {
                                         .thenCompose(createdPpPayment -> updateCtpPayment(createdPpPayment, ctpPaymentId))
                                         .thenApply(PaymentMapper::getApprovalUrl)
                                         .thenApply(approvalUrlOpt -> approvalUrlOpt
-                                                .map(approvalUrl ->
-                                                        new PaymentHandleResult(HttpStatus.CREATED, approvalUrl))
-                                                .orElseGet(() -> new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                                                .map(PaymentHandleResponse::of201CreatedApprovalUrl)
+                                                .orElseGet(() -> of400BadRequest(
                                                         format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId))));
                             })
                     // TODO: re-factor compose !!!!
                     .thenCompose(stage -> stage)
                     .exceptionally(throwable -> {
                         logger.error("Unexpected exception handling payment [{}]:", ctpPaymentId, throwable);
-                        return new PaymentHandleResult(HttpStatus.BAD_REQUEST,
+                        return of400BadRequest(
                                 format("Payment or cart for ctpPaymentId=[%s] can't be processed, see the logs", ctpPaymentId));
                     })
                     // TODO: re-factor join !!!!
                     .toCompletableFuture().join();
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", ctpPaymentId, e);
-            return new PaymentHandleResult(HttpStatus.INTERNAL_SERVER_ERROR);
+            return of500InternalServerError("See the logs");
         }
     }
 

@@ -1,11 +1,16 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.helper.mapper.PaymentMapper;
+import com.commercetools.helper.mapper.ShippingAddressMapper;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
+import com.paypal.api.payments.Patch;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentExecution;
+import com.paypal.api.payments.ShippingAddress;
+import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.commands.updateactions.SetCustomField;
 import io.sphere.sdk.payments.commands.updateactions.SetInterfaceId;
@@ -35,15 +40,18 @@ public class PaymentHandler {
     private final CtpFacade ctpFacade;
     private final PaypalPlusFacade paypalPlusFacade;
     private final PaymentMapper paymentMapper;
+    private final ShippingAddressMapper shippingAddressMapper;
 
     private final Logger logger;
 
     public PaymentHandler(@Nonnull CtpFacade ctpFacade,
                           @Nonnull PaymentMapper paymentMapper,
+                          @Nonnull ShippingAddressMapper shippingAddressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName) {
         this.ctpFacade = ctpFacade;
         this.paymentMapper = paymentMapper;
+        this.shippingAddressMapper = shippingAddressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
     }
@@ -95,18 +103,55 @@ public class PaymentHandler {
         }
     }
 
-    public PaymentHandleResult executePayment(@Nonnull String paypalPlusPaymentId,
+    public PaymentHandleResponse patchAddress(@Nonnull Cart cart, @Nonnull String paypalPlusPaymentId) {
+        try {
+            Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
+            ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cart);
+            Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
+            return paypalPlusFacade.getPaymentService().patch(paypalPlusPayment, replace)
+                    .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK))
+                    .exceptionally(throwable -> {
+                        logger.error("Unexpected exception handling payment cartId=[{}]:", cart.getId(), throwable);
+                        return PaymentHandleResponse.of400BadRequest(
+                                format("Payment or cart for cartId==[%s] can't be processed, see the logs", cart.getId()));
+                    })
+                    .toCompletableFuture().join();
+        } catch (Exception e) {
+            logger.error("Error while processing cart ID {}", cart.getId(), e);
+            return PaymentHandleResponse.of500InternalServerError(format("Error while processing cartId==[%s], see the logs", cart.getId()));
+        }
+    }
+
+
+    public PaymentHandleResponse executePayment(@Nonnull String paypalPlusPaymentId,
                                               @Nonnull String paypalPlusPayerId) {
         try {
-            return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
-                    new PaymentExecution().setPayerId(paypalPlusPayerId))
-                    .thenApply(payment -> new PaymentHandleResult(HttpStatus.OK,
-                            payment.getTransactions().get(0).getRelatedResources().get(0).toJSON()))
-                    // TODO: re-factor join!!!
+            return ctpFacade.getCartService().getByPaymentMethodAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, paypalPlusPaymentId)
+                    .thenApply(cart -> {
+                        if (!cart.isPresent()) {
+                            return PaymentHandleResponse.of404NotFound(
+                                    format("Can't find cart for interfaceId==[%s]", paypalPlusPaymentId));
+                        }
+                        return patchAddress(cart.get(), paypalPlusPaymentId);
+                    })
+                    .thenApply(paymentHandleResponse -> {
+                        boolean isSuccessful = HttpStatus.valueOf(paymentHandleResponse.getStatusCode()).is2xxSuccessful();
+                        if (isSuccessful) {
+                            // execute payment only when patching was successful
+                            return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
+                                    new PaymentExecution().setPayerId(paypalPlusPayerId))
+                                    .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK))
+                                    // TODO: re-factor join!!!
+                                    .toCompletableFuture().join();
+                        } else {
+                            return paymentHandleResponse;
+                        }
+                    })
                     .toCompletableFuture().join();
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
-            return new PaymentHandleResult(HttpStatus.INTERNAL_SERVER_ERROR);
+            return PaymentHandleResponse.of500InternalServerError(
+                    format("Error while processing paymentId==[%s]", paypalPlusPaymentId));
         }
     }
 

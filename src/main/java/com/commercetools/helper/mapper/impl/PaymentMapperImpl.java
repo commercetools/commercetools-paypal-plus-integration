@@ -81,9 +81,13 @@ public class PaymentMapperImpl implements PaymentMapper {
         String currencyCode = totalPrice.getCurrency().getCurrencyCode();
 
         return new Amount()
-                .setDetails(getTransactionDetails(paymentWithCartLike))
                 .setCurrency(currencyCode)
-                .setTotal(paypalPlusFormatter.monetaryAmountToString(totalPrice));
+                .setTotal(paypalPlusFormatter.monetaryAmountToString(totalPrice))
+
+                // include details only when taxes issue is resolved
+                // https://github.com/commercetools/commercetools-paypal-plus-integration/issues/28
+                //.setDetails(getTransactionDetails(paymentWithCartLike))
+                ;
     }
 
     @Nonnull
@@ -97,6 +101,24 @@ public class PaymentMapperImpl implements PaymentMapper {
                 .setItems(getLineItems(paymentWithCartLike));
     }
 
+    /**
+     * Detalize line items/taxes/shipping cost.
+     * <p>
+     * <b>Note:</b> if you specify this property in a create payment request, PaypalPlus service will validate the
+     * <i>subtotal</i> over total line items costs, this means <b>the line item prices should be specified excluding
+     * taxes</b>! Follow <a href="https://www.paypalobjects.com/webstatic/de_DE/downloads/PayPal-PLUS-IntegrationGuide.pdf">
+     * Integrating PayPal PLUS</a> guide <i>04.1. Create a payment</i> chapter:
+     * <pre>
+     * Please note:
+     * Including / excluding VAT
+     * To avoid rounding errors we recommend not submitting tax amounts on line item basis. Calculated tax amounts for
+     * the entire shopping basket may be submitted in the amount objects. In this case the item amounts will be treated
+     * as amounts excluding tax. In a B2C scenario, where taxes are included, no taxes should be submitted to PayPal.
+     * </pre>
+     *
+     * @param paymentWithCartLike cart to parse
+     * @return subtotal (line items)/taxes/shipping cost details.
+     */
     @Nonnull
     protected Details getTransactionDetails(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         MonetaryAmount totalPrice = paymentWithCartLike.getPayment().getAmountPlanned();

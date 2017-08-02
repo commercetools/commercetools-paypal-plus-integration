@@ -67,6 +67,10 @@ POST http://paypal-plus-integration-server.com/${projectName}/commercetools/exec
 paypalPlusPayerId=${payerId}
 paypalPlusPaymentId=${paymentId}
 ```
+**NOTE - in the next few days, the logic will change and you will need to pass the parameters as JSON:**
+```
+{"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
+``` 
 Example response on success:
 ```json
 {

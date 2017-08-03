@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.validation.Valid;
 
 import static java.lang.String.format;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPaymentsController {
@@ -29,8 +30,8 @@ public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPay
 
     @RequestMapping(
             method = RequestMethod.POST,
-            consumes = "application/json",
-            produces = "application/json",
+            consumes = APPLICATION_JSON_VALUE,
+            produces = APPLICATION_JSON_VALUE,
             value = "/{tenantName}/commercetools/execute/payments/")
     public ResponseEntity executePayments(@PathVariable String tenantName,
                                           @Valid @RequestBody PaypalPlusExecuteParams params,

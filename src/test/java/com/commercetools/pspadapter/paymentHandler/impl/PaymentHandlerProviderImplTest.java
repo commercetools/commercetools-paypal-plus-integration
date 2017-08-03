@@ -18,6 +18,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
+import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,6 +92,24 @@ public class PaymentHandlerProviderImplTest {
 
         paypalPlusPayment = this.paypalPlusFacade.getPaymentService().lookUp(paypalPlusPayment.getId()).toCompletableFuture().join();
         assertThat(paypalPlusPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
+    }
+
+    @Test
+    public void shouldSetPayerId () {
+        String testPayerId = "testPayerId";
+        CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
+
+        PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
+        paymentHandler.createPayment(ctpPaymentWithCart.getPayment().getId());
+        io.sphere.sdk.payments.Payment ctpPayment = this.sphereClient.execute(PaymentByIdGet.of(ctpPaymentWithCart.getPayment().getId())).toCompletableFuture().join();
+
+        paymentHandler.setPayerId(ctpPayment.getInterfaceId(), testPayerId).toCompletableFuture().join();
+
+        PaymentByIdGet paymentQuery = PaymentByIdGet.of(ctpPayment.getId());
+        ctpPayment = sphereClient.execute(paymentQuery)
+                .toCompletableFuture()
+                .join();
+        assertThat(ctpPayment.getCustom().getFieldAsString(PAYER_ID)).isEqualTo(testPayerId);
     }
 
     /** Private methods **/

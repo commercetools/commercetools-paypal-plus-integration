@@ -17,6 +17,7 @@ import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
+import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
@@ -62,7 +63,7 @@ public class PaymentHandlerProviderImplTest {
     public void setUp() {
         Optional<TenantConfig> tenantConfigOpt = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME);
         sphereClient = tenantConfigOpt.map(TenantConfig::createSphereClient).orElse(null);
-        
+
         this.paypalPlusFacade = tenantConfigOpt
                 .map(PaypalPlusFacadeFactory::getPaypalPlusFacade)
                 .orElse(null);
@@ -95,7 +96,7 @@ public class PaymentHandlerProviderImplTest {
     }
 
     @Test
-    public void shouldSetPayerId () {
+    public void shouldSetPayerId() {
         String testPayerId = "testPayerId";
         CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
 
@@ -112,7 +113,38 @@ public class PaymentHandlerProviderImplTest {
         assertThat(ctpPayment.getCustom().getFieldAsString(PAYER_ID)).isEqualTo(testPayerId);
     }
 
-    /** Private methods **/
+    @Test
+    public void shouldCreateChargeTransaction() {
+        CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
+
+        Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(ctpPaymentWithCart);
+        paypalPlusPayment = executeBlocking(this.paypalPlusFacade.getPaymentService().create(paypalPlusPayment));
+
+        PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
+
+        io.sphere.sdk.payments.Payment chargeTransaction = paymentHandler.createChargeTransaction(paypalPlusPayment, ctpPaymentWithCart.getPayment().getId(), TransactionState.SUCCESS);
+
+        assertThat(chargeTransaction).isNotNull();
+    }
+
+    @Test
+    public void whenPaypalPaymentIsNotApproved_transactionShouldNotBeCreated() {
+        CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
+        PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
+
+        String ctpPaymentId = ctpPaymentWithCart.getPayment().getId();
+        paymentHandler.createPayment(ctpPaymentId);
+
+        io.sphere.sdk.payments.Payment ctpPayment = this.sphereClient
+                .execute(PaymentByIdGet.of(ctpPaymentId)).toCompletableFuture().join();
+
+        PaymentHandleResponse response = paymentHandler.executePayment(ctpPayment.getInterfaceId(), "invalidTestPayerId");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    /**
+     * Private methods
+     **/
 
     private CtpPaymentWithCart createCartWithPayment() {
         CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())

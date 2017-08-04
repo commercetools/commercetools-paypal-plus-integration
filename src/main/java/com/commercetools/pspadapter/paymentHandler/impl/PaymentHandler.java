@@ -122,52 +122,38 @@ public class PaymentHandler {
             Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
             ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cart);
             Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
-            return paypalPlusFacade.getPaymentService().patch(paypalPlusPayment, replace)
-                    .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK))
-                    .exceptionally(throwable -> {
-                        logger.error("Unexpected exception handling payment cartId=[{}]:", cart.getId(), throwable);
-                        return PaymentHandleResponse.of400BadRequest(
-                                format("Payment or cart for cartId==[%s] can't be processed, see the logs", cart.getId()));
-                    })
-                    .toCompletableFuture().join();
-        } catch (Exception e) {
-            logger.error("Error while processing cart ID {}", cart.getId(), e);
-            return PaymentHandleResponse.of500InternalServerError(format("Error while processing cartId==[%s], see the logs", cart.getId()));
-        }
-    }
-
-    public PaymentHandleResponse executePayment(@Nonnull String paypalPlusPaymentId,
-                                                @Nonnull String paypalPlusPayerId) {
-        try {
-            return ctpFacade.getCartService().getByPaymentMethodAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, paypalPlusPaymentId)
-                    .thenCompose(cartOpt -> {
-                        if (!cartOpt.isPresent()) {
-                            return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
-                                    format("Can't find cart for interfaceId==[%s]", paypalPlusPaymentId)));
-                        } else {
-                            Cart cart = cartOpt.get();
-                            PaymentHandleResponse paymentHandleResponse = patchAddress(cart, paypalPlusPaymentId);
-                            boolean isSuccessful = HttpStatus.valueOf(paymentHandleResponse.getStatusCode()).is2xxSuccessful();
-                            if (isSuccessful) {
-                                // execute payment only when patching was successful
-                                return setPayerId(paypalPlusPaymentId, paypalPlusPayerId)
-                                        .thenCompose(ctpPayment -> executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment));
-                            } else {
-                                return CompletableFuture.completedFuture(paymentHandleResponse);
-                            }
-                        }
-                    })
-                    .exceptionally(throwable -> {
-                        logger.error("Unexpected exception executing Paypal payment paymentId=[{}]:", paypalPlusPaymentId, throwable);
-                        return PaymentHandleResponse.of400BadRequest(
-                                format("PaypalPlus payment [%s] can't be executed, see the logs", paypalPlusPaymentId));
-                    })
-                    .toCompletableFuture().join();
+            CompletionStage<PaymentHandleResponse> patchCS = paypalPlusFacade.getPaymentService().patch(paypalPlusPayment, replace)
+                    .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK));
+            return paymentExceptionWrapper(paypalPlusPaymentId, patchCS);
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return PaymentHandleResponse.of500InternalServerError(
                     format("Error while processing paymentId==[%s]", paypalPlusPaymentId));
         }
+    }
+
+    public PaymentHandleResponse executePayment(@Nonnull String paypalPlusPaymentId,
+                                                @Nonnull String paypalPlusPayerId) {
+        CompletionStage<PaymentHandleResponse> executeCS = ctpFacade.getCartService()
+                .getByPaymentMethodAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, paypalPlusPaymentId)
+                .thenCompose(cartOpt -> {
+                    if (!cartOpt.isPresent()) {
+                        return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
+                                format("Can't find cart for interfaceId==[%s]", paypalPlusPaymentId)));
+                    } else {
+                        Cart cart = cartOpt.get();
+                        PaymentHandleResponse paymentHandleResponse = patchAddress(cart, paypalPlusPaymentId);
+                        boolean isSuccessful = HttpStatus.valueOf(paymentHandleResponse.getStatusCode()).is2xxSuccessful();
+                        if (isSuccessful) {
+                            // execute payment only when patching was successful
+                            return setPayerId(paypalPlusPaymentId, paypalPlusPayerId)
+                                    .thenCompose(ctpPayment -> executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment));
+                        } else {
+                            return CompletableFuture.completedFuture(paymentHandleResponse);
+                        }
+                    }
+                });
+        return paymentExceptionWrapper(paypalPlusPaymentId, executeCS);
     }
 
     protected CompletionStage<io.sphere.sdk.payments.Payment> setPayerId(String paypalPlusPaymentId, String payerId) {
@@ -215,5 +201,16 @@ public class PaymentHandler {
                     }
                 })
                 .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK));
+    }
+
+    private PaymentHandleResponse paymentExceptionWrapper(String paypalPlusPaymentId,
+                                                          CompletionStage<PaymentHandleResponse> completionStage) {
+        return completionStage
+                .exceptionally(throwable -> {
+                    logger.error("Unexpected exception processing Paypal payment paymentId=[{}]:", paypalPlusPaymentId, throwable);
+                    return PaymentHandleResponse.of400BadRequest(
+                            format("PaypalPlus payment [%s] can't be processed, see the logs", paypalPlusPaymentId));
+                }).toCompletableFuture().join();
+
     }
 }

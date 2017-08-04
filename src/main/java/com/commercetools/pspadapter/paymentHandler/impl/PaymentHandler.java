@@ -136,7 +136,6 @@ public class PaymentHandler {
         }
     }
 
-
     public PaymentHandleResponse executePayment(@Nonnull String paypalPlusPaymentId,
                                                 @Nonnull String paypalPlusPayerId) {
         try {
@@ -152,20 +151,7 @@ public class PaymentHandler {
                             if (isSuccessful) {
                                 // execute payment only when patching was successful
                                 return setPayerId(paypalPlusPaymentId, paypalPlusPayerId)
-                                        .thenCompose(ctpPayment -> {
-                                                    return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
-                                                            new PaymentExecution().setPayerId(paypalPlusPayerId))
-                                                            .thenApply(paypalPayment -> {
-                                                                if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
-                                                                    return createChargeTransaction(paypalPayment, ctpPayment.getId(), TransactionState.SUCCESS);
-                                                                } else {
-                                                                    throw new PaypalPlusPaymentException(format("Error when approving payment [%s], current state=[%s]",
-                                                                            paypalPlusPaymentId, paypalPayment.getState()));
-                                                                }
-                                                            })
-                                                            .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK));
-                                                }
-                                        );
+                                        .thenCompose(ctpPayment -> executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment));
                             } else {
                                 return CompletableFuture.completedFuture(paymentHandleResponse);
                             }
@@ -213,5 +199,21 @@ public class PaymentHandler {
                 SetInterfaceId.of(newPpPayment.getId()));
         return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, updateActions)
                 .thenApply(ignore -> newPpPayment);
+    }
+
+    private CompletionStage<PaymentHandleResponse> executePaymentAndCreateTxn(@Nonnull String paypalPlusPaymentId,
+                                                                              @Nonnull String paypalPlusPayerId,
+                                                                              @Nonnull io.sphere.sdk.payments.Payment ctpPayment) {
+        return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
+                new PaymentExecution().setPayerId(paypalPlusPayerId))
+                .thenApply(paypalPayment -> {
+                    if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
+                        return createChargeTransaction(paypalPayment, ctpPayment.getId(), TransactionState.SUCCESS);
+                    } else {
+                        throw new PaypalPlusPaymentException(format("Error when approving payment [%s], current state=[%s]",
+                                paypalPlusPaymentId, paypalPayment.getState()));
+                    }
+                })
+                .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK));
     }
 }

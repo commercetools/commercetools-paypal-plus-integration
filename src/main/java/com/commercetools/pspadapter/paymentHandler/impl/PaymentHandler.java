@@ -1,6 +1,6 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
-import com.commercetools.exception.PaypalPlusPaymentException;
+import com.commercetools.exception.PaypalPlusException;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.helper.mapper.ShippingAddressMapper;
 import com.commercetools.model.CtpPaymentWithCart;
@@ -121,7 +121,7 @@ public class PaymentHandler {
     public PaymentHandleResponse patchAddress(@Nonnull Cart cart, @Nonnull String paypalPlusPaymentId) {
         try {
             Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
-            ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cart);
+            ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cart.getShippingAddress());
             Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
             CompletionStage<PaymentHandleResponse> patchCS = paypalPlusFacade.getPaymentService().patch(paypalPlusPayment, replace)
                     .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK));
@@ -197,7 +197,7 @@ public class PaymentHandler {
                     if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
                         return createChargeTransaction(paypalPayment, ctpPayment.getId(), TransactionState.SUCCESS);
                     } else {
-                        throw new PaypalPlusPaymentException(format("Error when approving payment [%s], current state=[%s]",
+                        throw new PaypalPlusException(format("Error when approving payment [%s], current state=[%s]",
                                 paypalPlusPaymentId, paypalPayment.getState()));
                     }
                 })

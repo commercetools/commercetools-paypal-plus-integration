@@ -7,15 +7,25 @@ import io.sphere.sdk.carts.CartDraftBuilder;
 import io.sphere.sdk.carts.CustomLineItemDraft;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.payments.Payment;
+import io.sphere.sdk.payments.PaymentDraftBuilder;
+import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.javamoney.moneta.Money;
 
+import javax.annotation.Nonnull;
+import javax.money.MonetaryAmount;
 import java.util.List;
 import java.util.Locale;
 
+import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 
 /**
  * Utility to create CT platform object instances.
@@ -89,5 +99,21 @@ public class CtpResourcesUtil {
 
     public static String resolveMockDataResource(String mockDataRelativePath) {
         return MOCK_ROOT_DIR + mockDataRelativePath;
+    }
+
+    public static PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, Locale locale) {
+        return PaymentDraftBuilder.of(totalPrice)
+                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(PAYPAL).build())
+                .custom(CustomFieldsDraftBuilder.ofTypeKey("payment-paypal")
+                        .addObject(SUCCESS_URL_FIELD, "http://example.com/success/23456789")
+                        .addObject(CANCEL_URL_FIELD, "http://example.com/cancel/23456789")
+                        .addObject(REFERENCE, "23456789")
+                        .addObject(LANGUAGE_CODE_FIELD, ofNullable(locale).orElse(DEFAULT_LOCALE).getLanguage())
+                        .build());
+    }
+
+    public static CartDraftBuilder createCartDraftBuilder() {
+        return CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
+                .currency(EUR);
     }
 }

@@ -17,11 +17,9 @@ import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentDraftDsl;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
-import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,18 +42,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.commercetools.helper.mapper.PaymentMapper.getApprovalUrl;
-import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
-import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
+import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentDraftBuilder;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.lang.String.format;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -170,7 +166,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
 
     @Test
     public void whenPaymentInterfaceIsIncorrect_shouldReturnError() throws Exception {
-        PaymentDraftDsl dsl = getPaymentDraftBuilder(Money.of(10, EUR), Locale.ENGLISH)
+        PaymentDraftDsl dsl = createPaymentDraftBuilder(Money.of(10, EUR), Locale.ENGLISH)
                 .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface("NOT-PAYPAL-INTERFACE").method(PAYPAL).build())
                 .build();
 
@@ -208,21 +204,9 @@ public class CommercetoolsCreatePaymentsControllerIT {
     }
 
     private CompletionStage<Payment> createPaymentCS(@Nonnull MonetaryAmount totalPrice, Locale locale) {
-        PaymentDraftDsl dsl = getPaymentDraftBuilder(totalPrice, locale)
+        PaymentDraftDsl dsl = createPaymentDraftBuilder(totalPrice, locale)
                 .build();
         return sphereClient.execute(PaymentCreateCommand.of(dsl));
-
-    }
-
-    private PaymentDraftBuilder getPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, Locale locale) {
-        return PaymentDraftBuilder.of(totalPrice)
-                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(PAYPAL).build())
-                .custom(CustomFieldsDraftBuilder.ofTypeKey("payment-paypal")
-                        .addObject(SUCCESS_URL_FIELD, "http://example.com/success/23456789")
-                        .addObject(CANCEL_URL_FIELD, "http://example.com/cancel/23456789")
-                        .addObject(REFERENCE, "23456789")
-                        .addObject(LANGUAGE_CODE_FIELD, ofNullable(locale).orElse(DEFAULT_LOCALE).getLanguage())
-                        .build());
     }
 
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 public class TenantProperties {
 
     @Valid
+    @NotNull
     private Map<String, Tenant> tenants;
 
     public Map<String, Tenant> getTenants() {

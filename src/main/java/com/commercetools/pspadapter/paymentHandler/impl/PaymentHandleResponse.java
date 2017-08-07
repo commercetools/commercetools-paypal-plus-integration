@@ -1,6 +1,7 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.payment.handler.CommercetoolsCreatePaymentsController;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,39 +30,61 @@ public class PaymentHandleResponse {
 
     private final int statusCode;
 
+    private final String errorCode;
+
     private final String errorMessage;
 
     private final String approvalUrl;
 
-    private PaymentHandleResponse(@Nonnull HttpStatus httpStatus, @Nullable String errorMessage, @Nullable String approvalUrl) {
+    private PaymentHandleResponse(@Nonnull HttpStatus httpStatus, @Nullable String errorCode,
+                                  @Nullable String errorMessage, @Nullable String approvalUrl) {
         this.httpStatus = httpStatus;
         this.statusCode = httpStatus.value();
+        this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.approvalUrl = approvalUrl;
     }
 
     public static PaymentHandleResponse ofStatusCode(HttpStatus httpStatus) {
-        return new PaymentHandleResponse(httpStatus, null, null);
+        return new PaymentHandleResponse(httpStatus, null,null, null);
     }
 
     public static PaymentHandleResponse of201CreatedApprovalUrl(@Nonnull String approvalUrl) {
-        return new PaymentHandleResponse(CREATED, null, approvalUrl);
+        return new PaymentHandleResponse(CREATED,  null,null, approvalUrl);
     }
 
     public static PaymentHandleResponse of400BadRequest(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(BAD_REQUEST, errorMessage, null);
+        return new PaymentHandleResponse(BAD_REQUEST, null, errorMessage, null);
+    }
+
+    public static PaymentHandleResponse of400BadRequest(@Nonnull String errorCode, @Nonnull String errorMessage) {
+        return new PaymentHandleResponse(BAD_REQUEST, errorCode, errorMessage, null);
     }
 
     public static PaymentHandleResponse of404NotFound(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(NOT_FOUND, errorMessage, null);
+        return new PaymentHandleResponse(NOT_FOUND, null, errorMessage, null);
+    }
+
+    public static PaymentHandleResponse of404NotFound(@Nonnull String errorCode, @Nonnull String errorMessage) {
+        return new PaymentHandleResponse(NOT_FOUND, errorCode, errorMessage, null);
     }
 
     public static PaymentHandleResponse of500InternalServerError(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, errorMessage, null);
+        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, null, errorMessage, null);
     }
 
+    public static PaymentHandleResponse of500InternalServerError(@Nonnull String errorCode, @Nonnull String errorMessage) {
+        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, errorCode, errorMessage, null);
+    }
+
+    @JsonIgnore
     public int getStatusCode() {
         return statusCode;
+    }
+
+    @Nullable
+    public String getErrorCode() {
+        return errorCode;
     }
 
     @Nullable

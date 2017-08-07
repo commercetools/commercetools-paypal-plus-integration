@@ -38,6 +38,7 @@ import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APP
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.PAYER_ID;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse.of400BadRequest;
+import static com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse.of404NotFound;
 import static com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse.of500InternalServerError;
 import static com.commercetools.pspadapter.tenant.TenantLoggerUtil.createLoggerName;
 import static com.commercetools.util.TimeUtil.toZonedDateTime;
@@ -77,7 +78,7 @@ public class PaymentHandler {
                             // TODO: re-factor this wasps nest!!!
                             (optPayment, optCart) -> {
                                 if (!(optPayment.isPresent() && optCart.isPresent())) {
-                                    return completedFuture(of400BadRequest(
+                                    return completedFuture(of404NotFound(
                                             format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
                                 }
 
@@ -85,7 +86,7 @@ public class PaymentHandler {
 
                                 // TODO: andrii.kovalenko: this should be a common solution across all the controllers
                                 if (!PAYPAL_PLUS.equals(ctpPayment.getPaymentMethodInfo().getPaymentInterface())) {
-                                    completedFuture(of400BadRequest(
+                                    return completedFuture(of400BadRequest(
                                             format("Payment ctpPaymentId=[%s] has incorrect payment interface: " +
                                                             "expected [%s], found [%s]", ctpPaymentId, PAYPAL_PLUS,
                                                     ctpPayment.getPaymentMethodInfo().getPaymentInterface())));
@@ -200,7 +201,7 @@ public class PaymentHandler {
                                 paypalPlusPaymentId, paypalPayment.getState()));
                     }
                 })
-                .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK));
+                .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.CREATED));
     }
 
     private PaymentHandleResponse paymentExceptionWrapper(String paypalPlusPaymentId,

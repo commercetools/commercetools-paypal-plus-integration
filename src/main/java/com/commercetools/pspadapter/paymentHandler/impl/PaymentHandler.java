@@ -207,7 +207,7 @@ public class PaymentHandler {
                                                           CompletionStage<PaymentHandleResponse> completionStage) {
         return completionStage
                 .exceptionally(throwable -> {
-                    logger.error("Unexpected exception processing Paypal payment paymentId=[{}]:", paypalPlusPaymentId, throwable);
+                    logger.error("Unexpected exception processing Paypal Plus paymentId=[{}]:", paypalPlusPaymentId, throwable);
                     return PaymentHandleResponse.of400BadRequest(
                             format("PaypalPlus payment [%s] can't be processed, see the logs", paypalPlusPaymentId));
                 }).toCompletableFuture().join();

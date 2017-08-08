@@ -140,7 +140,7 @@ public class PaymentHandler {
                 .thenCompose(cartOpt -> {
                     if (!cartOpt.isPresent()) {
                         return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
-                                format("Can't find cart for interfaceId==[%s]", paypalPlusPaymentId)));
+                                format("Can't find cart with interfaceId==[%s]", paypalPlusPaymentId)));
                     } else {
                         Cart cart = cartOpt.get();
                         PaymentHandleResponse paymentHandleResponse = patchAddress(cart, paypalPlusPaymentId);

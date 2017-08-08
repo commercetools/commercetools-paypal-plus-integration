@@ -193,6 +193,8 @@ public class PaymentHandler {
                 .thenCompose(paypalPayment -> {
                     if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
                         return createChargeTransaction(paypalPayment, ctpPayment.getId(), TransactionState.SUCCESS);
+                    } else if (PaypalPlusPaymentStates.CREATED.equals(paypalPayment.getState())) {
+                        return createChargeTransaction(paypalPayment, ctpPayment.getId(), TransactionState.PENDING);
                     } else {
                         throw new PaypalPlusPaymentException(format("Error when approving payment [%s], current state=[%s]",
                                 paypalPlusPaymentId, paypalPayment.getState()));

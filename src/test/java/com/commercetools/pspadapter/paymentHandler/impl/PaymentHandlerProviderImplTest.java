@@ -122,7 +122,9 @@ public class PaymentHandlerProviderImplTest {
 
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
 
-        io.sphere.sdk.payments.Payment chargeTransaction = paymentHandler.createChargeTransaction(paypalPlusPayment, ctpPaymentWithCart.getPayment().getId(), TransactionState.SUCCESS);
+        io.sphere.sdk.payments.Payment chargeTransaction
+                = paymentHandler.createChargeTransaction(paypalPlusPayment, ctpPaymentWithCart.getPayment().getId(), TransactionState.SUCCESS)
+                .toCompletableFuture().join();
 
         assertThat(chargeTransaction).isNotNull();
     }

@@ -104,7 +104,7 @@ public class PaymentHandlerProviderImplTest {
         paymentHandler.createPayment(ctpPaymentWithCart.getPayment().getId());
         io.sphere.sdk.payments.Payment ctpPayment = this.sphereClient.execute(PaymentByIdGet.of(ctpPaymentWithCart.getPayment().getId())).toCompletableFuture().join();
 
-        paymentHandler.setPayerId(ctpPayment.getInterfaceId(), testPayerId).toCompletableFuture().join();
+        paymentHandler.updatePayerIdInCtpPayment(ctpPayment.getInterfaceId(), testPayerId).toCompletableFuture().join();
 
         PaymentByIdGet paymentQuery = PaymentByIdGet.of(ctpPayment.getId());
         ctpPayment = sphereClient.execute(paymentQuery)

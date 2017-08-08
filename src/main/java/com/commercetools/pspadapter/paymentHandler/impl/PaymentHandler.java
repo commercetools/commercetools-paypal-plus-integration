@@ -146,7 +146,7 @@ public class PaymentHandler {
                         boolean isSuccessful = HttpStatus.valueOf(paymentHandleResponse.getStatusCode()).is2xxSuccessful();
                         if (isSuccessful) {
                             // execute payment only when patching was successful
-                            return setPayerId(paypalPlusPaymentId, paypalPlusPayerId)
+                            return updatePayerIdInCtpPayment(paypalPlusPaymentId, paypalPlusPayerId)
                                     .thenCompose(ctpPayment -> executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment));
                         } else {
                             return CompletableFuture.completedFuture(paymentHandleResponse);
@@ -156,7 +156,7 @@ public class PaymentHandler {
         return paymentExceptionWrapper(paypalPlusPaymentId, executeCS);
     }
 
-    protected CompletionStage<io.sphere.sdk.payments.Payment> setPayerId(String paypalPlusPaymentId, String payerId) {
+    protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(String paypalPlusPaymentId, String payerId) {
         return ctpFacade.getPaymentService().getByPaymentMethodAndInterfaceId(PAYPAL_PLUS, paypalPlusPaymentId)
                 .thenCompose((paymentOpt) -> paymentOpt.map(payment -> {
                     List<UpdateAction<io.sphere.sdk.payments.Payment>> updateActions = Collections.singletonList(SetCustomField.ofObject(PAYER_ID, payerId));

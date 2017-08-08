@@ -78,40 +78,39 @@ public class PaymentHandler {
 
     public PaymentHandleResponse createPayment(@Nonnull String ctpPaymentId) {
         try {
-            return executeWithExceptionallyHandling(ctpPaymentId, CTP_PAYMENT_ID,
-                    ctpFacade.getPaymentService().getById(ctpPaymentId)
-                            .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
-                                    // TODO: re-factor this wasps nest!!!
-                                    (optPayment, optCart) -> {
-                                        if (!(optPayment.isPresent() && optCart.isPresent())) {
-                                            return completedFuture(of404NotFound(
-                                                    format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
-                                        }
+            CompletionStage<PaymentHandleResponse> createPaymentCS = ctpFacade.getPaymentService().getById(ctpPaymentId)
+                    .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
+                            // TODO: re-factor this wasps nest!!!
+                            (optPayment, optCart) -> {
+                                if (!(optPayment.isPresent() && optCart.isPresent())) {
+                                    return completedFuture(of404NotFound(
+                                            format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
+                                }
 
-                                        io.sphere.sdk.payments.Payment ctpPayment = optPayment.get();
+                                io.sphere.sdk.payments.Payment ctpPayment = optPayment.get();
 
-                                        // TODO: andrii.kovalenko: this should be a common solution across all the controllers
-                                        if (!PAYPAL_PLUS.equals(ctpPayment.getPaymentMethodInfo().getPaymentInterface())) {
-                                            return completedFuture(of400BadRequest(
-                                                    format("Payment ctpPaymentId=[%s] has incorrect payment interface: " +
-                                                                    "expected [%s], found [%s]", ctpPaymentId, PAYPAL_PLUS,
-                                                            ctpPayment.getPaymentMethodInfo().getPaymentInterface())));
-                                        }
+                                // TODO: andrii.kovalenko: this should be a common solution across all the controllers
+                                if (!PAYPAL_PLUS.equals(ctpPayment.getPaymentMethodInfo().getPaymentInterface())) {
+                                    return completedFuture(of400BadRequest(
+                                            format("Payment ctpPaymentId=[%s] has incorrect payment interface: " +
+                                                            "expected [%s], found [%s]", ctpPaymentId, PAYPAL_PLUS,
+                                                    ctpPayment.getPaymentMethodInfo().getPaymentInterface())));
+                                }
 
-                                        Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(
-                                                new CtpPaymentWithCart(optPayment.get(), optCart.get()));
+                                Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(
+                                        new CtpPaymentWithCart(optPayment.get(), optCart.get()));
 
-                                        return paypalPlusFacade.getPaymentService().create(paypalPlusPayment)
-                                                .thenCompose(createdPpPayment -> setApprovalUrlAndInterfaceId(createdPpPayment, ctpPaymentId))
-                                                .thenApply(PaymentMapper::getApprovalUrl)
-                                                .thenApply(approvalUrlOpt -> approvalUrlOpt
-                                                        .map(PaymentHandleResponse::of201CreatedApprovalUrl)
-                                                        .orElseGet(() -> of400BadRequest(
-                                                                format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId))));
-                                    })
-                            // TODO: re-factor compose !!!!
-                            .thenCompose(stage -> stage)
-            );
+                                return paypalPlusFacade.getPaymentService().create(paypalPlusPayment)
+                                        .thenCompose(createdPpPayment -> setApprovalUrlAndInterfaceId(createdPpPayment, ctpPaymentId))
+                                        .thenApply(PaymentMapper::getApprovalUrl)
+                                        .thenApply(approvalUrlOpt -> approvalUrlOpt
+                                                .map(PaymentHandleResponse::of201CreatedApprovalUrl)
+                                                .orElseGet(() -> of400BadRequest(
+                                                        format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId))));
+                            })
+                    // TODO: re-factor compose !!!!
+                    .thenCompose(stage -> stage);
+            return executeWithExceptionallyHandling(ctpPaymentId, CTP_PAYMENT_ID, createPaymentCS);
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", ctpPaymentId, e);
             return of500InternalServerError("See the logs");

@@ -125,7 +125,7 @@ public class PaymentHandler {
             Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
             CompletionStage<PaymentHandleResponse> patchCS = paypalPlusFacade.getPaymentService().patch(paypalPlusPayment, replace)
                     .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK));
-            return paymentExceptionWrapper(paypalPlusPaymentId, patchCS);
+            return executeWithExceptionallyHandling(paypalPlusPaymentId, patchCS);
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return PaymentHandleResponse.of500InternalServerError(
@@ -154,7 +154,7 @@ public class PaymentHandler {
                         }
                     }
                 });
-        return paymentExceptionWrapper(paypalPlusPaymentId, executeCS);
+        return executeWithExceptionallyHandling(paypalPlusPaymentId, executeCS);
     }
 
     protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(String paypalPlusPaymentId, String payerId) {
@@ -165,7 +165,7 @@ public class PaymentHandler {
                 }).orElse(null));
     }
 
-    protected io.sphere.sdk.payments.Payment createChargeTransaction(Payment paypalPayment, String ctpPaymentId, TransactionState transactionState) {
+    protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(Payment paypalPayment, String ctpPaymentId, TransactionState transactionState) {
         Amount totalAmount = paypalPayment.getTransactions().get(0).getAmount();
         BigDecimal total = new BigDecimal(totalAmount.getTotal());
         String updateTimeStr = paypalPayment.getUpdateTime() == null ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
@@ -175,9 +175,7 @@ public class PaymentHandler {
                 .state(transactionState)
                 .build();
         return ctpFacade.getPaymentService()
-                .updatePayment(ctpPaymentId, Collections.singletonList(AddTransaction.of(transactionDraft)))
-                .toCompletableFuture()
-                .join();
+                .updatePayment(ctpPaymentId, Collections.singletonList(AddTransaction.of(transactionDraft)));
     }
 
     protected CompletionStage<Payment> setApprovalUrlAndInterfaceId(Payment newPpPayment, String ctpPaymentId) {
@@ -193,7 +191,7 @@ public class PaymentHandler {
                                                                               @Nonnull io.sphere.sdk.payments.Payment ctpPayment) {
         return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
                 new PaymentExecution().setPayerId(paypalPlusPayerId))
-                .thenApply(paypalPayment -> {
+                .thenCompose(paypalPayment -> {
                     if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
                         return createChargeTransaction(paypalPayment, ctpPayment.getId(), TransactionState.SUCCESS);
                     } else {
@@ -204,8 +202,8 @@ public class PaymentHandler {
                 .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.CREATED));
     }
 
-    private PaymentHandleResponse paymentExceptionWrapper(String paypalPlusPaymentId,
-                                                          CompletionStage<PaymentHandleResponse> completionStage) {
+    private PaymentHandleResponse executeWithExceptionallyHandling(String paypalPlusPaymentId,
+                                                                   CompletionStage<PaymentHandleResponse> completionStage) {
         return completionStage
                 .exceptionally(throwable -> {
                     logger.error("Unexpected exception processing Paypal Plus paymentId=[{}]:", paypalPlusPaymentId, throwable);

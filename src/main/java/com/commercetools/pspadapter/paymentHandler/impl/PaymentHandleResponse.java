@@ -45,8 +45,12 @@ public class PaymentHandleResponse {
         this.approvalUrl = approvalUrl;
     }
 
-    public static PaymentHandleResponse ofStatusCode(HttpStatus httpStatus) {
+    public static PaymentHandleResponse ofHttpStatus(HttpStatus httpStatus) {
         return new PaymentHandleResponse(httpStatus, null,null, null);
+    }
+
+    public static PaymentHandleResponse ofHttpStatusAndErrorMessage(HttpStatus httpStatus, String errorMessage) {
+        return new PaymentHandleResponse(httpStatus, null, errorMessage, null);
     }
 
     public static PaymentHandleResponse of201CreatedApprovalUrl(@Nonnull String approvalUrl) {

@@ -44,12 +44,12 @@ In this process, there are 3 parties involved:
                 "method": "paypal"
               }
             ```
-    1. Backend POSTs CTP payment ID to Paypal-integration. Example: 
+    1. Backend POSTs CTP payment ID created in the previous step to Paypal-integration. Example: 
         ```
         POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/create/payments/${ctpPaymentId}
         ```
-        If request was successful both response body and CTP payment object will have `approval_url` defined.
-    1. Frontend uses returned `approval_url` to render available payment methods as described in the Paypal Plus integration documentation.
+        If request was successful both response body and CTP payment object will have `approvalUrl` defined.
+    1. Frontend uses returned `approvalUrl` to render available payment methods as described in the Paypal Plus integration documentation.
 
 2. Execute payment after user successfully finished PayPal Plus checkout and was redirected back to the shop through `successUrl`.
     PayPal Plus will set 3 request parameters to `successUrl`:
@@ -61,7 +61,7 @@ In this process, there are 3 parties involved:
     ```
     http://example.com/checkout/payment/success?paymentId=${paymentId}&token=${token}&PayerID=${payerId} 
     ```
-    1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them to Paypal-integration. Example:
+    1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them to Paypal-integration for payment execution. Example:
     ```
     POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
     {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}

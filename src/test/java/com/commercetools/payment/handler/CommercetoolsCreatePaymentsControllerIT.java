@@ -2,6 +2,7 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
@@ -129,8 +130,9 @@ public class CommercetoolsCreatePaymentsControllerIT {
 
         // try to fetch payment from PP and verify it
         // this line could be change if PaypalPlusPaymentService is extended to have "getById" functionality
+        APIContextFactory apiContextFactory = tenantConfig.createAPIContextFactory();
         com.paypal.api.payments.Payment createdPpPayment =
-                com.paypal.api.payments.Payment.get(tenantConfig.createAPIContext(), ppPaymentId);
+                com.paypal.api.payments.Payment.get(apiContextFactory.createAPIContext(), ppPaymentId);
 
         assertThat(createdPpPayment).isNotNull();
         assertThat(createdPpPayment.getState()).isEqualTo("created");

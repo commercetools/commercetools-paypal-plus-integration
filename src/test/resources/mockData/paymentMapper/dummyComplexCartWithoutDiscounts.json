@@ -233,27 +233,27 @@
   "country": "DE",
   "shippingAddress": {
     "title": "Mr.",
-    "firstName": "John",
-    "lastName": "Doe",
-    "streetName": "Hervamstr 666",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm 100",
     "additionalStreetInfo": "",
-    "postalCode": "81000",
-    "city": "Munich",
+    "postalCode": "10709",
+    "city": "Berlin",
     "country": "DE",
     "phone": "+491234567890",
-    "email": "aaa.bbb@ggg.de"
+    "email": "max.mustermann@gmail.com"
   },
   "billingAddress": {
     "title": "Mr.",
-    "firstName": "John",
-    "lastName": "Doe",
-    "streetName": "Hervamstr 666",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm 100",
     "additionalStreetInfo": "",
-    "postalCode": "81000",
-    "city": "Munich",
+    "postalCode": "10709",
+    "city": "Berlin",
     "country": "DE",
     "phone": "+491234567890",
-    "email": "aaa.bbb@ggg.de"
+    "email": "max.mustermann@gmail.com"
   },
   "shippingInfo": {
     "shippingMethodName": "DHL",

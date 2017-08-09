@@ -22,17 +22,16 @@
     }
   ],
   "shippingAddress": {
-    "salutation": "mr",
-    "firstName": "Marc",
-    "lastName": " Tester",
-    "streetName": "Teststr.",
-    "streetNumber": "30",
-    "postalCode": "11111",
-    "city": "Testcity",
+    "title": "Mr.",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm 100",
+    "additionalStreetInfo": "",
+    "postalCode": "10709",
+    "city": "Berlin",
     "country": "DE",
-    "phone": "0123456789",
-    "email": "test@test.de",
-    "additionalAddressInfo": ""
+    "phone": "+491234567890",
+    "email": "max.mustermann@gmail.com"
   },
   "shippingInfo": {
     "shippingMethodName": "DHL",
@@ -78,17 +77,16 @@
     }
   },
   "shippingAddress": {
-    "salutation": "mr",
-    "firstName": "Marc",
-    "lastName": " Tester",
-    "streetName": "Teststr.",
-    "streetNumber": "30",
-    "postalCode": "11111",
-    "city": "Testcity",
+    "title": "Mr.",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm 100",
+    "additionalStreetInfo": "",
+    "postalCode": "10709",
+    "city": "Berlin",
     "country": "DE",
-    "phone": "0123456789",
-    "email": "test@test.de",
-    "additionalAddressInfo": ""
+    "phone": "+491234567890",
+    "email": "max.mustermann@gmail.com"
   },
   "inventoryMode": "None",
   "taxMode": "Platform",

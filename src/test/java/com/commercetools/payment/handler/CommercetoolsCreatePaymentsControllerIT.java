@@ -82,7 +82,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
         tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
                 .orElseThrow(IllegalStateException::new);
 
-        ctpFacade = CtpFacadeFactory.getCtpFacade(tenantConfig);
+        ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
 
         sphereClient = tenantConfig.createSphereClient();
     }

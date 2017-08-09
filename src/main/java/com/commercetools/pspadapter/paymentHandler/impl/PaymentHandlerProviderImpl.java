@@ -34,8 +34,8 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
     public Optional<PaymentHandler> getPaymentHandler(@Nonnull String tenantName) {
         return configFactory.getTenantConfig(tenantName)
                 .map(tenantConfig -> {
-                    CtpFacade ctpFacade = CtpFacadeFactory.getCtpFacade(tenantConfig);
-                    PaypalPlusFacade payPalPlusFacade = PaypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
+                    CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
+                    PaypalPlusFacade payPalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
                     return new PaymentHandler(ctpFacade, paymentMapper, shippingAddressMapper, payPalPlusFacade, tenantName);
                 });
     }

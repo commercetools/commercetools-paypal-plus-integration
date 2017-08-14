@@ -26,7 +26,7 @@ public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPay
 
     @RequestMapping(
             method = RequestMethod.POST,
-            value = "/{tenantName}/commercetools/execute/payments/")
+            value = "/{tenantName}/commercetools/execute/payments")
     public ResponseEntity executePayments(@PathVariable String tenantName,
                                                  @RequestParam String paypalPlusPaymentId,
                                                  @RequestParam String paypalPlusPayerId) {

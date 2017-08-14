@@ -46,7 +46,7 @@ public class PaymentHandleResponse {
     }
 
     public static PaymentHandleResponse ofHttpStatus(HttpStatus httpStatus) {
-        return new PaymentHandleResponse(httpStatus, null,null, null);
+        return new PaymentHandleResponse(httpStatus, null, null, null);
     }
 
     public static PaymentHandleResponse ofHttpStatusAndErrorMessage(HttpStatus httpStatus, String errorMessage) {
@@ -54,7 +54,7 @@ public class PaymentHandleResponse {
     }
 
     public static PaymentHandleResponse of201CreatedApprovalUrl(@Nonnull String approvalUrl) {
-        return new PaymentHandleResponse(CREATED,  null,null, approvalUrl);
+        return new PaymentHandleResponse(CREATED, null, null, approvalUrl);
     }
 
     public static PaymentHandleResponse of400BadRequest(@Nonnull String errorMessage) {

@@ -4,6 +4,8 @@ import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
+import com.commercetools.pspadapter.facade.PaypalPlusFacade;
+import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
@@ -28,10 +30,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import javax.annotation.Nonnull;
 import javax.money.MonetaryAmount;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
@@ -40,6 +44,7 @@ import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createCartDraftBuilder;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentDraftBuilder;
 import static java.lang.String.format;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,6 +64,7 @@ public class CommercetoolsExecutePaymentsControllerIT {
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
     private CtpFacade ctpFacade;
+    private PaypalPlusFacade paypalPlusFacade;
 
     @Before
     public void setUp() throws Exception {
@@ -66,6 +72,7 @@ public class CommercetoolsExecutePaymentsControllerIT {
                 .orElseThrow(IllegalStateException::new);
 
         ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
+        paypalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
 
         sphereClient = tenantConfig.createSphereClient();
     }
@@ -78,21 +85,32 @@ public class CommercetoolsExecutePaymentsControllerIT {
     }
 
     @Test
-    public void whenPaypalPayerIdIsWrong_shouldReturn400() throws Exception {
+    public void whenPaypalPayerIdIsWrong_shouldPatch_thenShouldReturn400() throws Exception {
         String paymentId = createCartAndPayment();
 
         this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)));
 
         Payment payment = executeBlocking(this.sphereClient.execute(PaymentByIdGet.of(paymentId)));
 
+        String interfaceId = payment.getInterfaceId();
         JSONObject jsonBody = new JSONObject();
         jsonBody.put("paypalPlusPayerId", "nonExistingPayerId");
-        jsonBody.put("paypalPlusPaymentId", payment.getInterfaceId());
+        jsonBody.put("paypalPlusPaymentId", interfaceId);
         this.mockMvc.perform(post(format("/%s/commercetools/execute/payments/", MAIN_TEST_TENANT_NAME))
                 .content(jsonBody.toString())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andReturn();
+
+        com.paypal.api.payments.Payment pPPayment = executeBlocking(paypalPlusFacade.getPaymentService().lookUp(interfaceId));
+        Optional<Payment> ctpPaymentOpt = executeBlocking(ctpFacade.getPaymentService().getById(paymentId));
+        assertThat(pPPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
+        assertThat(ctpPaymentOpt).isNotEmpty();
+
+        // assert interface interactions
+        Payment ctpPayment = ctpPaymentOpt.get();
+        assertThat(ctpPayment.getInterfaceInteractions()).hasSize(6);
+
     }
 
     @Test

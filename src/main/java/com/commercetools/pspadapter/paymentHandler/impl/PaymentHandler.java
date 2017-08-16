@@ -303,24 +303,8 @@ public class PaymentHandler {
                     if (throwable instanceof PaypalPlusServiceException) {
                         PayPalRESTException restException = ((PaypalPlusServiceException) throwable).getCause();
                         if (restException != null) {
-                            CompletionStage<String> ctpPaymentIdStage = CompletableFuture.completedFuture(paymentId);
-                            if (PAYPAL_PLUS_PAYMENT_ID.equals(paymentIdType)) {
-                                ctpPaymentIdStage = this.ctpFacade.getPaymentService()
-                                        .getByPaymentMethodAndInterfaceId(PAYPAL_PLUS, paymentId)
-                                        .thenApply(ctpPayment -> ctpPayment.map(Resource::getId).orElse(null));
-                            }
-
-                            CompletionStage<PaymentHandleResponse> paymentHandleResponseStage = ctpPaymentIdStage
-                                    .thenCompose(ctpPaymentId -> {
-                                        AddInterfaceInteraction action = createAddInterfaceInteractionAction(restException.getDetails(), RESPONSE);
-                                        // todo: don't join here, but rather return completion stage
-                                        return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, Collections.singletonList(action))
-                                                .thenApply(ignore -> {
-                                                    return PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
-                                                            format("%s=[%s] can't be processed, see the logs", paymentIdType, paymentId));
-                                                });
-                                    });
-                            return paymentHandleResponseStage.toCompletableFuture().join();
+                            return saveResponseToInterfaceInteraction(paymentId, paymentIdType, restException)
+                                    .toCompletableFuture().join();
                         }
                     }
                     CompletionStage<PaymentHandleResponse> paymentHandleResponseStage = CompletableFuture.completedFuture(PaymentHandleResponse.of400BadRequest(
@@ -328,6 +312,29 @@ public class PaymentHandler {
                     return paymentHandleResponseStage.toCompletableFuture().join();
                 });
         return exceptionally.toCompletableFuture().join();
+    }
+
+    private CompletionStage<PaymentHandleResponse> saveResponseToInterfaceInteraction(String paymentId, String paymentIdType, PayPalRESTException restException) {
+        CompletionStage<String> ctpPaymentIdStage = CompletableFuture.completedFuture(paymentId);
+        if (PAYPAL_PLUS_PAYMENT_ID.equals(paymentIdType)) {
+            // if it's paypal plus payment id and not ctp payment id,
+            // then fetch ctp payment to get ctp payment id
+            ctpPaymentIdStage = this.ctpFacade.getPaymentService()
+                    .getByPaymentMethodAndInterfaceId(PAYPAL_PLUS, paymentId)
+                    .thenApply(ctpPayment -> ctpPayment.map(Resource::getId).orElse(null));
+        }
+
+        CompletionStage<PaymentHandleResponse> paymentHandleResponseStage = ctpPaymentIdStage
+                .thenCompose(ctpPaymentId -> {
+                    AddInterfaceInteraction action = createAddInterfaceInteractionAction(restException.getDetails(), RESPONSE);
+                    return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, Collections.singletonList(action))
+                            .thenApply(ignore -> {
+                                return PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
+                                        format("%s=[%s] can't be processed, see the logs", paymentIdType, paymentId));
+                            });
+                });
+        // todo: don't join here, but rather return completion stage
+        return paymentHandleResponseStage;
     }
 
     private String getCtpPaymentId(@Nonnull Cart cartWithPaymentsExpansion,

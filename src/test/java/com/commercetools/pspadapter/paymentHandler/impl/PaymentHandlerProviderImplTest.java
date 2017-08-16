@@ -3,12 +3,15 @@ package com.commercetools.pspadapter.paymentHandler.impl;
 import com.commercetools.Application;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.pspadapter.facade.CtpFacade;
+import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.paypal.api.payments.Payment;
+import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
 import io.sphere.sdk.carts.CartDraftBuilder;
 import io.sphere.sdk.carts.commands.CartCreateCommand;
@@ -59,6 +62,8 @@ public class PaymentHandlerProviderImplTest {
 
     private PaypalPlusFacade paypalPlusFacade;
 
+    private CtpFacade ctpFacade;
+
     @Before
     public void setUp() {
         Optional<TenantConfig> tenantConfigOpt = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME);
@@ -66,6 +71,10 @@ public class PaymentHandlerProviderImplTest {
 
         this.paypalPlusFacade = tenantConfigOpt
                 .map(tenantConfig -> new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade())
+                .orElse(null);
+
+        this.ctpFacade = tenantConfigOpt
+                .map(tenantConfig -> new CtpFacadeFactory(tenantConfig).getCtpFacade())
                 .orElse(null);
     }
 
@@ -84,15 +93,17 @@ public class PaymentHandlerProviderImplTest {
     @Test
     public void shouldPatchShippingAddress() {
         CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
-        Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(ctpPaymentWithCart);
-        paypalPlusPayment = executeBlocking(this.paypalPlusFacade.getPaymentService().create(paypalPlusPayment));
-
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
-        PaymentHandleResponse paymentHandleResult = paymentHandler.patchAddress(ctpPaymentWithCart.getCart(), paypalPlusPayment.getId());
+        paymentHandler.createPayment(ctpPaymentWithCart.getPayment().getId());
+
+        Cart cartWithExpansion = executeBlocking(this.ctpFacade.getCartService().getByPaymentId(ctpPaymentWithCart.getPayment().getId(),
+                "paymentInfo.payments[*]")).get();
+        String paypalPlusPaymentId = cartWithExpansion.getPaymentInfo().getPayments().get(0).getObj().getInterfaceId();
+        PaymentHandleResponse paymentHandleResult = paymentHandler.patchAddress(cartWithExpansion, paypalPlusPaymentId);
         assertThat(paymentHandleResult.getStatusCode()).isEqualTo(HttpStatus.OK.value());
 
-        paypalPlusPayment = this.paypalPlusFacade.getPaymentService().lookUp(paypalPlusPayment.getId()).toCompletableFuture().join();
-        assertThat(paypalPlusPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
+        Payment pPPayment = this.paypalPlusFacade.getPaymentService().lookUp(paypalPlusPaymentId).toCompletableFuture().join();
+        assertThat(pPPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
     }
 
     @Test
@@ -145,6 +156,23 @@ public class PaymentHandlerProviderImplTest {
 
         ctpPayment = sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)).toCompletableFuture().join();
         assertThat(ctpPayment.getTransactions()).isEmpty();
+    }
+
+    @Test
+    public void whenOnPatchCartIsProvidedWithNoExpansion_500IsReturned() {
+        CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
+        PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
+
+        String ctpPaymentId = ctpPaymentWithCart.getPayment().getId();
+        paymentHandler.createPayment(ctpPaymentId);
+
+        io.sphere.sdk.payments.Payment ctpPayment = this.sphereClient
+                .execute(PaymentByIdGet.of(ctpPaymentId)).toCompletableFuture().join();
+
+        PaymentHandleResponse paymentHandleResponse = paymentHandler.patchAddress(ctpPaymentWithCart.getCart(),
+                ctpPayment.getInterfaceId());
+
+        assertThat(paymentHandleResponse.getStatusCode()).isEqualTo(500);
     }
 
     /**

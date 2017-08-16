@@ -1,8 +1,8 @@
 package com.commercetools.exception;
 
 /**
- * A general Paypal Plus exception to be used application-wide. If you want to
- * throw an exception, please use this one or extend it.
+ * A general Paypal Plus exception to be used
+ * with any exceptions connected with Paypal Plus
  */
 public class PaypalPlusException extends RuntimeException {
 

@@ -13,5 +13,13 @@ public interface CartService {
 
     CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String paymentId);
 
-    CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface, @Nullable String interfaceId);
+    CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String paymentId,
+                                                   @Nullable String expansionPath);
+
+    CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface,
+                                                                     @Nullable String interfaceId);
+
+    CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface,
+                                                                     @Nullable String interfaceId,
+                                                                     @Nullable String expansionPath);
 }

@@ -1,5 +1,6 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
+import com.commercetools.exception.MissingExpansionException;
 import com.commercetools.exception.PaypalPlusException;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.helper.mapper.PaymentMapper;
@@ -104,6 +105,7 @@ public class PaymentHandler {
                                 io.sphere.sdk.payments.Payment ctpPayment = optPayment.get();
 
                                 // TODO: andrii.kovalenko: this should be a common solution across all the controllers
+                                // https://github.com/commercetools/commercetools-paypal-plus-integration/issues/38
                                 if (!PAYPAL_PLUS.equals(ctpPayment.getPaymentMethodInfo().getPaymentInterface())) {
                                     return completedFuture(of400BadRequest(
                                             format("Payment ctpPaymentId=[%s] has incorrect payment interface: " +
@@ -143,19 +145,23 @@ public class PaymentHandler {
                             })
                     // TODO: re-factor compose !!!!
                     .thenCompose(stage -> stage);
-            return executeWithExceptionallyHandling(ctpPaymentId, CTP_PAYMENT_ID, createPaymentCS);
+            return runWithExceptionallyHandling(ctpPaymentId, CTP_PAYMENT_ID, createPaymentCS);
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", ctpPaymentId, e);
             return of500InternalServerError("See the logs");
         }
     }
 
-    public PaymentHandleResponse patchAddress(@Nonnull Cart cart, @Nonnull String paypalPlusPaymentId) {
+    public PaymentHandleResponse patchAddress(@Nonnull Cart cartWithPaymentsExpansion,
+                                              @Nonnull String paypalPlusPaymentId) {
         try {
-            // todo: change the way to get payment id
-            String paymentId = cart.getPaymentInfo().getPayments().get(0).getId();
+            String paymentId = getCtpPaymentId(cartWithPaymentsExpansion, paypalPlusPaymentId);
+            if (paymentId == null) {
+                throw new PaypalPlusException(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
+                        paypalPlusPaymentId, cartWithPaymentsExpansion.getId()));
+            }
             Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
-            ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cart.getShippingAddress());
+            ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cartWithPaymentsExpansion.getShippingAddress());
             Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
             AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(replace, REQUEST);
             CompletionStage<PaymentHandleResponse> patchCS = ctpFacade.getPaymentService()
@@ -171,7 +177,7 @@ public class PaymentHandler {
                                 return ctpFacade.getPaymentService().updatePayment(payment, actionList);
                             })
                             .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.OK)));
-            return executeWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
+            return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return PaymentHandleResponse.of500InternalServerError(
@@ -182,7 +188,8 @@ public class PaymentHandler {
     public PaymentHandleResponse executePayment(@Nonnull String paypalPlusPaymentId,
                                                 @Nonnull String paypalPlusPayerId) {
         CompletionStage<PaymentHandleResponse> executeCS = ctpFacade.getCartService()
-                .getByPaymentMethodAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, paypalPlusPaymentId)
+                .getByPaymentMethodAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS,
+                        paypalPlusPaymentId, "paymentInfo.payments[*]")
                 .thenCompose(cartOpt -> {
                     if (!cartOpt.isPresent()) {
                         return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
@@ -200,7 +207,7 @@ public class PaymentHandler {
                         }
                     }
                 });
-        return executeWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, executeCS);
+        return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, executeCS);
     }
 
     protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(String paypalPlusPaymentId, String payerId) {
@@ -283,9 +290,9 @@ public class PaymentHandler {
         }
     }
 
-    private PaymentHandleResponse executeWithExceptionallyHandling(String paymentId,
-                                                                   String paymentIdType,
-                                                                   CompletionStage<PaymentHandleResponse> completionStage) {
+    private PaymentHandleResponse runWithExceptionallyHandling(String paymentId,
+                                                               String paymentIdType,
+                                                               CompletionStage<PaymentHandleResponse> completionStage) {
         CompletionStage<PaymentHandleResponse> exceptionally = completionStage
                 .exceptionally(throwable -> {
                     logger.error("Unexpected exception processing " + paymentIdType + "=[{}]:", paymentId, throwable);
@@ -321,5 +328,18 @@ public class PaymentHandler {
                     return paymentHandleResponseStage.toCompletableFuture().join();
                 });
         return exceptionally.toCompletableFuture().join();
+    }
+
+    private String getCtpPaymentId(@Nonnull Cart cartWithPaymentsExpansion,
+                                   @Nonnull String paypalPlusPaymentId) {
+        if (cartWithPaymentsExpansion.getPaymentInfo().getPayments() == null
+                || cartWithPaymentsExpansion.getPaymentInfo().getPayments().get(0).getObj() == null) {
+            throw new MissingExpansionException("Please provide expansion for cart.paymentInfo.payments[*]");
+        }
+        return cartWithPaymentsExpansion.getPaymentInfo().getPayments().stream()
+                .filter(paymentReference -> paypalPlusPaymentId.equals(paymentReference.getObj().getInterfaceId()))
+                .findAny()
+                .map(paymentReference -> paymentReference.getObj().getId())
+                .orElse(null);
     }
 }

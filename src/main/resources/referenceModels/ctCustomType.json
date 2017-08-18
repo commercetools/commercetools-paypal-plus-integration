@@ -1,0 +1,112 @@
+{
+  "key": "payment-paypal",
+  "name": {
+    "en": "payment-paypal"
+  },
+  "resourceTypeIds": [
+    "payment"
+  ],
+  "fieldDefinitions": [
+    {
+      "name": "languageCode",
+      "label": {
+        "en": "languageCode"
+      },
+      "required": true,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "reference",
+      "label": {
+        "en": "reference"
+      },
+      "required": true,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "referenceText",
+      "label": {
+        "en": "referenceText"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine"
+    },
+    {
+      "name": "redirectUrl",
+      "label": {
+        "en": "redirectUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "successUrl",
+      "label": {
+        "en": "successUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "errorUrl",
+      "label": {
+        "en": "errorUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "cancelUrl",
+      "label": {
+        "en": "cancelUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "approvalUrl",
+      "label": {
+        "en": "approvalUrl",
+        "de": "approvalUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "payerId",
+      "label": {
+        "en": "payerId",
+        "de": "payerId"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    }
+  ]
+}

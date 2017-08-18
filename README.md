@@ -39,10 +39,10 @@ In this process, there are 3 parties involved:
             - successUrl
             - paymentMethodInfo needs to be set like this:
             ```json
-              "paymentMethodInfo": {
-                "paymentInterface": "PAYPAL_PLUS",
-                "method": "paypal"
-              }
+            "paymentMethodInfo": {
+              "paymentInterface": "PAYPAL_PLUS",
+              "method": "paypal"
+            }
             ```
     1. Backend POSTs CTP payment ID created in the previous step to Paypal-integration. Example: 
         ```

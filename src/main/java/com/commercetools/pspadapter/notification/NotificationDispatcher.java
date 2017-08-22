@@ -4,9 +4,11 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessor;
 import com.paypal.api.payments.Event;
+import io.sphere.sdk.payments.Payment;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 
 public class NotificationDispatcher {
 
@@ -24,9 +26,9 @@ public class NotificationDispatcher {
         this.paypalPlusFacade = paypalPlusFacade;
     }
 
-    public void dispatchEvent(Event event) {
+    public CompletionStage<Payment> dispatchEvent(Event event) {
         // todo: validate received event
         NotificationProcessor notificationProcessor = processors.get(event.getEventType());
-        notificationProcessor.processEventNotification(this.ctpFacade, event).toCompletableFuture().join();
+        return notificationProcessor.processEventNotification(this.ctpFacade, event);
     }
 }

@@ -6,9 +6,7 @@ import com.commercetools.pspadapter.notification.processor.NotificationProcessor
 import com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
 import com.paypal.base.rest.PayPalModel;
 import io.sphere.sdk.commands.UpdateAction;
@@ -28,6 +26,11 @@ import static java.lang.String.format;
 
 public abstract class NotificationProcessorBase implements NotificationProcessor {
 
+    private final Gson gson;
+
+    NotificationProcessorBase(Gson gson) {
+        this.gson = gson;
+    }
 
     @Override
     public CompletionStage<Payment> processEventNotification(CtpFacade ctpFacade, Event event) {
@@ -48,17 +51,6 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
         return listBuilder.build();
     }
 
-    private AddInterfaceInteraction createAddInterfaceInteractionAction(PayPalModel model) {
-        Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
-                .disableHtmlEscaping()
-                .create();
-        String json = gson.toJson(model);
-        return AddInterfaceInteraction.ofTypeKeyAndObjects(InterfaceInteractionType.NOTIFICATION.getInterfaceKey(),
-                ImmutableMap.of(InterfaceInteractionType.NOTIFICATION.getValueFieldName(), json,
-                        "timestamp", ZonedDateTime.now()));
-    }
-
     protected Optional<Transaction> findMatchingTxn(Collection<Transaction> transactions,
                                                     TransactionType transactionType,
                                                     TransactionState transactionState) {
@@ -72,5 +64,12 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
     abstract ChangeTransactionState createUpdatePaymentStatus(Payment ctpPayment, Event event);
 
     abstract CompletionStage<Optional<Payment>> getRelatedCtpPayment(CtpFacade ctpFacade, Event event);
+
+    private AddInterfaceInteraction createAddInterfaceInteractionAction(PayPalModel model) {
+        String json = gson.toJson(model);
+        return AddInterfaceInteraction.ofTypeKeyAndObjects(InterfaceInteractionType.NOTIFICATION.getInterfaceKey(),
+                ImmutableMap.of(InterfaceInteractionType.NOTIFICATION.getValueFieldName(), json,
+                        "timestamp", ZonedDateTime.now()));
+    }
 
 }

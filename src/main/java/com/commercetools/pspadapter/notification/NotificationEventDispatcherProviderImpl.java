@@ -5,7 +5,10 @@ import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessor;
+import com.commercetools.pspadapter.notification.processor.impl.PaymentSaleCompletedProcessor;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.google.common.collect.ImmutableMap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -19,8 +22,11 @@ public class NotificationEventDispatcherProviderImpl implements NotificationEven
 
     private final Map<String, NotificationProcessor> processors;
 
+    @Autowired
     public NotificationEventDispatcherProviderImpl(@Nonnull TenantConfigFactory configFactory,
-                                                   @Nonnull Map<String, NotificationProcessor> notificationProcessors) {
+                                                   // when you have Map here instead of ImmutableMap, Spring injects a default bean map
+                                                   // which is not notificationProcessors that is defined in ApplicationConfig
+                                                   @Nonnull ImmutableMap<String, NotificationProcessor> notificationProcessors) {
         this.configFactory = configFactory;
         this.processors = notificationProcessors;
     }

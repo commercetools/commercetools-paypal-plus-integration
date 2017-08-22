@@ -43,10 +43,8 @@ import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -80,27 +78,18 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
     }
 
     @Test
-    public void handlePaymentsReturnsTenantAndRequestParameters() throws Exception {
-        this.mockMvc.perform(post("/56654vbv/paypalplus/notification")
-                .param("ggg", "ppp")
-                .param("ttt", "345")
-                .param("bool", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("56654vbv")))
-                .andExpect(content().string(containsString("ggg=ppp")))
-                .andExpect(content().string(containsString("ttt=345")))
-                .andExpect(content().string(containsString("bool=true")));
-    }
-
-    @Test
     public void handlePaymentsIgnoresTrailingSlash() throws Exception {
-        this.mockMvc.perform(post("/blah-blah/paypalplus/notification")
-                .param("xxx", "yyy"))
+        this.mockMvc.perform(post("/blah-blah/paypalplus/notification/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("blah-blah")))
-                .andExpect(content().string(containsString("xxx=yyy")));
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(post("/blah-blah/paypalplus/notification")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 
     @Test

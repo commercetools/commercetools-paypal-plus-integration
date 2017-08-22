@@ -11,9 +11,7 @@ import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Amount;
 import com.paypal.api.payments.Patch;
 import com.paypal.api.payments.Payment;
@@ -77,18 +75,21 @@ public class PaymentHandler {
 
     private final String PAYPAL_PLUS_PAYMENT_ID = "Paypal Plus payment ID";
     private final String CTP_PAYMENT_ID = "CTP payment ID";
+    private final Gson gson;
 
 
     public PaymentHandler(@Nonnull CtpFacade ctpFacade,
                           @Nonnull PaymentMapper paymentMapper,
                           @Nonnull ShippingAddressMapper shippingAddressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
-                          @Nonnull String tenantName) {
+                          @Nonnull String tenantName,
+                          @Nonnull Gson gson) {
         this.ctpFacade = ctpFacade;
         this.paymentMapper = paymentMapper;
         this.shippingAddressMapper = shippingAddressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
+        this.gson = gson;
     }
 
     public PaymentHandleResponse createPayment(@Nonnull String ctpPaymentId) {
@@ -243,11 +244,7 @@ public class PaymentHandler {
 
     private AddInterfaceInteraction createAddInterfaceInteractionAction(PayPalModel model,
                                                                         InterfaceInteractionType type) {
-        Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
-                .disableHtmlEscaping()
-                .create();
-        String json = gson.toJson(model);
+        String json = this.gson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(type.getInterfaceKey(),
                 ImmutableMap.of(type.getValueFieldName(), json,
                         "timestamp", ZonedDateTime.now()));

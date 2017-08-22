@@ -1,7 +1,7 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
-import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.PaymentIntegrationTest;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
@@ -9,15 +9,8 @@ import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
-import io.sphere.sdk.carts.Cart;
-import io.sphere.sdk.carts.CartDraft;
-import io.sphere.sdk.carts.commands.CartCreateCommand;
-import io.sphere.sdk.carts.commands.CartUpdateCommand;
-import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.PaymentDraftDsl;
-import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -30,19 +23,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-import javax.annotation.Nonnull;
-import javax.money.MonetaryAmount;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createCartDraftBuilder;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentDraftBuilder;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
-public class CommercetoolsExecutePaymentsControllerIT {
+public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -86,7 +72,7 @@ public class CommercetoolsExecutePaymentsControllerIT {
 
     @Test
     public void whenPaypalPayerIdIsWrong_shouldPatch_thenShouldReturn400() throws Exception {
-        String paymentId = createCartAndPayment();
+        String paymentId = createCartAndPayment(sphereClient);
 
         this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)));
 
@@ -124,32 +110,5 @@ public class CommercetoolsExecutePaymentsControllerIT {
                 .andExpect(status().isNotFound())
                 .andReturn();
     }
-
-    private String createCartAndPayment() {
-        Cart updatedCart = executeBlocking(createCartCS()
-                .thenCompose(cart -> createPaymentCS(cart.getTotalPrice(), cart.getLocale())
-                        .thenApply(payment -> new CtpPaymentWithCart(payment, cart))
-                        .thenCompose(ctpPaymentWithCart -> sphereClient.execute(
-                                CartUpdateCommand.of(ctpPaymentWithCart.getCart(),
-                                        AddPayment.of(ctpPaymentWithCart.getPayment())
-                                ))
-                        )
-                ));
-
-        return updatedCart.getPaymentInfo().getPayments().get(0).getId();
-    }
-
-    private CompletionStage<Cart> createCartCS() {
-        CartDraft dummyComplexCartWithDiscounts = createCartDraftBuilder()
-                .build();
-        return sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts));
-    }
-
-    private CompletionStage<Payment> createPaymentCS(@Nonnull MonetaryAmount totalPrice, Locale locale) {
-        PaymentDraftDsl dsl = createPaymentDraftBuilder(totalPrice, locale)
-                .build();
-        return sphereClient.execute(PaymentCreateCommand.of(dsl));
-    }
-
 
 }

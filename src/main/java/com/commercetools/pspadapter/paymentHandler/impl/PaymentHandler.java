@@ -211,7 +211,7 @@ public class PaymentHandler {
     }
 
     protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(String paypalPlusPaymentId, String payerId) {
-        return ctpFacade.getPaymentService().getByPaymentMethodAndInterfaceId(PAYPAL_PLUS, paypalPlusPaymentId)
+        return ctpFacade.getPaymentService().getByPaymentInterfaceNameAndInterfaceId(PAYPAL_PLUS, paypalPlusPaymentId)
                 .thenCompose((paymentOpt) -> paymentOpt.map(payment -> {
                     List<UpdateAction<io.sphere.sdk.payments.Payment>> updateActions = Collections.singletonList(SetCustomField.ofObject(PAYER_ID, payerId));
                     return ctpFacade.getPaymentService().updatePayment(payment, updateActions);
@@ -320,7 +320,7 @@ public class PaymentHandler {
             // if it's paypal plus payment id and not ctp payment id,
             // then fetch ctp payment to get ctp payment id
             ctpPaymentIdStage = this.ctpFacade.getPaymentService()
-                    .getByPaymentMethodAndInterfaceId(PAYPAL_PLUS, paymentId)
+                    .getByPaymentInterfaceNameAndInterfaceId(PAYPAL_PLUS, paymentId)
                     .thenApply(ctpPayment -> ctpPayment.map(Resource::getId).orElse(null));
         }
 

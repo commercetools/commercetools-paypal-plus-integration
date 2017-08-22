@@ -86,7 +86,7 @@ public class PaymentServiceImplIntegrationTest {
         Payment createdPayment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
 
         Payment fetchedPayment = executeBlocking(
-                paymentService.getByPaymentMethodAndInterfaceId(paymentInterface, interfaceId))
+                paymentService.getByPaymentInterfaceNameAndInterfaceId(paymentInterface, interfaceId))
                 .orElse(null);
 
         assertThat(fetchedPayment).isNotNull();

@@ -1,6 +1,7 @@
 package com.commercetools.testUtil.ctpUtil;
 
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.testUtil.ResourcesUtil;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
 import io.sphere.sdk.carts.CartDraftBuilder;
@@ -30,9 +31,7 @@ import static java.util.Optional.ofNullable;
 /**
  * Utility to create CT platform object instances.
  */
-public class CtpResourcesUtil {
-
-    public static String MOCK_ROOT_DIR = "mockData/";
+public class CtpResourcesUtil extends ResourcesUtil {
 
     public static CartDraft getCartDraftWithCustomLineItems(TaxCategory taxCategory) {
         CustomLineItemDraft testItem = CustomLineItemDraft.of(
@@ -95,10 +94,6 @@ public class CtpResourcesUtil {
 
     public static CartDraft getCartDraftFromResource(String resourcePath) {
         return readObjectFromResource(resourcePath, CartDraft.class);
-    }
-
-    public static String resolveMockDataResource(String mockDataRelativePath) {
-        return MOCK_ROOT_DIR + mockDataRelativePath;
     }
 
     public static PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, Locale locale) {

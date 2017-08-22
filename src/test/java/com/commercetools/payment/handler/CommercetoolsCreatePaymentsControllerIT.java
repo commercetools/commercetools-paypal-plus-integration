@@ -2,6 +2,7 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.PaymentIntegrationTest;
 import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
@@ -72,7 +73,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
 // completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
-public class CommercetoolsCreatePaymentsControllerIT {
+public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -103,7 +104,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
 
     @Test
     public void shouldReturnNewPaypalPaymentId() throws Exception {
-        final String paymentId = createCartAndPayment();
+        final String paymentId = createCartAndPayment(sphereClient);
         MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
                 .andExpect(status().isCreated())
@@ -164,7 +165,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
 
     @Test
     public void whenCartIsMissing_shouldReturnError() throws Exception {
-        Payment payment = executeBlocking(createPaymentCS(Money.of(10, EUR), Locale.ENGLISH));
+        Payment payment = executeBlocking(createPaymentCS(sphereClient, Money.of(10, EUR), Locale.ENGLISH));
         MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andDo(print())
                 .andExpect(status().isNotFound())
@@ -180,7 +181,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
                 .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface("NOT-PAYPAL-INTERFACE").method(PAYPAL).build())
                 .build();
 
-        Cart cart = executeBlocking(createCartCS()
+        Cart cart = executeBlocking(createCartCS(sphereClient)
                 .thenCompose(c -> sphereClient.execute(PaymentCreateCommand.of(dsl))
                         .thenApply(payment -> new CtpPaymentWithCart(payment, c))
                         .thenCompose(ctpPaymentWithCart -> sphereClient.execute(CartUpdateCommand.of(ctpPaymentWithCart.getCart(),
@@ -225,29 +226,6 @@ public class CommercetoolsCreatePaymentsControllerIT {
         );
         assertThat(response).isNotEmpty();
         assertThat(SphereJsonUtils.parse(response)).isNotEmpty();
-    }
-
-    private String createCartAndPayment() {
-        Cart updatedCart = executeBlocking(createCartCS()
-                .thenCompose(cart -> createPaymentCS(cart.getTotalPrice(), cart.getLocale())
-                        .thenApply(payment -> new CtpPaymentWithCart(payment, cart))
-                        .thenCompose(ctpPaymentWithCart -> sphereClient.execute(CartUpdateCommand.of(ctpPaymentWithCart.getCart(),
-                                AddPayment.of(ctpPaymentWithCart.getPayment()))))));
-
-        return updatedCart.getPaymentInfo().getPayments().get(0).getId();
-    }
-
-    private CompletionStage<Cart> createCartCS() {
-        CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
-                .currency(EUR)
-                .build();
-        return sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts));
-    }
-
-    private CompletionStage<Payment> createPaymentCS(@Nonnull MonetaryAmount totalPrice, Locale locale) {
-        PaymentDraftDsl dsl = createPaymentDraftBuilder(totalPrice, locale)
-                .build();
-        return sphereClient.execute(PaymentCreateCommand.of(dsl));
     }
 
 }

@@ -9,12 +9,16 @@ import javax.annotation.Nonnull;
 
 public class BaseCommercetoolsPaymentsController {
     protected final StringTrimmerEditor stringTrimmerEditor;
-    protected final PaymentHandlerProvider paymentHandlerProvider;
+    protected PaymentHandlerProvider paymentHandlerProvider;
 
     public BaseCommercetoolsPaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,
                                                @Nonnull PaymentHandlerProvider paymentHandlerProvider) {
         this.stringTrimmerEditor = stringTrimmerEditor;
         this.paymentHandlerProvider = paymentHandlerProvider;
+    }
+
+    public BaseCommercetoolsPaymentsController(StringTrimmerEditor stringTrimmerEditor) {
+        this.stringTrimmerEditor = stringTrimmerEditor;
     }
 
     @InitBinder

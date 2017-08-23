@@ -9,6 +9,7 @@ import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
+import com.commercetools.testUtil.customTestConfigs.ServiceConfig;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.Transaction;
@@ -30,6 +31,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -51,6 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
+@ContextConfiguration(classes = ServiceConfig.class)
 public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegrationTest {
 
     @Autowired

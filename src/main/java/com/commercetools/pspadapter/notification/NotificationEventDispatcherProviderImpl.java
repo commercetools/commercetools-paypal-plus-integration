@@ -2,10 +2,7 @@ package com.commercetools.pspadapter.notification;
 
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.facade.PaypalPlusFacade;
-import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessor;
-import com.commercetools.pspadapter.notification.processor.impl.PaymentSaleCompletedProcessor;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +33,7 @@ public class NotificationEventDispatcherProviderImpl implements NotificationEven
         return this.configFactory.getTenantConfig(tenantName)
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-                    PaypalPlusFacade paypalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
-                    return new NotificationDispatcher(this.processors, ctpFacade, paypalPlusFacade);
+                    return new NotificationDispatcher(this.processors, ctpFacade);
                 });
     }
 }

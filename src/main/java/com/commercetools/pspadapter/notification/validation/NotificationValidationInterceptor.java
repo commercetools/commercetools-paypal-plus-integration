@@ -1,8 +1,10 @@
 package com.commercetools.pspadapter.notification.validation;
 
+import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.google.common.annotations.VisibleForTesting;
 import com.paypal.api.payments.Webhook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,11 +37,16 @@ import static java.lang.String.format;
 public class NotificationValidationInterceptor extends HandlerInterceptorAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationValidationInterceptor.class);
 
-    @Autowired
-    private Map<String, Webhook> tenantNameToWebhookMap;
+    private final Map<String, Webhook> tenantNameToWebhookMap;
+
+    private final TenantConfigFactory configFactory;
 
     @Autowired
-    private TenantConfigFactory configFactory;
+    public NotificationValidationInterceptor(@Nonnull Map<String, Webhook> tenantNameToWebhookMap,
+                                             @Nonnull TenantConfigFactory configFactory) {
+        this.tenantNameToWebhookMap = tenantNameToWebhookMap;
+        this.configFactory = configFactory;
+    }
 
     @Override
     public boolean preHandle(@Nonnull HttpServletRequest request,
@@ -54,7 +61,7 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
         }
         Optional<TenantConfig> tenantConfigOpt = configFactory.getTenantConfig(tenantName);
         return tenantConfigOpt
-                .map(tenantConfig -> new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade())
+                .map(this::getPaypalPlusFacade)
                 .map(paypalPlusFacade -> {
                     try {
                         return paypalPlusFacade.getPaymentService().validateNotificationEvent(webhook, getHeadersInfo(request), getBody(request));
@@ -64,6 +71,11 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
                 })
                 .orElseGet(() -> CompletableFuture.completedFuture(false))
                 .toCompletableFuture().join();
+    }
+
+    @VisibleForTesting
+    protected PaypalPlusFacade getPaypalPlusFacade(TenantConfig tenantConfig) {
+        return new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
     }
 
     private Map<String, String> getHeadersInfo(@Nonnull HttpServletRequest request) {

@@ -2,6 +2,7 @@ package com.commercetools.testUtil.customTestConfigs;
 
 import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
+import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.pspadapter.tenant.TenantProperties;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
@@ -81,8 +82,9 @@ public class ServiceConfig {
     }
 
     @Bean
-    public NotificationValidationInterceptor notificationValidationInterceptor() {
-        return new MockNotificationValidationInterceptor();
+    @Autowired
+    public NotificationValidationInterceptor notificationValidationInterceptor(TenantConfigFactory tenantConfigFactory) {
+        return new MockNotificationValidationInterceptor(tenantConfigFactory);
     }
 
 }

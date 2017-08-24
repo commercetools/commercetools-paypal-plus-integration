@@ -28,10 +28,14 @@ public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
     // todo: put this to config file
     private static final String NOTIFICATION_URL_TEMPLATE = "https://53fd60b6.ngrok.io/%s/paypalplus/notification";
 
-    @Bean
     @Autowired
-    public Map<String, Webhook> tenantNameToWebhookMap(TenantConfigFactory tenantConfigFactory,
-                                                       TenantProperties tenantProperties) {
+    private TenantConfigFactory tenantConfigFactory;
+
+    @Autowired
+    TenantProperties tenantProperties;
+
+    @Bean
+    public Map<String, Webhook> tenantNameToWebhookMap() {
         // create all necessary webhooks. This will certainly takes a while because it involves Paypal calls,
         // but without the webhooks configured correctly, the app cannot work properly
         return tenantProperties.getTenants().keySet().stream()
@@ -51,7 +55,7 @@ public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
 
     @Bean
     public NotificationValidationInterceptor notificationValidationInterceptor() {
-        return new NotificationValidationInterceptor();
+        return new NotificationValidationInterceptor(tenantNameToWebhookMap(), tenantConfigFactory);
     }
 
     @Override

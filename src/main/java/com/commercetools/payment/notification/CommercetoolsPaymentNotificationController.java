@@ -59,7 +59,7 @@ public class CommercetoolsPaymentNotificationController extends BaseCommercetool
                         .handle((payment, throwable) -> {
                             if (throwable != null) {
                                 logger.error(format("Unexpected exception processing event=[%s] for tenant=[%s]",
-                                        eventFromPaypal.toJSON(), tenantName));
+                                        eventFromPaypal.toJSON(), tenantName), throwable);
                                 return new ResponseEntity<HttpStatus>(HttpStatus.INTERNAL_SERVER_ERROR);
                             } else {
                                 return new ResponseEntity<HttpStatus>(HttpStatus.OK);

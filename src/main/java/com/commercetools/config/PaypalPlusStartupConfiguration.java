@@ -2,18 +2,21 @@ package com.commercetools.config;
 
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
+import com.commercetools.pspadapter.notification.validation.NotificationValidationFilter;
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.pspadapter.tenant.TenantProperties;
 import com.paypal.api.payments.Webhook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import javax.annotation.Nonnull;
+import javax.servlet.Filter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,14 +28,14 @@ import static java.lang.String.format;
 @Configuration
 public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
 
-    // todo: put this to config file
-    private static final String NOTIFICATION_URL_TEMPLATE = "https://53fd60b6.ngrok.io/%s/paypalplus/notification";
-
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
 
     @Autowired
     TenantProperties tenantProperties;
+
+    @Value("${ctp.paypal.plus.integration.server.url}")
+    private String integrationServerUrl;
 
     @Bean
     public Map<String, Webhook> tenantNameToWebhookMap() {
@@ -44,7 +47,7 @@ public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
                     return tenantConfigOpt.map(tenantConfig -> {
                         PaypalPlusFacade paypalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
                         return paypalPlusFacade.getPaymentService()
-                                .ensureWebhook(format(NOTIFICATION_URL_TEMPLATE, tenantConfig.getCtpProjectKey()))
+                                .ensureWebhook(format(integrationServerUrl + "/%s/paypalplus/notification", tenantConfig.getCtpProjectKey()))
                                 .thenApply(webhook -> new WebhookWithTenantName(webhook, tenantName))
                                 .toCompletableFuture().join();
                     }).orElse(null);
@@ -66,6 +69,11 @@ public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
         registry.addInterceptor(notificationValidationInterceptor())
                 .addPathPatterns("/*/" + PSP_NAME + "/notification");
         super.addInterceptors(registry);
+    }
+
+    @Bean
+    public Filter notificationValidationFilter() {
+        return new NotificationValidationFilter();
     }
 }
 

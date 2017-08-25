@@ -12,3 +12,5 @@ tenantConfig:
         id:
         secret:
         mode: sandbox
+
+ctp.paypal.plus.integration.server.url: https://integration-server-url.com

@@ -11,7 +11,7 @@ import java.util.concurrent.CompletionStage;
  */
 public interface CartService {
 
-    CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String paymentId);
+    CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String ctpPaymentId);
 
     CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface, @Nullable String interfaceId);
 }

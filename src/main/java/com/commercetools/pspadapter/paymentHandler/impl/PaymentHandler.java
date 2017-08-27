@@ -117,10 +117,27 @@ public class PaymentHandler {
         }
     }
 
+    public PaymentHandleResponse patchAddress(@Nonnull String ctpPaymentId) {
+        return ctpFacade.getCartService().getByPaymentId(ctpPaymentId)
+                .thenCombineAsync(ctpFacade.getPaymentService().getById(ctpPaymentId),
+                        (cartOpt, ctpPaymentOpt) -> {
+                            if (cartOpt.isPresent() && ctpPaymentOpt.isPresent()
+                                    && ctpPaymentOpt.get().getInterfaceId() != null) {
+                                return patchAddress(cartOpt.get(), ctpPaymentOpt.get().getInterfaceId());
+                            } else {
+                                return PaymentHandleResponse.of400BadRequest(
+                                        format("Payment payment=[%s] does not exists or does not have a connected cart.",
+                                                ctpPaymentId));
+                            }
+                        })
+                .toCompletableFuture().join();
+    }
+
     public PaymentHandleResponse patchAddress(@Nonnull Cart cart, @Nonnull String paypalPlusPaymentId) {
         try {
             Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
             ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cart);
+            // todo: add mapper for billing address
             Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
             CompletionStage<PaymentHandleResponse> patchCS = paypalPlusFacade.getPaymentService().patch(paypalPlusPayment, replace)
                     .thenApply(payment -> PaymentHandleResponse.ofStatusCode(HttpStatus.OK));

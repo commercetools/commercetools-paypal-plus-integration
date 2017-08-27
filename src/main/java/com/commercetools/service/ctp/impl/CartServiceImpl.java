@@ -25,11 +25,11 @@ public class CartServiceImpl extends BaseSphereService implements CartService {
     }
 
     @Override
-    public CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String paymentId) {
-        if (StringUtils.isEmpty(paymentId)) {
+    public CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String ctpPaymentId) {
+        if (StringUtils.isEmpty(ctpPaymentId)) {
             return completedFuture(Optional.empty());
         }
-        CartQuery cartQuery = CartQuery.of().withPredicates(m -> m.paymentInfo().payments().id().is(paymentId));
+        CartQuery cartQuery = CartQuery.of().withPredicates(m -> m.paymentInfo().payments().id().is(ctpPaymentId));
         return sphereClient.execute(cartQuery).thenApplyAsync(PagedQueryResult::head);
     }
 

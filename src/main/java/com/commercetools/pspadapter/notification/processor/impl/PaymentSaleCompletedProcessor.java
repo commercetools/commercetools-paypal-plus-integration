@@ -13,6 +13,7 @@ import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -29,14 +30,14 @@ public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
     }
 
     @Override
-    public boolean canProcess(Event event) {
+    public boolean canProcess(@Nonnull Event event) {
         return NotificationEventType.PAYMENT_SALE_COMPLETED.getPaypalEventTypeName()
                 .equalsIgnoreCase(event.getEventType());
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public CompletionStage<Optional<Payment>> getRelatedCtpPayment(CtpFacade ctpFacade, Event event) {
+    CompletionStage<Optional<Payment>> getRelatedCtpPayment(@Nonnull CtpFacade ctpFacade, @Nonnull Event event) {
         Map<String, String> resource = (Map<String, String>) event.getResource();
         String ppPlusPaymentId = resource.get("parent_payment");
 
@@ -45,8 +46,8 @@ public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
     }
 
     @Override
-    public ChangeTransactionState createUpdatePaymentStatus(Payment ctpPayment, Event event) {
+    Optional<ChangeTransactionState> createChangeTransactionState(@Nonnull Payment ctpPayment) {
         Optional<Transaction> txnOpt = findMatchingTxn(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
-        return txnOpt.map(txn -> ChangeTransactionState.of(TransactionState.SUCCESS, txn.getId())).orElse(null);
+        return txnOpt.map(txn -> ChangeTransactionState.of(TransactionState.SUCCESS, txn.getId()));
     }
 }

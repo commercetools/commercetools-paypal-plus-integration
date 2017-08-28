@@ -1,7 +1,7 @@
 package com.commercetools.pspadapter.tenant;
 
+import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.util.CtpClientConfigurationUtils;
-import com.paypal.base.rest.APIContext;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 
@@ -69,7 +69,7 @@ public class TenantConfig {
                 this.ctpClientSecret);
     }
 
-    public APIContext createAPIContext() {
-        return new APIContext(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
+    public APIContextFactory createAPIContextFactory() {
+        return new APIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
     }
 }

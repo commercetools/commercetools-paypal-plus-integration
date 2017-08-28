@@ -2,7 +2,6 @@ package com.commercetools.helper.mapper.impl;
 
 import com.commercetools.helper.mapper.ShippingAddressMapper;
 import com.paypal.api.payments.ShippingAddress;
-import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.models.Address;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +12,7 @@ public class ShippingAddressMapperImpl implements ShippingAddressMapper {
     private static final Logger LOG = LoggerFactory.getLogger(ShippingAddressMapperImpl.class);
 
     @Override
-    public ShippingAddress ctpAddressToPaypalPlusAddress(Cart cart) {
-        Address ctpAddress = cart.getShippingAddress();
+    public ShippingAddress ctpAddressToPaypalPlusAddress(Address ctpAddress) {
         ShippingAddress paypalAddress = new ShippingAddress();
         paypalAddress.setRecipientName(ctpAddress.getLastName());
         paypalAddress.setLine1(ctpAddress.getStreetName());

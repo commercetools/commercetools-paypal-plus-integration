@@ -1,9 +1,9 @@
 package com.commercetools.service.paypalPlus.impl;
 
 import com.commercetools.Application;
+import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.paypal.api.payments.*;
-import com.paypal.base.rest.APIContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class PaypalPlusPaymentServiceImplIntegrationTest {
      * It is used to supply store credit card.
      */
     @Autowired
-    private APIContext paypalPlusApiContext;
+    private APIContextFactory apiContextFactory;
 
     @Test
     public void validatePaymentServiceContextInjection() {
@@ -45,7 +45,7 @@ public class PaypalPlusPaymentServiceImplIntegrationTest {
     @Test
     public void createPseudoCreditCardPayment() throws Exception {
         CreditCard dummyCreditCard = dummyCreditCard();
-        final CreditCard storedCreditCard = dummyCreditCard.create(paypalPlusApiContext);
+        final CreditCard storedCreditCard = dummyCreditCard.create(apiContextFactory.createAPIContext());
 
         Payment mockPayment = dummyCreditCardSecurePayment(storedCreditCard.getId());
 

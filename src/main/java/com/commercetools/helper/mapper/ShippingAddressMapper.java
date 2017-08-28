@@ -1,9 +1,9 @@
 package com.commercetools.helper.mapper;
 
 import com.paypal.api.payments.ShippingAddress;
-import io.sphere.sdk.carts.Cart;
+import io.sphere.sdk.models.Address;
 
 public interface ShippingAddressMapper {
 
-    ShippingAddress ctpAddressToPaypalPlusAddress (Cart cart);
+    ShippingAddress ctpAddressToPaypalPlusAddress(Address ctpAddress);
 }

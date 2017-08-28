@@ -86,3 +86,30 @@ In this process, there are 3 parties involved:
     POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
     {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
     ```
+    
+## HTTP Responses
+All endpoints accept and return data as JSON.
+
+1. Return HTTP codes on `create/payments` endpoint URL:
+- **201**: successfully created payment in PayPal and CTP updated with approvalUrl as custom field
+- **404**: resource not found by the supplied UUID/ID
+- **400**: required request parameters are missing or wrong
+- **503**: any exception which implies that request can be safely retried with the same parameters/payload again
+- **500**: unexpected/not handled exceptions
+
+1. Return HTTP codes on `execute/payments` endpoint URL:
+- **201**: successfully executed payment in PayPal, created transaction in CTP
+- **404**: resource not found by the supplied UUID/ID
+- **400**: required request parameters are missing or wrong
+- **503**: any exception which implies that request can be safely retried with the same parameters/payload again
+- **500**: unexpected/not handled exceptions
+
+Additionally, response can contain additional response body. All fields of the response body are optional. Example:
+```json
+{
+  "message": "Successful processing",
+  "approvalUrl": "https://test.de",              # applicable only in case of create payment
+  "error": "",                                   # only in case of error and represents a unique error code
+  "errorDescription": "Parameter 'x' is missing" # only in case of error
+}
+```

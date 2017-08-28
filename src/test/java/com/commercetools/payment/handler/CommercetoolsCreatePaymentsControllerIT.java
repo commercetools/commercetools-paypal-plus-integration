@@ -2,8 +2,10 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
+import com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
@@ -15,12 +17,15 @@ import io.sphere.sdk.carts.commands.CartCreateCommand;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
 import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.PaymentDraftBuilder;
+import io.sphere.sdk.payments.PaymentDraftDsl;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
-import io.sphere.sdk.types.CustomFieldsDraftBuilder;
+import io.sphere.sdk.payments.queries.PaymentByIdGet;
+import io.sphere.sdk.types.CustomFields;
+import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,25 +37,29 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import javax.annotation.Nonnull;
+import javax.money.MonetaryAmount;
 import java.net.URL;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.commercetools.helper.mapper.PaymentMapper.getApprovalUrl;
-import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
-import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
+import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentDraftBuilder;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.lang.String.format;
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -63,7 +72,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
 // completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
-public class CommercetoolsCreatePaymentsControllerIntegrationTest {
+public class CommercetoolsCreatePaymentsControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -80,7 +89,7 @@ public class CommercetoolsCreatePaymentsControllerIntegrationTest {
         tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
                 .orElseThrow(IllegalStateException::new);
 
-        ctpFacade = CtpFacadeFactory.getCtpFacade(tenantConfig);
+        ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
 
         sphereClient = tenantConfig.createSphereClient();
     }
@@ -104,8 +113,6 @@ public class CommercetoolsCreatePaymentsControllerIntegrationTest {
         // validate response json: statusCode and approvalUrl
         JsonNode responseBody = SphereJsonUtils.parse(mvcResult.getResponse().getContentAsString());
 
-        assertThat(responseBody.get("statusCode").asInt()).isEqualTo(CREATED.value());
-
         String returnedApprovalUrl = responseBody.get(APPROVAL_URL).asText();
         assertThat(returnedApprovalUrl).isNotBlank();
         URL url = new URL(returnedApprovalUrl);
@@ -118,7 +125,7 @@ public class CommercetoolsCreatePaymentsControllerIntegrationTest {
                 .orElse(null);
         assertThat(pPPaymentToken).isNotBlank();
 
-        // verify CTP payment values: approval url + interfaceId
+        // verify CTP payment values: approval url + interfaceId + interface interaction
         Payment updatedPayment = executeBlocking(ctpFacade.getPaymentService().getById(paymentId)).orElse(null);
         assertThat(updatedPayment).isNotNull();
 
@@ -127,10 +134,13 @@ public class CommercetoolsCreatePaymentsControllerIntegrationTest {
         String ppPaymentId = updatedPayment.getInterfaceId();
         assertThat(ppPaymentId).isNotNull();
 
+        assertInterfaceInteractions(paymentId);
+
         // try to fetch payment from PP and verify it
         // this line could be change if PaypalPlusPaymentService is extended to have "getById" functionality
+        APIContextFactory apiContextFactory = tenantConfig.createAPIContextFactory();
         com.paypal.api.payments.Payment createdPpPayment =
-                com.paypal.api.payments.Payment.get(tenantConfig.createAPIContext(), ppPaymentId);
+                com.paypal.api.payments.Payment.get(apiContextFactory.createAPIContext(), ppPaymentId);
 
         assertThat(createdPpPayment).isNotNull();
         assertThat(createdPpPayment.getState()).isEqualTo("created");
@@ -141,41 +151,103 @@ public class CommercetoolsCreatePaymentsControllerIntegrationTest {
     }
 
     @Test
-    public void shouldReturnErrorIfPaymentIsMissing() throws Exception {
-        // TODO: andrii.kovalenko
+    public void whenPaymentIsMissing_shouldReturnError() throws Exception {
+        this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, "nonUUIDString")))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, UUID.randomUUID().toString())))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    public void shouldReturnErrorIfCartIsMissing() throws Exception {
-        // TODO: andrii.kovalenko
+    public void whenCartIsMissing_shouldReturnError() throws Exception {
+        Payment payment = executeBlocking(createPaymentCS(Money.of(10, EUR), Locale.ENGLISH));
+        MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andReturn();
+
+        JsonNode responseBody = SphereJsonUtils.parse(mvcResult.getResponse().getContentAsString());
+        assertThat(responseBody.get("errorMessage").asText()).isNotBlank();
     }
 
     @Test
-    public void shouldReturnErrorIfPaymentInterfaceIsIncorrect() throws Exception {
-        // TODO: andrii.kovalenko
+    public void whenPaymentInterfaceIsIncorrect_shouldReturnError() throws Exception {
+        PaymentDraftDsl dsl = createPaymentDraftBuilder(Money.of(10, EUR), Locale.ENGLISH)
+                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface("NOT-PAYPAL-INTERFACE").method(PAYPAL).build())
+                .build();
+
+        Cart cart = executeBlocking(createCartCS()
+                .thenCompose(c -> sphereClient.execute(PaymentCreateCommand.of(dsl))
+                        .thenApply(payment -> new CtpPaymentWithCart(payment, c))
+                        .thenCompose(ctpPaymentWithCart -> sphereClient.execute(CartUpdateCommand.of(ctpPaymentWithCart.getCart(),
+                                AddPayment.of(ctpPaymentWithCart.getPayment()))))));
+
+        String paymentId = cart.getPaymentInfo().getPayments().get(0).getId();
+        MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        JsonNode responseBody = SphereJsonUtils.parse(mvcResult.getResponse().getContentAsString());
+        assertThat(responseBody.get("errorMessage").asText()).isNotBlank();
+    }
+
+    private void assertInterfaceInteractions(String paymentId) {
+        Payment paymentWithExpandedInteractions = executeBlocking(sphereClient.execute(
+                PaymentByIdGet.of(paymentId).plusExpansionPaths(ExpansionPath.of("interfaceInteractions[*].type"))
+        ));
+
+        assertThat(paymentWithExpandedInteractions.getInterfaceInteractions()).hasSize(2);
+        Optional<CustomFields> requestInteractionOpt = paymentWithExpandedInteractions.getInterfaceInteractions().stream()
+                .filter(customFields -> customFields.getType().getObj().getKey().equals(InterfaceInteractionType.REQUEST.getInterfaceKey()))
+                .findAny();
+
+        assertThat(requestInteractionOpt).isNotEmpty();
+        assertThat(requestInteractionOpt.get().getFieldAsString("timestamp")).isNotEmpty();
+        String request = requestInteractionOpt.get().getFieldAsString(
+                InterfaceInteractionType.REQUEST.getValueFieldName()
+        );
+        assertThat(request).isNotEmpty();
+        assertThat(SphereJsonUtils.parse(request)).isNotEmpty();
+
+        Optional<CustomFields> responseInteractionOpt = paymentWithExpandedInteractions.getInterfaceInteractions().stream()
+                .filter(customFields -> customFields.getType().getObj().getKey().equals(InterfaceInteractionType.RESPONSE.getInterfaceKey()))
+                .findAny();
+
+        assertThat(responseInteractionOpt).isNotEmpty();
+        assertThat(responseInteractionOpt.get().getFieldAsString("timestamp")).isNotEmpty();
+        String response = responseInteractionOpt.get().getFieldAsString(
+                InterfaceInteractionType.RESPONSE.getValueFieldName()
+        );
+        assertThat(response).isNotEmpty();
+        assertThat(SphereJsonUtils.parse(response)).isNotEmpty();
     }
 
     private String createCartAndPayment() {
-        CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
-                .currency(EUR)
-                .build();
-
-        Cart updatedCart = executeBlocking(sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts))
-                .thenCompose(cart -> sphereClient.execute(PaymentCreateCommand.of(
-                        PaymentDraftBuilder.of(cart.getTotalPrice())
-                                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(PAYPAL).build())
-                                .custom(CustomFieldsDraftBuilder.ofTypeKey("payment-paypal")
-                                        .addObject(SUCCESS_URL_FIELD, "http://example.com/success/23456789")
-                                        .addObject(CANCEL_URL_FIELD, "http://example.com/cancel/23456789")
-                                        .addObject(REFERENCE, "23456789")
-                                        .addObject(LANGUAGE_CODE_FIELD, ofNullable(cart.getLocale()).orElse(DEFAULT_LOCALE).getLanguage())
-                                        .build())
-                                .build()))
+        Cart updatedCart = executeBlocking(createCartCS()
+                .thenCompose(cart -> createPaymentCS(cart.getTotalPrice(), cart.getLocale())
                         .thenApply(payment -> new CtpPaymentWithCart(payment, cart))
                         .thenCompose(ctpPaymentWithCart -> sphereClient.execute(CartUpdateCommand.of(ctpPaymentWithCart.getCart(),
                                 AddPayment.of(ctpPaymentWithCart.getPayment()))))));
 
         return updatedCart.getPaymentInfo().getPayments().get(0).getId();
+    }
+
+    private CompletionStage<Cart> createCartCS() {
+        CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
+                .currency(EUR)
+                .build();
+        return sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts));
+    }
+
+    private CompletionStage<Payment> createPaymentCS(@Nonnull MonetaryAmount totalPrice, Locale locale) {
+        PaymentDraftDsl dsl = createPaymentDraftBuilder(totalPrice, locale)
+                .build();
+        return sphereClient.execute(PaymentCreateCommand.of(dsl));
     }
 
 }

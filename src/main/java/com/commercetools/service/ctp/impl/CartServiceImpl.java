@@ -28,11 +28,11 @@ public class CartServiceImpl extends BaseSphereService implements CartService {
 
     @Override
     public CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String ctpPaymentId) {
-        return getByPaymentId(paymentId, null);
+        return getByPaymentId(ctpPaymentId, null);
     }
 
     @Override
-    public CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String paymentId,
+    public CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String ctpPaymentId,
                                                           @Nullable String expansionPath) {
         if (StringUtils.isEmpty(ctpPaymentId)) {
             return completedFuture(Optional.empty());

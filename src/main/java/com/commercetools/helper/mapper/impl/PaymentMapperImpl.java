@@ -83,11 +83,7 @@ public class PaymentMapperImpl implements PaymentMapper {
         return new Amount()
                 .setCurrency(currencyCode)
                 .setTotal(paypalPlusFormatter.monetaryAmountToString(totalPrice))
-
-                // include details only when taxes issue is resolved
-                // https://github.com/commercetools/commercetools-paypal-plus-integration/issues/28
-                //.setDetails(getTransactionDetails(paymentWithCartLike))
-                ;
+                .setDetails(getTransactionDetails(paymentWithCartLike));
     }
 
     @Nonnull
@@ -127,13 +123,11 @@ public class PaymentMapperImpl implements PaymentMapper {
 
         // Total must be equal to the sum of shipping, tax and subtotal, if they are specified
         MonetaryAmount shipping = getActualShippingCost(paymentWithCartLike.getCart()).orElse(ZERO);
-        MonetaryAmount tax = getActualTax(paymentWithCartLike.getCart()).orElse(ZERO);
-        MonetaryAmount subtotal = totalPrice.subtract(shipping).subtract(tax);
+        MonetaryAmount subtotal = totalPrice.subtract(shipping);
 
         return new Details()
                 .setSubtotal(paypalPlusFormatter.monetaryAmountToString(subtotal))
-                .setShipping(paypalPlusFormatter.monetaryAmountToString(shipping))
-                .setTax(paypalPlusFormatter.monetaryAmountToString(tax));
+                .setShipping(paypalPlusFormatter.monetaryAmountToString(shipping));
     }
 
     /**

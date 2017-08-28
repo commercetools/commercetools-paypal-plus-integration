@@ -10,14 +10,13 @@ import javax.annotation.Nonnull;
 
 public class CtpFacadeFactory {
 
-    /**
-     * TODO: Lam: static method is a wrong approach here. The class should have a constructor, which accepts TenantConfig
-     * and then on demand generates CtpFacade.
-     * Same in {@link PaypalPlusFacadeFactory#getPaypalPlusFacade(com.commercetools.pspadapter.tenant.TenantConfig)}
-     * @param tenantConfig
-     * @return
-     */
-    public static CtpFacade getCtpFacade(@Nonnull TenantConfig tenantConfig) {
+    private final TenantConfig tenantConfig;
+
+    public CtpFacadeFactory(TenantConfig tenantConfig) {
+        this.tenantConfig = tenantConfig;
+    }
+
+    public CtpFacade getCtpFacade() {
         SphereClient sphereClient = tenantConfig.createSphereClient();
         CartServiceImpl cartService = new CartServiceImpl(sphereClient);
         OrderServiceImpl orderService = new OrderServiceImpl(sphereClient);

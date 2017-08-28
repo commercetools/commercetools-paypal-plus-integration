@@ -1,5 +1,6 @@
 package com.commercetools.testUtil.customTestConfigs;
 
+import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.tenant.TenantProperties;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
@@ -9,7 +10,6 @@ import com.commercetools.service.ctp.impl.OrderServiceImpl;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.commercetools.service.paypalPlus.impl.PaypalPlusPaymentServiceImpl;
-import com.paypal.base.rest.APIContext;
 import io.sphere.sdk.client.SphereAccessTokenSupplier;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
@@ -51,8 +51,8 @@ public class ServiceConfig {
 
     @Bean
     @Autowired
-    public PaypalPlusPaymentService paypalPlusPaymentService(APIContext apiContext) {
-        return new PaypalPlusPaymentServiceImpl(apiContext);
+    public PaypalPlusPaymentService paypalPlusPaymentService(APIContextFactory apiContextFactory) {
+        return new PaypalPlusPaymentServiceImpl(apiContextFactory);
     }
 
     @Bean
@@ -72,9 +72,9 @@ public class ServiceConfig {
     }
 
     @Bean
-    public APIContext apiContext() {
+    public APIContextFactory apiContextFactory() {
         // TODO: avoid explicit string config "paypalplus-integration-test"
         TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().get(MAIN_TEST_TENANT_NAME).getPaypalPlus();
-        return new APIContext(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
+        return new APIContextFactory(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
     }
 }

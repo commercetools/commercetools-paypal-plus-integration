@@ -62,7 +62,7 @@ In this process, there are 3 parties involved:
      ```javascript
          var ppp = PAYPAL.apps.PPP({
              onContinue: function () {
-                   $.post("/${tenantName}/commercetools/patch/payments/${ctpPaymentId}", function (data) {
+                   $.post("/url-to-your-shop-that-will-make-call-to-paypal-integration", function (data) {
                    if (data != false) {
                      ppp.doCheckout();
                    }
@@ -86,6 +86,29 @@ In this process, there are 3 parties involved:
     POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
     {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
     ```
+    2. In case of **invoice payment**, the bank details for the invoice will be saved as custom fields in the Payment object. Example:
+    ```json
+    {
+       "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "1455d4e6-41b4-yyyy-xxxx-4f120864e231"
+        },
+        "fields": {
+          "reference": "6KF07542JV235932C",
+          "paymentDueDate": "2017-09-27",
+          "amount": {
+            "centAmount": 200,
+            "currencyCode": "EUR"
+          },
+          "paidToIBAN": "DE1212121212123456789",
+          "paidToAccountBankName": "Deutsche Bank",
+          "paidToAccountHolderName": "PayPal Europe",
+          "paidToBIC": "DEUTDEDBPAL"
+        }
+      }
+    }
+    ``` 
     
 ## HTTP Responses
 All endpoints accept and return data as JSON.

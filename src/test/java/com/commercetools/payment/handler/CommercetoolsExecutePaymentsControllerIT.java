@@ -41,6 +41,7 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
+import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createCartAndPayment;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createCartDraftBuilder;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentDraftBuilder;
 import static java.lang.String.format;
@@ -86,7 +87,7 @@ public class CommercetoolsExecutePaymentsControllerIT {
 
     @Test
     public void whenPaypalPayerIdIsWrong_shouldPatch_thenShouldReturn400() throws Exception {
-        String paymentId = createCartAndPayment();
+        String paymentId = createCartAndPayment(sphereClient);
 
         this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)));
 
@@ -124,32 +125,5 @@ public class CommercetoolsExecutePaymentsControllerIT {
                 .andExpect(status().isNotFound())
                 .andReturn();
     }
-
-    private String createCartAndPayment() {
-        Cart updatedCart = executeBlocking(createCartCS()
-                .thenCompose(cart -> createPaymentCS(cart.getTotalPrice(), cart.getLocale())
-                        .thenApply(payment -> new CtpPaymentWithCart(payment, cart))
-                        .thenCompose(ctpPaymentWithCart -> sphereClient.execute(
-                                CartUpdateCommand.of(ctpPaymentWithCart.getCart(),
-                                        AddPayment.of(ctpPaymentWithCart.getPayment())
-                                ))
-                        )
-                ));
-
-        return updatedCart.getPaymentInfo().getPayments().get(0).getId();
-    }
-
-    private CompletionStage<Cart> createCartCS() {
-        CartDraft dummyComplexCartWithDiscounts = createCartDraftBuilder()
-                .build();
-        return sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts));
-    }
-
-    private CompletionStage<Payment> createPaymentCS(@Nonnull MonetaryAmount totalPrice, Locale locale) {
-        PaymentDraftDsl dsl = createPaymentDraftBuilder(totalPrice, locale)
-                .build();
-        return sphereClient.execute(PaymentCreateCommand.of(dsl));
-    }
-
 
 }

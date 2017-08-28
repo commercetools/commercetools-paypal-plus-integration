@@ -10,6 +10,7 @@ import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterface
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -18,6 +19,7 @@ import com.paypal.api.payments.Amount;
 import com.paypal.api.payments.Patch;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentExecution;
+import com.paypal.api.payments.PaymentInstruction;
 import com.paypal.api.payments.ShippingAddress;
 import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
@@ -48,8 +50,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.PAYER_ID;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.REQUEST;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.RESPONSE;
@@ -153,7 +154,7 @@ public class PaymentHandler {
     }
 
     public PaymentHandleResponse patchAddress(@Nonnull String ctpPaymentId) {
-        return ctpFacade.getCartService().getByPaymentId(ctpPaymentId)
+        return ctpFacade.getCartService().getByPaymentId(ctpPaymentId, "paymentInfo.payments[*]")
                 .thenCombineAsync(ctpFacade.getPaymentService().getById(ctpPaymentId),
                         (cartOpt, ctpPaymentOpt) -> {
                             if (cartOpt.isPresent() && ctpPaymentOpt.isPresent()
@@ -279,19 +280,41 @@ public class PaymentHandler {
         return ctpFacade.getPaymentService()
                 // 1. add execute request to the ctp payment as interaction interface
                 .updatePayment(ctpPayment.getId(), Collections.singletonList(interactionAction))
-                .thenCompose(payment -> {
+                .thenCompose(updatedCtpPayment -> {
                     // 2. send execute request to paypal
                     return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
                             paymentExecution)
                             .thenCompose(paypalPayment -> {
-                                AddInterfaceInteraction addInteractionAction = createAddInterfaceInteractionAction(paypalPayment, RESPONSE);
                                 // 3. add paypal response to the ctp payment as interaction interface
-                                return ctpFacade.getPaymentService().updatePayment(payment, Collections.singletonList(addInteractionAction))
+                                return updateCtpPayment(paypalPayment, updatedCtpPayment)
                                         // 4. create charge transaction in the ctp payment
-                                        .thenApply(updatedCtpPayment -> createChargeTransaction(paypalPlusPaymentId, paypalPayment, updatedCtpPayment));
+                                        .thenApply(updatedCtpPayment2 -> createChargeTransaction(paypalPlusPaymentId, paypalPayment, updatedCtpPayment2));
                             });
                 })
                 .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.CREATED));
+    }
+
+    private CompletionStage<io.sphere.sdk.payments.Payment> updateCtpPayment(Payment paypalPayment, io.sphere.sdk.payments.Payment ctpPayment) {
+        ImmutableList.Builder<UpdateAction<io.sphere.sdk.payments.Payment>> builder = ImmutableList.builder();
+        builder.add(createAddInterfaceInteractionAction(paypalPayment, RESPONSE));
+        PaymentInstruction paymentInstruction = paypalPayment.getPaymentInstruction();
+        if (paymentInstruction != null) {
+            builder.addAll(createAddPaymentInstructionAction(paymentInstruction));
+        }
+        return ctpFacade.getPaymentService().updatePayment(ctpPayment, builder.build());
+    }
+
+    private List<SetCustomField> createAddPaymentInstructionAction(PaymentInstruction paymentInstruction) {
+        ImmutableList.Builder<SetCustomField> listBuilder = ImmutableList.builder();
+        listBuilder.add(SetCustomField.ofObject(REFERENCE, paymentInstruction.getReferenceNumber()));
+        listBuilder.add(SetCustomField.ofObject(BANK_NAME, paymentInstruction.getRecipientBankingInstruction().getBankName()));
+        listBuilder.add(SetCustomField.ofObject(ACCOUNT_HOLDER_NAME, paymentInstruction.getRecipientBankingInstruction().getAccountHolderName()));
+        listBuilder.add(SetCustomField.ofObject(IBAN, paymentInstruction.getRecipientBankingInstruction().getInternationalBankAccountNumber()));
+        listBuilder.add(SetCustomField.ofObject(BIC, paymentInstruction.getRecipientBankingInstruction().getBankIdentifierCode()));
+        listBuilder.add(SetCustomField.ofObject(PAYMENT_DUE_DATE, paymentInstruction.getPaymentDueDate()));
+        listBuilder.add(SetCustomField.ofObject(AMOUNT, Money.of(new BigDecimal(paymentInstruction.getAmount().getValue()),
+                paymentInstruction.getAmount().getCurrency())));
+        return listBuilder.build();
     }
 
     private CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull String paypalPlusPaymentId,
@@ -299,7 +322,8 @@ public class PaymentHandler {
                                                                                     io.sphere.sdk.payments.Payment ctpPayment) {
         if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
             return createChargeTransaction(paypalPayment, ctpPayment.getId(), SUCCESS);
-        } else if (PaypalPlusPaymentStates.CREATED.equals(paypalPayment.getState())) {
+        } else if (PaypalPlusPaymentStates.CREATED.equals(paypalPayment.getState())
+                || PaypalPlusPaymentStates.PENDING.equals(paypalPayment.getState())) {
             return createChargeTransaction(paypalPayment, ctpPayment.getId(), PENDING);
         } else {
             throw new PaypalPlusException(format("Error when approving payment [%s], current state=[%s]",

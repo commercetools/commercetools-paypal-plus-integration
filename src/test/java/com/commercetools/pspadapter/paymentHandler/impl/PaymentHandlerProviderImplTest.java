@@ -142,6 +142,9 @@ public class PaymentHandlerProviderImplTest {
 
         PaymentHandleResponse response = paymentHandler.executePayment(ctpPayment.getInterfaceId(), "invalidTestPayerId");
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+
+        ctpPayment = sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)).toCompletableFuture().join();
+        assertThat(ctpPayment.getTransactions()).isEmpty();
     }
 
     /**

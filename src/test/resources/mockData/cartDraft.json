@@ -5,13 +5,16 @@
   "lineItems" : [],
   "customLineItems" : [],
   "shippingAddress" : {
-    "country" : "DE",
-    "firstName" : "FN",
-    "lastName" : "LN",
-    "streetName" : "sname",
-    "streetNumber" : "1",
-    "postalCode" : "12345",
-    "city" : "city"
+    "title": "Mr.",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm 100",
+    "additionalStreetInfo": "",
+    "postalCode": "10709",
+    "city": "Berlin",
+    "country": "DE",
+    "phone": "+491234567890",
+    "email": "max.mustermann@gmail.com"
   },
   "locale" : "en"
 }

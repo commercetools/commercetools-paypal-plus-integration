@@ -18,7 +18,7 @@ public class PaypalPlusFacadeFactoryTest {
         TenantProperties tenantProperties = setUpMockTenantProperties(existingTenantName);
 
         TenantConfigFactory tenantConfigFactory = new TenantConfigFactory(tenantProperties);
-        PaypalPlusFacade pPTenant = PaypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfigFactory.getTenantConfig(existingTenantName).get());
+        PaypalPlusFacade pPTenant = new PaypalPlusFacadeFactory(tenantConfigFactory.getTenantConfig(existingTenantName).get()).getPaypalPlusFacade();
         assertThat(pPTenant).isNotNull();
     }
 }

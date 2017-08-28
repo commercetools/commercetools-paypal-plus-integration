@@ -65,7 +65,7 @@ public class PaymentHandlerProviderImplTest {
         sphereClient = tenantConfigOpt.map(TenantConfig::createSphereClient).orElse(null);
 
         this.paypalPlusFacade = tenantConfigOpt
-                .map(PaypalPlusFacadeFactory::getPaypalPlusFacade)
+                .map(tenantConfig -> new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade())
                 .orElse(null);
     }
 

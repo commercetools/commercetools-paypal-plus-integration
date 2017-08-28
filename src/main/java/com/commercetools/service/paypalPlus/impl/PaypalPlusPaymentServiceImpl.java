@@ -1,11 +1,11 @@
 package com.commercetools.service.paypalPlus.impl;
 
 import com.commercetools.exception.PaypalPlusServiceException;
+import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.paypal.api.payments.Patch;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentExecution;
-import com.paypal.api.payments.ShippingAddress;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,18 +22,18 @@ import java.util.concurrent.CompletionStage;
 public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implements PaypalPlusPaymentService {
 
     @Autowired
-    public PaypalPlusPaymentServiceImpl(@Nonnull APIContext paypalPlusApiContext) {
-        super(paypalPlusApiContext);
+    public PaypalPlusPaymentServiceImpl(@Nonnull APIContextFactory paypalPlusApiContextFactory) {
+        super(paypalPlusApiContextFactory);
     }
 
     @Override
     public CompletionStage<Payment> create(@Nonnull Payment payment) {
-        return paymentStageWrapper(() -> payment.create(paypalPlusApiContext));
+        return paymentStageWrapper((paypalPlusApiContext) -> payment.create(paypalPlusApiContext));
     }
 
     @Override
     public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull Patch patch) {
-        return paymentStageWrapper(() -> {
+        return paymentStageWrapper((paypalPlusApiContext) -> {
             payment.update(paypalPlusApiContext, Collections.singletonList(patch));
             return payment;
         });
@@ -46,12 +46,12 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
      */
     @Override
     public CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution) {
-        return paymentStageWrapper(() -> payment.execute(paypalPlusApiContext, paymentExecution));
+        return paymentStageWrapper((paypalPlusApiContext) -> payment.execute(paypalPlusApiContext, paymentExecution));
     }
 
     @Override
     public CompletionStage<Payment> lookUp(@Nonnull String paymentId) {
-        return paymentStageWrapper(() -> Payment.get(paypalPlusApiContext, paymentId));
+        return paymentStageWrapper((paypalPlusApiContext) -> Payment.get(paypalPlusApiContext, paymentId));
     }
 
     /**
@@ -67,11 +67,12 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
      * @param supplier which call the necessary functions.
      * @return a {@link CompletionStage<Payment>} with new stored Paypal Plus payment.
      */
-    private <R> CompletionStage<R> paymentStageWrapper(@Nonnull PayPalRESTExceptionSupplier<R> supplier)
+    private <R> CompletionStage<R> paymentStageWrapper(@Nonnull PayPalRESTExceptionSupplier<APIContext, R> supplier)
             throws PaypalPlusServiceException {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return supplier.apply();
+                APIContext context = paypalPlusApiContextFactory.createAPIContext();
+                return supplier.apply(context);
             } catch (PayPalRESTException e) {
                 throw new PaypalPlusServiceException("Create Paypal Plus payment exception", e);
             }
@@ -79,7 +80,7 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
     }
 
     @FunctionalInterface
-    private interface PayPalRESTExceptionSupplier<R> {
-        R apply() throws PayPalRESTException;
+    private interface PayPalRESTExceptionSupplier<T, R> {
+        R apply(T apiContext) throws PayPalRESTException;
     }
 }

@@ -18,7 +18,7 @@ public class CtpFacadeFactoryTest {
         TenantProperties tenantProperties = setUpMockTenantProperties(existingTenantName);
 
         TenantConfigFactory tenantConfigFactory = new TenantConfigFactory(tenantProperties);
-        CtpFacade ctTenant = CtpFacadeFactory.getCtpFacade(tenantConfigFactory.getTenantConfig(existingTenantName).get());
+        CtpFacade ctTenant = new CtpFacadeFactory(tenantConfigFactory.getTenantConfig(existingTenantName).get()).getCtpFacade();
         assertThat(ctTenant).isNotNull();
     }
 }

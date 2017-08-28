@@ -503,27 +503,27 @@
   "country": "DE",
   "shippingAddress": {
     "title": "Mr.",
-    "firstName": "Testperson-de",
-    "lastName": "Approved",
-    "streetName": "Hellersbergstraße 14",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm 100",
     "additionalStreetInfo": "",
-    "postalCode": "41460",
-    "city": "Neuss",
+    "postalCode": "10709",
+    "city": "Berlin",
     "country": "DE",
-    "phone": "01522113356",
-    "email": "youremail@email.com"
+    "phone": "+491234567890",
+    "email": "max.mustermann@gmail.com"
   },
   "billingAddress": {
     "title": "Mr.",
-    "firstName": "Testperson-de",
-    "lastName": "Approved",
-    "streetName": "Hellersbergstraße 14",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm 100",
     "additionalStreetInfo": "",
-    "postalCode": "41460",
-    "city": "Neuss",
+    "postalCode": "10709",
+    "city": "Berlin",
     "country": "DE",
-    "phone": "01522113356",
-    "email": "youremail@email.com"
+    "phone": "+491234567890",
+    "email": "max.mustermann@gmail.com"
   },
   "customLineItems": [],
   "discountCodes": [

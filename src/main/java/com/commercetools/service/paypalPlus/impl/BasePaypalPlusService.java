@@ -1,14 +1,14 @@
 package com.commercetools.service.paypalPlus.impl;
 
-import com.paypal.base.rest.APIContext;
+import com.commercetools.pspadapter.APIContextFactory;
 
 import javax.annotation.Nonnull;
 
 abstract class BasePaypalPlusService {
 
-    final APIContext paypalPlusApiContext;
+    final APIContextFactory paypalPlusApiContextFactory;
 
-    BasePaypalPlusService(@Nonnull APIContext paypalPlusApiContext) {
-        this.paypalPlusApiContext = paypalPlusApiContext;
+    BasePaypalPlusService(@Nonnull APIContextFactory paypalPlusApiContextFactory) {
+        this.paypalPlusApiContextFactory = paypalPlusApiContextFactory;
     }
 }

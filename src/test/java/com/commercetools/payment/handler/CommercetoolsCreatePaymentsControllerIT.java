@@ -151,7 +151,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
     }
 
     @Test
-    public void whenPaymentIsMissing_shouldReturnError() throws Exception {
+    public void whenPaymentIsMissing_shouldReturn4xxError() throws Exception {
         this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, "nonUUIDString")))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -163,8 +163,8 @@ public class CommercetoolsCreatePaymentsControllerIT {
     }
 
     @Test
-    public void whenCartIsMissing_shouldReturnError() throws Exception {
-        Payment payment = executeBlocking(createPaymentCS(Money.of(10, EUR), Locale.ENGLISH));
+    public void whenCartIsMissing_shouldReturn404() throws Exception {
+        Payment payment = executeBlocking(createPaymentCompletationStage(Money.of(10, EUR), Locale.ENGLISH));
         MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andDo(print())
                 .andExpect(status().isNotFound())
@@ -175,7 +175,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
     }
 
     @Test
-    public void whenPaymentInterfaceIsIncorrect_shouldReturnError() throws Exception {
+    public void whenPaymentInterfaceIsIncorrect_shouldReturn400() throws Exception {
         PaymentDraftDsl dsl = createPaymentDraftBuilder(Money.of(10, EUR), Locale.ENGLISH)
                 .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface("NOT-PAYPAL-INTERFACE").method(PAYPAL).build())
                 .build();
@@ -229,7 +229,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
 
     private String createCartAndPayment() {
         Cart updatedCart = executeBlocking(createCartCS()
-                .thenCompose(cart -> createPaymentCS(cart.getTotalPrice(), cart.getLocale())
+                .thenCompose(cart -> createPaymentCompletationStage(cart.getTotalPrice(), cart.getLocale())
                         .thenApply(payment -> new CtpPaymentWithCart(payment, cart))
                         .thenCompose(ctpPaymentWithCart -> sphereClient.execute(CartUpdateCommand.of(ctpPaymentWithCart.getCart(),
                                 AddPayment.of(ctpPaymentWithCart.getPayment()))))));
@@ -244,7 +244,8 @@ public class CommercetoolsCreatePaymentsControllerIT {
         return sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts));
     }
 
-    private CompletionStage<Payment> createPaymentCS(@Nonnull MonetaryAmount totalPrice, Locale locale) {
+    private CompletionStage<Payment> createPaymentCompletationStage(@Nonnull MonetaryAmount totalPrice,
+                                                                    Locale locale) {
         PaymentDraftDsl dsl = createPaymentDraftBuilder(totalPrice, locale)
                 .build();
         return sphereClient.execute(PaymentCreateCommand.of(dsl));

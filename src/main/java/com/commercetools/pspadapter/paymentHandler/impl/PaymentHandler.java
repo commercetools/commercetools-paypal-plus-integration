@@ -348,7 +348,8 @@ public class PaymentHandler {
                                    @Nonnull String paypalPlusPaymentId) {
         if (cartWithPaymentsExpansion.getPaymentInfo().getPayments() == null
                 || cartWithPaymentsExpansion.getPaymentInfo().getPayments().get(0).getObj() == null) {
-            throw new MissingExpansionException("Please provide expansion for cart.paymentInfo.payments[*]");
+            throw new MissingExpansionException(format("Please expand Cart with cart.paymentInfo.payments[*] for cartId=[%s]",
+                    cartWithPaymentsExpansion.getId()));
         }
         return cartWithPaymentsExpansion.getPaymentInfo().getPayments().stream()
                 .filter(paymentReference -> paypalPlusPaymentId.equals(paymentReference.getObj().getInterfaceId()))

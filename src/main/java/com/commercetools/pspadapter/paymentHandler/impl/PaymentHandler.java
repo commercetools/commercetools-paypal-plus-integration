@@ -308,7 +308,7 @@ public class PaymentHandler {
                         }
                     }
                     CompletionStage<PaymentHandleResponse> paymentHandleResponseStage = CompletableFuture.completedFuture(PaymentHandleResponse.of400BadRequest(
-                            format("%s [%s] can't be processed, details: [%s]", paymentIdType, paymentId, restException.getMessage())));
+                            format("%s [%s] can't be processed, details: [%s]", paymentIdType, paymentId, throwable.getMessage())));
                     return paymentHandleResponseStage.toCompletableFuture().join();
                 });
         return exceptionally.toCompletableFuture().join();
@@ -330,7 +330,7 @@ public class PaymentHandler {
                     return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, Collections.singletonList(action))
                             .thenApply(ignore -> {
                                 return PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
-                                        format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, throwable.getMessage()));
+                                        format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, restException.getMessage()));
                             });
                 });
         // todo: don't join here, but rather return completion stage

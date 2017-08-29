@@ -217,11 +217,11 @@ public class PaymentHandler {
                         PayPalRESTException restException = ((PaypalPlusServiceException) throwable).getCause();
                         if (restException != null) {
                             return PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
-                                    format("%s=[%s] can't be processed, see the logs", paymentIdType, paymentId));
+                                    format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, restException.getMessage()));
                         }
                     }
                     return PaymentHandleResponse.of400BadRequest(
-                            format("%s [%s] can't be processed, see the logs", paymentIdType, paymentId));
+                            format("%s [%s] can't be processed, details: [%s]", paymentIdType, paymentId, throwable.getMessage()));
                 }).toCompletableFuture().join();
 
     }

@@ -289,7 +289,7 @@ public class PaymentHandler {
         } else if (PaypalPlusPaymentStates.CREATED.equals(paypalPayment.getState())) {
             return createChargeTransaction(paypalPayment, ctpPayment.getId(), PENDING);
         } else {
-            throw new PaypalPlusException(format("Error when approving payment [%s], current state=[%s]",
+            throw new PaypalPlusException(format("Error when approving payment paypalPlusPaymentId=[%s], current state=[%s]",
                     paypalPlusPaymentId, paypalPayment.getState()));
         }
     }

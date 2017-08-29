@@ -156,29 +156,30 @@ public class PaymentHandler {
     public PaymentHandleResponse patchAddress(@Nonnull Cart cartWithPaymentsExpansion,
                                               @Nonnull String paypalPlusPaymentId) {
         try {
-            String paymentId = getCtpPaymentId(cartWithPaymentsExpansion, paypalPlusPaymentId);
-            if (paymentId == null) {
+            Optional<String> paymentIdOpt = getCtpPaymentId(cartWithPaymentsExpansion, paypalPlusPaymentId);
+            return paymentIdOpt.map(paymentId -> {
+                Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
+                ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cartWithPaymentsExpansion.getShippingAddress());
+                Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
+                AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(replace, REQUEST);
+                CompletionStage<PaymentHandleResponse> patchCS = ctpFacade.getPaymentService()
+                        // 1. add patch request to the ctp payment interface interaction
+                        .updatePayment(paymentId, Collections.singletonList(addInterfaceInteractionAction))
+                        .thenCompose(payment -> paypalPlusFacade.getPaymentService()
+                                // 2. patch payment on paypal
+                                .patch(paypalPlusPayment, replace)
+                                .thenCompose(pPPayment -> {
+                                    List<UpdateAction<io.sphere.sdk.payments.Payment>> actionList
+                                            = Collections.singletonList(createAddInterfaceInteractionAction(pPPayment, REQUEST));
+                                    // 3. save paypal response to the interface interaction in ctp payment
+                                    return ctpFacade.getPaymentService().updatePayment(payment, actionList);
+                                })
+                                .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.OK)));
+                return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
+            }).orElseThrow(() -> {
                 throw new PaypalPlusException(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
                         paypalPlusPaymentId, cartWithPaymentsExpansion.getId()));
-            }
-            Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
-            ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cartWithPaymentsExpansion.getShippingAddress());
-            Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
-            AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(replace, REQUEST);
-            CompletionStage<PaymentHandleResponse> patchCS = ctpFacade.getPaymentService()
-                    // 1. add patch request to the ctp payment interface interaction
-                    .updatePayment(paymentId, Collections.singletonList(addInterfaceInteractionAction))
-                    .thenCompose(payment -> paypalPlusFacade.getPaymentService()
-                            // 2. patch payment on paypal
-                            .patch(paypalPlusPayment, replace)
-                            .thenCompose(pPPayment -> {
-                                List<UpdateAction<io.sphere.sdk.payments.Payment>> actionList
-                                        = Collections.singletonList(createAddInterfaceInteractionAction(pPPayment, REQUEST));
-                                // 3. save paypal response to the interface interaction in ctp payment
-                                return ctpFacade.getPaymentService().updatePayment(payment, actionList);
-                            })
-                            .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.OK)));
-            return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
+            });
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return PaymentHandleResponse.of500InternalServerError(
@@ -343,7 +344,7 @@ public class PaymentHandler {
         return paymentHandleResponseStage;
     }
 
-    private String getCtpPaymentId(@Nonnull Cart cartWithPaymentsExpansion,
+    private Optional<String> getCtpPaymentId(@Nonnull Cart cartWithPaymentsExpansion,
                                    @Nonnull String paypalPlusPaymentId) {
         if (cartWithPaymentsExpansion.getPaymentInfo().getPayments() == null
                 || cartWithPaymentsExpansion.getPaymentInfo().getPayments().get(0).getObj() == null) {
@@ -352,7 +353,6 @@ public class PaymentHandler {
         return cartWithPaymentsExpansion.getPaymentInfo().getPayments().stream()
                 .filter(paymentReference -> paypalPlusPaymentId.equals(paymentReference.getObj().getInterfaceId()))
                 .findAny()
-                .map(paymentReference -> paymentReference.getObj().getId())
-                .orElse(null);
+                .map(paymentReference -> paymentReference.getObj().getId());
     }
 }

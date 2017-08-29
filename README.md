@@ -56,7 +56,7 @@ In this process, there are 3 parties involved:
         ```
         POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/patch/payments/${ctpPaymentId}
         ```
-    2. NOTICE: refer to the newest version of Paypal Plus Integration documentation to know how to make a request
+    2. NOTICE: frontend developers should refer to the newest version of Paypal Plus Integration documentation to know how to make a request
     before redirect in Javascript. As of August 2017, on submit should call `ppp.doContinue()`. Additionally,
     `ppp` object must be created with the following option:
      ```javascript

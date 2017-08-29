@@ -10,6 +10,7 @@ import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
+import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,12 +21,19 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Locale;
+import java.util.concurrent.CompletionStage;
+
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createCartAndPayment;
+import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentCS;
+import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -58,6 +66,13 @@ public class CommercetoolsPatchPaymentsControllerTest {
     }
 
     @Test
+    public void finalSlashIsProcessedToo() throws Exception {
+        this.mockMvc.perform(get("/asdhfasdfasf/commercetools/patch/payments/6753324-23452-sgsfgd/"))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
     public void shouldReturnNewPaypalPaymentId() throws Exception {
         final String ctpPaymentId = createCartAndPayment(sphereClient);
         this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s",
@@ -74,6 +89,15 @@ public class CommercetoolsPatchPaymentsControllerTest {
         // until it's fixed, it will be disabled
 //        com.paypal.api.payments.Payment ppPayment = executeBlocking(ppFacade.getPaymentService().lookUp(ctpPayment.getInterfaceId()));
 //        assertThat(ppPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
+    }
+
+    @Test
+    public void whenPaymentHasNoCart_shouldThrow400Error() throws Exception {
+        Payment payment = createPaymentCS(Money.of(10, USD), Locale.ENGLISH, sphereClient)
+                .toCompletableFuture().join();
+        this.mockMvc.perform(post(format("/%s/commercetools/patch/payments/%s",
+                MAIN_TEST_TENANT_NAME, payment.getId())))
+                .andExpect(status().isBadRequest());
     }
 
 

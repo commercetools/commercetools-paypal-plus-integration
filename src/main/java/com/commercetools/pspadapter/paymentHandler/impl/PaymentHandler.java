@@ -23,6 +23,7 @@ import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.payments.TransactionDraft;
 import io.sphere.sdk.payments.TransactionDraftBuilder;
@@ -346,12 +347,13 @@ public class PaymentHandler {
 
     private Optional<String> getCtpPaymentId(@Nonnull Cart cartWithPaymentsExpansion,
                                    @Nonnull String paypalPlusPaymentId) {
-        if (cartWithPaymentsExpansion.getPaymentInfo().getPayments() == null
-                || cartWithPaymentsExpansion.getPaymentInfo().getPayments().get(0).getObj() == null) {
+        List<Reference<io.sphere.sdk.payments.Payment>> payments
+                = cartWithPaymentsExpansion.getPaymentInfo().getPayments();
+        if (payments == null || payments.get(0).getObj() == null) {
             throw new MissingExpansionException(format("Please expand Cart with cart.paymentInfo.payments[*] for cartId=[%s]",
                     cartWithPaymentsExpansion.getId()));
         }
-        return cartWithPaymentsExpansion.getPaymentInfo().getPayments().stream()
+        return payments.stream()
                 .filter(paymentReference -> paypalPlusPaymentId.equals(paymentReference.getObj().getInterfaceId()))
                 .findAny()
                 .map(paymentReference -> paymentReference.getObj().getId());

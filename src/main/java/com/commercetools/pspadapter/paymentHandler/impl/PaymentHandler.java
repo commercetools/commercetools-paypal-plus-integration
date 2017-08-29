@@ -4,7 +4,7 @@ import com.commercetools.exception.MissingExpansionException;
 import com.commercetools.exception.PaypalPlusException;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.helper.mapper.PaymentMapper;
-import com.commercetools.helper.mapper.ShippingAddressMapper;
+import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates;
@@ -20,7 +20,6 @@ import com.paypal.api.payments.Patch;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentExecution;
 import com.paypal.api.payments.PaymentInstruction;
-import com.paypal.api.payments.ShippingAddress;
 import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
 import io.sphere.sdk.carts.Cart;
@@ -72,7 +71,7 @@ public class PaymentHandler {
     private final CtpFacade ctpFacade;
     private final PaypalPlusFacade paypalPlusFacade;
     private final PaymentMapper paymentMapper;
-    private final ShippingAddressMapper shippingAddressMapper;
+    private final AddressMapper addressMapper;
 
     private final Logger logger;
 
@@ -82,12 +81,12 @@ public class PaymentHandler {
 
     public PaymentHandler(@Nonnull CtpFacade ctpFacade,
                           @Nonnull PaymentMapper paymentMapper,
-                          @Nonnull ShippingAddressMapper shippingAddressMapper,
+                          @Nonnull AddressMapper addressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName) {
         this.ctpFacade = ctpFacade;
         this.paymentMapper = paymentMapper;
-        this.shippingAddressMapper = shippingAddressMapper;
+        this.addressMapper = addressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
     }
@@ -178,16 +177,28 @@ public class PaymentHandler {
                         paypalPlusPaymentId, cartWithPaymentsExpansion.getId()));
             }
             Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
-            ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cartWithPaymentsExpansion.getShippingAddress());
-            // todo: add mapper for billing address
-            Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
-            AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(replace, REQUEST);
+            ImmutableList.Builder<Patch> builder = ImmutableList.builder();
+
+            io.sphere.sdk.models.Address shippingAddress = cartWithPaymentsExpansion.getShippingAddress();
+            Patch patchShippingAddress = new Patch("add", "/transactions/0/item_list/shipping_address")
+                    .setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
+            builder.add(patchShippingAddress);
+
+            // billing address is not mandatory
+            io.sphere.sdk.models.Address billingAddress = cartWithPaymentsExpansion.getBillingAddress();
+            if (billingAddress != null) {
+                Patch patchBillingAddress = new Patch("add", "/payer/payer_info")
+                        .setValue(addressMapper.ctpAddressToPaypalPlusPayerInfo(billingAddress));
+                builder.add(patchBillingAddress);
+            }
+
+            AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(patchShippingAddress, REQUEST);
             CompletionStage<PaymentHandleResponse> patchCS = ctpFacade.getPaymentService()
                     // 1. add patch request to the ctp payment interface interaction
                     .updatePayment(paymentId, Collections.singletonList(addInterfaceInteractionAction))
                     .thenCompose(payment -> paypalPlusFacade.getPaymentService()
                             // 2. patch payment on paypal
-                            .patch(paypalPlusPayment, replace)
+                            .patch(paypalPlusPayment, builder.build())
                             .thenCompose(pPPayment -> {
                                 List<UpdateAction<io.sphere.sdk.payments.Payment>> actionList
                                         = Collections.singletonList(createAddInterfaceInteractionAction(pPPayment, REQUEST));
@@ -213,16 +224,8 @@ public class PaymentHandler {
                         return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
                                 format("Can't find cart with interfaceId==[%s]", paypalPlusPaymentId)));
                     } else {
-                        Cart cart = cartOpt.get();
-                        PaymentHandleResponse paymentHandleResponse = patchAddress(cart, paypalPlusPaymentId);
-                        boolean isSuccessful = HttpStatus.valueOf(paymentHandleResponse.getStatusCode()).is2xxSuccessful();
-                        if (isSuccessful) {
-                            // execute payment only when patching was successful
-                            return updatePayerIdInCtpPayment(paypalPlusPaymentId, paypalPlusPayerId)
-                                    .thenCompose(ctpPayment -> executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment));
-                        } else {
-                            return CompletableFuture.completedFuture(paymentHandleResponse);
-                        }
+                        return updatePayerIdInCtpPayment(paypalPlusPaymentId, paypalPlusPayerId)
+                                .thenCompose(ctpPayment -> executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment));
                     }
                 });
         return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, executeCS);

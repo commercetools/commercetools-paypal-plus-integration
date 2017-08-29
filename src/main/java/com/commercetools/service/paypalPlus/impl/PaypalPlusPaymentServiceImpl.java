@@ -11,7 +11,7 @@ import com.paypal.base.rest.PayPalRESTException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -32,9 +32,9 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
     }
 
     @Override
-    public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull Patch patch) {
+    public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull List<Patch> patches) {
         return paymentStageWrapper((paypalPlusApiContext) -> {
-            payment.update(paypalPlusApiContext, Collections.singletonList(patch));
+            payment.update(paypalPlusApiContext, patches);
             return payment;
         });
     }

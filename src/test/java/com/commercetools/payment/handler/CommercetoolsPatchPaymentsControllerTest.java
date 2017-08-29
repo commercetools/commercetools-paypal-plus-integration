@@ -8,6 +8,9 @@ import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
+import io.sphere.sdk.carts.Cart;
+import io.sphere.sdk.carts.commands.CartUpdateCommand;
+import io.sphere.sdk.carts.commands.updateactions.SetBillingAddress;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
 import org.javamoney.moneta.Money;
@@ -22,7 +25,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Locale;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
@@ -73,7 +75,7 @@ public class CommercetoolsPatchPaymentsControllerTest {
     }
 
     @Test
-    public void shouldReturnNewPaypalPaymentId() throws Exception {
+    public void shouldPatchPaypalPaymentWithBillingAndShippingAddresses() throws Exception {
         final String ctpPaymentId = createCartAndPayment(sphereClient);
         this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s",
                 MAIN_TEST_TENANT_NAME, ctpPaymentId)));
@@ -87,8 +89,32 @@ public class CommercetoolsPatchPaymentsControllerTest {
 
         // A bug from Paypal makes this test sometimes fails, sometimes not
         // until it's fixed, it will be disabled
+        // https://github.com/paypal/PayPal-REST-API-issues/issues/124
 //        com.paypal.api.payments.Payment ppPayment = executeBlocking(ppFacade.getPaymentService().lookUp(ctpPayment.getInterfaceId()));
 //        assertThat(ppPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
+//        assertThat(ppPayment.getPayer().getPayerInfo().getBillingAddress()).isNotNull();
+    }
+
+    @Test
+    public void whenBillingAddressIsNull_shouldReturnPaymentWithShippingAddress() throws Exception {
+        final String ctpPaymentId = createCartAndPayment(sphereClient);
+        Cart cart = executeBlocking(ctpFacade.getCartService().getByPaymentId(ctpPaymentId)).get();
+        executeBlocking(sphereClient.execute(CartUpdateCommand.of(cart, SetBillingAddress.of(null))));
+        this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s",
+                MAIN_TEST_TENANT_NAME, ctpPaymentId)));
+
+        this.mockMvc.perform(post(format("/%s/commercetools/patch/payments/%s",
+                MAIN_TEST_TENANT_NAME, ctpPaymentId)))
+                .andExpect(status().isOk());
+//        Payment ctpPayment = executeBlocking(ctpFacade.getPaymentService().getById(ctpPaymentId)).get();
+
+        // A bug from Paypal makes this test sometimes fails, sometimes not
+        // until it's fixed, it will be disabled
+        // https://github.com/paypal/PayPal-REST-API-issues/issues/124
+//        com.paypal.api.payments.Payment ppPayment = executeBlocking(ppFacade.getPaymentService()
+//                .lookUp(ctpPayment.getInterfaceId()));
+//        assertThat(ppPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
+//        assertThat(ppPayment.getPayer().getPayerInfo().getBillingAddress()).isNotNull();
     }
 
     @Test

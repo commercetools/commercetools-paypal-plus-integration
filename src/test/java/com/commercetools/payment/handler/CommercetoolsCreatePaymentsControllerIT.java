@@ -150,7 +150,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
     }
 
     @Test
-    public void whenPaymentIsMissing_shouldReturnError() throws Exception {
+    public void whenPaymentIsMissing_shouldReturn4xxError() throws Exception {
         this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, "nonUUIDString")))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -162,7 +162,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
     }
 
     @Test
-    public void whenCartIsMissing_shouldReturnError() throws Exception {
+    public void whenCartIsMissing_shouldReturn404() throws Exception {
         Payment payment = executeBlocking(createPaymentCS(Money.of(10, EUR), Locale.ENGLISH, sphereClient));
         MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andDo(print())
@@ -174,7 +174,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
     }
 
     @Test
-    public void whenPaymentInterfaceIsIncorrect_shouldReturnError() throws Exception {
+    public void whenPaymentInterfaceIsIncorrect_shouldReturn400() throws Exception {
         PaymentDraftDsl dsl = createPaymentDraftBuilder(Money.of(10, EUR), Locale.ENGLISH)
                 .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface("NOT-PAYPAL-INTERFACE").method(PAYPAL).build())
                 .build();

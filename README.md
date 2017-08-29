@@ -115,13 +115,11 @@ All endpoints accept and return data as JSON.
 
 1. Return HTTP codes on `create/payments` endpoint URL:
 - **201**: successfully created payment in PayPal and CTP updated with approvalUrl as custom field
-- **404**: resource not found by the supplied UUID/ID
-- **400**: required request parameters are missing or wrong
-- **503**: any exception which implies that request can be safely retried with the same parameters/payload again
-- **500**: unexpected/not handled exceptions
 
 1. Return HTTP codes on `execute/payments` endpoint URL:
 - **201**: successfully executed payment in PayPal, created transaction in CTP
+
+1. Common error codes
 - **404**: resource not found by the supplied UUID/ID
 - **400**: required request parameters are missing or wrong
 - **503**: any exception which implies that request can be safely retried with the same parameters/payload again

@@ -81,7 +81,7 @@ In this process, there are 3 parties involved:
     ```
     http://example.com/checkout/payment/success?paymentId=${paymentId}&token=${token}&PayerID=${payerId} 
     ```
-    1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them to Paypal-integration for payment execution. Example:
+    1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them in the request body to Paypal-integration for payment execution. Example:
     ```
     POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
     {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}

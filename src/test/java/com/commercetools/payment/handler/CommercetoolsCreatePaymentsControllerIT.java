@@ -144,7 +144,7 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
     }
 
     @Test
-    public void whenPaymentIsMissing_shouldReturnError() throws Exception {
+    public void whenPaymentIsMissing_shouldReturn4xxError() throws Exception {
         this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, "nonUUIDString")))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -156,8 +156,8 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
     }
 
     @Test
-    public void whenCartIsMissing_shouldReturnError() throws Exception {
-        Payment payment = executeBlocking(createPaymentCS(sphereClient, Money.of(10, EUR), Locale.ENGLISH));
+    public void whenCartIsMissing_shouldReturn404() throws Exception {
+        Payment payment = executeBlocking(createPaymentCompletationStage(sphereClient, Money.of(10, EUR), Locale.ENGLISH));
         MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andDo(print())
                 .andExpect(status().isNotFound())
@@ -168,7 +168,7 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
     }
 
     @Test
-    public void whenPaymentInterfaceIsIncorrect_shouldReturnError() throws Exception {
+    public void whenPaymentInterfaceIsIncorrect_shouldReturn400() throws Exception {
         PaymentDraftDsl dsl = createPaymentDraftBuilder(Money.of(10, EUR), Locale.ENGLISH)
                 .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface("NOT-PAYPAL-INTERFACE").method(PAYPAL).build())
                 .build();

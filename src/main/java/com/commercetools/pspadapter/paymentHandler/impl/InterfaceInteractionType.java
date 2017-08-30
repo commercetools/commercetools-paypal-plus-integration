@@ -15,6 +15,6 @@ public enum InterfaceInteractionType {
     }
 
     public String getValueFieldName() {
-        return this.name().toLowerCase();
+        return name().toLowerCase();
     }
 }

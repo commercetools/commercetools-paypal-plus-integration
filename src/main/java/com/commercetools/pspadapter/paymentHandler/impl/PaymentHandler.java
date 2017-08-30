@@ -204,10 +204,8 @@ public class PaymentHandler {
                                 })
                                 .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.OK)));
                 return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
-            }).orElseThrow(() -> {
-                throw new PaypalPlusException(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
-                        paypalPlusPaymentId, cartWithPaymentsExpansion.getId()));
-            });
+            }).orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
+                    paypalPlusPaymentId, cartWithPaymentsExpansion.getId())));
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return PaymentHandleResponse.of500InternalServerError(

@@ -86,7 +86,7 @@ public class CommercetoolsExecutePaymentsControllerIT {
     }
 
     @Test
-    public void whenPaypalPayerIdIsWrong_shouldPatch_thenShouldReturn400() throws Exception {
+    public void whenPaypalPayerIdIsWrong_shouldReturn400() throws Exception {
         String paymentId = createCartAndPayment(sphereClient);
 
         this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)));
@@ -103,15 +103,12 @@ public class CommercetoolsExecutePaymentsControllerIT {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        com.paypal.api.payments.Payment pPPayment = executeBlocking(paypalPlusFacade.getPaymentService().lookUp(interfaceId));
         Optional<Payment> ctpPaymentOpt = executeBlocking(ctpFacade.getPaymentService().getById(paymentId));
-        assertThat(pPPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
         assertThat(ctpPaymentOpt).isNotEmpty();
 
         // assert interface interactions
         Payment ctpPayment = ctpPaymentOpt.get();
-        assertThat(ctpPayment.getInterfaceInteractions()).hasSize(6);
-
+        assertThat(ctpPayment.getInterfaceInteractions()).hasSize(4);
     }
 
     @Test

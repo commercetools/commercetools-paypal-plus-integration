@@ -28,7 +28,7 @@ public class MultipleReadServletRequestTest {
                 .collect(Collectors.joining(""));
         inputStream.close();
 
-        ServletInputStream inputStream2 = mockRequest.getInputStream();
+        ServletInputStream inputStream2 = servlet.getInputStream();
         String stringFromStream2 = new BufferedReader(new InputStreamReader(inputStream2))
                 .lines()
                 .collect(Collectors.joining(""));

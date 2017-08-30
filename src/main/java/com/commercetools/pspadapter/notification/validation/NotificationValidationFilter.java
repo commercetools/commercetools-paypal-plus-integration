@@ -3,6 +3,7 @@ package com.commercetools.pspadapter.notification.validation;
 import com.commercetools.payment.notification.CommercetoolsPaymentNotificationController;
 import org.springframework.web.filter.GenericFilterBean;
 
+import javax.annotation.Nonnull;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
@@ -41,7 +42,9 @@ public class NotificationValidationFilter extends GenericFilterBean {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    public void doFilter(@Nonnull ServletRequest request,
+                         @Nonnull ServletResponse response,
+                         @Nonnull FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest currentRequest = (HttpServletRequest) request;
         Matcher m = pattern.matcher(currentRequest.getServletPath());

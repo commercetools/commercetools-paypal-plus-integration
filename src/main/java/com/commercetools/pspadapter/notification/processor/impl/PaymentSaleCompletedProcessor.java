@@ -1,8 +1,6 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
-import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
-import com.commercetools.pspadapter.facade.CtpFacade;
 import com.google.gson.Gson;
 import com.paypal.api.payments.Event;
 import io.sphere.sdk.payments.Payment;
@@ -14,9 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletionStage;
 
 /**
  * Processes event notification of type PAYMENT.SALE.COMPLETED
@@ -33,16 +29,6 @@ public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
     public boolean canProcess(@Nonnull Event event) {
         return NotificationEventType.PAYMENT_SALE_COMPLETED.getPaypalEventTypeName()
                 .equalsIgnoreCase(event.getEventType());
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    CompletionStage<Optional<Payment>> getRelatedCtpPayment(@Nonnull CtpFacade ctpFacade, @Nonnull Event event) {
-        Map<String, String> resource = (Map<String, String>) event.getResource();
-        String ppPlusPaymentId = resource.get("parent_payment");
-
-        return ctpFacade.getPaymentService()
-                .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, ppPlusPaymentId);
     }
 
     @Override

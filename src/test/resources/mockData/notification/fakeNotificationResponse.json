@@ -1,0 +1,25 @@
+{
+  "id": "WH-2WR32451HC0233532-67976317FL4543714",
+  "create_time": "2014-10-23T17:23:52Z",
+  "resource_type": "sale",
+  "event_type": "RANDOM.NOTIFICATION.EVENT",
+  "summary": "A successful sale payment was made for $ 0.48 USD",
+  "resource": {
+    "parent_payment": "PAY-xxxxxx"
+  },
+  "links": [
+    {
+      "href": "https://api.paypal.com/v1/notifications/webhooks-events/WH-2WR32451HC0233532-67976317FL4543714",
+      "rel": "self",
+      "method": "GET",
+      "encType": "application/json"
+    },
+    {
+      "href": "https://api.paypal.com/v1/notifications/webhooks-events/WH-2WR32451HC0233532-67976317FL4543714/resend",
+      "rel": "resend",
+      "method": "POST",
+      "encType": "application/json"
+    }
+  ],
+  "event_version": "1.0"
+}

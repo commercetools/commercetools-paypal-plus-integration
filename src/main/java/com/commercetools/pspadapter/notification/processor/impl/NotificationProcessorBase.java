@@ -1,6 +1,7 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
 import com.commercetools.exception.NotFoundException;
+import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessor;
 import com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -37,11 +39,13 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
         this.gson = gson;
     }
 
+    abstract Optional<ChangeTransactionState> createChangeTransactionState(@Nonnull Payment ctpPayment);
+
     @Override
     public CompletionStage<Payment> processEventNotification(@Nonnull CtpFacade ctpFacade,
                                                              @Nonnull Event event) {
         if (!canProcess(event)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(format("Event can't be processed. [%s]", event.toJSON()));
         }
         return getRelatedCtpPayment(ctpFacade, event)
                 .thenCompose(ctpPaymentOpt -> ctpPaymentOpt.map(ctpPayment -> ctpFacade.getPaymentService()
@@ -62,6 +66,15 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
         return listBuilder.build();
     }
 
+    @SuppressWarnings("unchecked")
+    protected CompletionStage<Optional<Payment>> getRelatedCtpPayment(@Nonnull CtpFacade ctpFacade, @Nonnull Event event) {
+        Map<String, String> resource = (Map<String, String>) event.getResource();
+        String ppPlusPaymentId = resource.get("parent_payment");
+
+        return ctpFacade.getPaymentService()
+                .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, ppPlusPaymentId);
+    }
+
     protected Optional<Transaction> findMatchingTxn(Collection<Transaction> transactions,
                                                     TransactionType transactionType,
                                                     TransactionState transactionState) {
@@ -72,11 +85,7 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
                 .findAny();
     }
 
-    abstract Optional<ChangeTransactionState> createChangeTransactionState(Payment ctpPayment);
-
-    abstract CompletionStage<Optional<Payment>> getRelatedCtpPayment(CtpFacade ctpFacade, Event event);
-
-    private AddInterfaceInteraction createAddInterfaceInteractionAction(PayPalModel model) {
+    protected AddInterfaceInteraction createAddInterfaceInteractionAction(PayPalModel model) {
         String json = gson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(InterfaceInteractionType.NOTIFICATION.getInterfaceKey(),
                 ImmutableMap.of(InterfaceInteractionType.NOTIFICATION.getValueFieldName(), json,

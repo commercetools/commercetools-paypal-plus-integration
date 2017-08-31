@@ -62,6 +62,9 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
     @Value(value = "classpath:mockData/notification/paymentSaleCompletedResponse.json")
     private Resource paymentSaleCompletedResponseResource;
 
+    @Value(value = "classpath:mockData/notification/fakeNotificationResponse.json")
+    private Resource fakeNotificationResponseResource;
+
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
 
@@ -114,6 +117,31 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
         assertThat(transaction.getState()).isEqualTo(TransactionState.SUCCESS);
     }
 
+    @Test
+    public void onUnknownNotification_shouldSaveToInterfaceInteraction() throws Exception {
+        String interfaceId = getMockPaymentInterfaceId();
+
+        Payment paymentBefore = executeBlocking(ctpFacade.getPaymentService()
+                .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, interfaceId))
+                .get();
+
+        this.mockMvc.perform(post(format("/%s/paypalplus/notification", MAIN_TEST_TENANT_NAME))
+                .content(getFakeNotificationEventResponseMock(interfaceId))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        Payment paymentAfter = executeBlocking(ctpFacade.getPaymentService()
+                .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, interfaceId))
+                .get();
+
+        Transaction transactionBefore = paymentBefore.getTransactions().get(0);
+        Transaction transactionAfter = paymentAfter.getTransactions().get(0);
+        assertThat(transactionAfter.getType()).isEqualTo(transactionBefore.getType());
+        assertThat(transactionAfter.getState()).isEqualTo(transactionBefore.getState());
+        assertThat(paymentAfter.getInterfaceInteractions().size()).isEqualTo(paymentBefore.getInterfaceInteractions().size() + 1);
+    }
+
     private String getMockPaymentInterfaceId() throws Exception {
         String paymentId = createCartAndPayment(sphereClient);
 
@@ -126,6 +154,13 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
         Payment updatedPayment = executeBlocking(sphereClient.execute(PaymentUpdateCommand.of(payment, AddTransaction.of(draft))));
 
         return updatedPayment.getInterfaceId();
+    }
+
+    public String getFakeNotificationEventResponseMock(String paypalPaymentId) throws IOException {
+        return new BufferedReader(new InputStreamReader(fakeNotificationResponseResource.getInputStream()))
+                .lines()
+                .collect(Collectors.joining())
+                .replaceAll("PAY-xxxxxx", paypalPaymentId);
     }
 
     public String getPaymentSaleCompletedResponseMock(String paypalPaymentId) throws IOException {

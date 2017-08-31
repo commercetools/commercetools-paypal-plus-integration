@@ -157,7 +157,7 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
 
     @Test
     public void whenCartIsMissing_shouldReturn404() throws Exception {
-        Payment payment = executeBlocking(createPaymentCompletationStage(sphereClient, Money.of(10, EUR), Locale.ENGLISH));
+        Payment payment = executeBlocking(createPaymentCS(sphereClient, Money.of(10, EUR), Locale.ENGLISH));
         MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andDo(print())
                 .andExpect(status().isNotFound())

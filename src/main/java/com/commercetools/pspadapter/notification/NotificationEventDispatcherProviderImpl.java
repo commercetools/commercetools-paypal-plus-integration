@@ -3,6 +3,7 @@ package com.commercetools.pspadapter.notification;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessor;
+import com.commercetools.pspadapter.notification.processor.impl.DefaultNotificationProcessor;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.google.common.collect.ImmutableMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +20,16 @@ public class NotificationEventDispatcherProviderImpl implements NotificationEven
 
     private final Map<String, NotificationProcessor> processors;
 
+    private final DefaultNotificationProcessor defaultNotificationProcessor;
+
     @Autowired
     public NotificationEventDispatcherProviderImpl(@Nonnull TenantConfigFactory configFactory,
+                                                   @Nonnull DefaultNotificationProcessor defaultNotificationProcessor,
                                                    // when you have Map here instead of ImmutableMap, Spring injects a default bean map
                                                    // which is not notificationProcessors that is defined in ApplicationConfig
                                                    @Nonnull ImmutableMap<String, NotificationProcessor> notificationProcessors) {
         this.configFactory = configFactory;
+        this.defaultNotificationProcessor = defaultNotificationProcessor;
         this.processors = notificationProcessors;
     }
 
@@ -33,7 +38,7 @@ public class NotificationEventDispatcherProviderImpl implements NotificationEven
         return this.configFactory.getTenantConfig(tenantName)
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-                    return new NotificationDispatcher(this.processors, ctpFacade);
+                    return new NotificationDispatcher(this.processors, ctpFacade, this.defaultNotificationProcessor);
                 });
     }
 }

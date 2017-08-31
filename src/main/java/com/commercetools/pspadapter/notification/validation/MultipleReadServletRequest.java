@@ -2,6 +2,7 @@ package com.commercetools.pspadapter.notification.validation;
 
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +22,7 @@ import java.io.IOException;
  */
 public class MultipleReadServletRequest extends ContentCachingRequestWrapper {
 
-    public MultipleReadServletRequest(HttpServletRequest request) {
+    public MultipleReadServletRequest(@Nonnull HttpServletRequest request) {
         super(request);
     }
 

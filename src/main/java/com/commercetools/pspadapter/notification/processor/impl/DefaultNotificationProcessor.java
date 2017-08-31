@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
 
 /**
@@ -21,17 +22,17 @@ public class DefaultNotificationProcessor extends NotificationProcessorBase {
     private static final Logger logger = LoggerFactory.getLogger(NotificationProcessorBase.class);
 
     @Autowired
-    DefaultNotificationProcessor(Gson gson) {
+    DefaultNotificationProcessor(@Nonnull Gson gson) {
         super(gson);
     }
 
     @Override
-    Optional<ChangeTransactionState> createChangeTransactionState(Payment ctpPayment) {
+    Optional<ChangeTransactionState> createChangeTransactionState(@Nonnull Payment ctpPayment) {
         return Optional.empty();
     }
 
     @Override
-    public boolean canProcess(Event event) {
+    public boolean canProcess(@Nonnull Event event) {
         logger.info("Cannot find processor for the event, using the default processor: {}", event);
         return true;
     }

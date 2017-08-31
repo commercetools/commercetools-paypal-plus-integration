@@ -54,7 +54,8 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
                 );
     }
 
-    protected ImmutableList<UpdateAction<Payment>> createPaymentUpdates(Payment ctpPayment, Event event) {
+    protected ImmutableList<UpdateAction<Payment>> createPaymentUpdates(@Nonnull Payment ctpPayment,
+                                                                        @Nonnull Event event) {
         final ImmutableList.Builder<UpdateAction<Payment>> listBuilder = ImmutableList.builder();
         listBuilder.add(createAddInterfaceInteractionAction(event));
         Optional<ChangeTransactionState> changeTransactionOpt = createChangeTransactionState(ctpPayment);
@@ -67,7 +68,8 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
     }
 
     @SuppressWarnings("unchecked")
-    protected CompletionStage<Optional<Payment>> getRelatedCtpPayment(@Nonnull CtpFacade ctpFacade, @Nonnull Event event) {
+    protected CompletionStage<Optional<Payment>> getRelatedCtpPayment(@Nonnull CtpFacade ctpFacade,
+                                                                      @Nonnull Event event) {
         Map<String, String> resource = (Map<String, String>) event.getResource();
         String ppPlusPaymentId = resource.get("parent_payment");
 
@@ -75,9 +77,9 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
                 .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, ppPlusPaymentId);
     }
 
-    protected Optional<Transaction> findMatchingTxn(Collection<Transaction> transactions,
-                                                    TransactionType transactionType,
-                                                    TransactionState transactionState) {
+    protected Optional<Transaction> findMatchingTxn(@Nonnull Collection<Transaction> transactions,
+                                                    @Nonnull TransactionType transactionType,
+                                                    @Nonnull TransactionState transactionState) {
         return transactions
                 .stream()
                 .filter(transaction -> transaction.getType().equals(transactionType))
@@ -85,7 +87,7 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
                 .findAny();
     }
 
-    protected AddInterfaceInteraction createAddInterfaceInteractionAction(PayPalModel model) {
+    protected AddInterfaceInteraction createAddInterfaceInteractionAction(@Nonnull PayPalModel model) {
         String json = gson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(InterfaceInteractionType.NOTIFICATION.getInterfaceKey(),
                 ImmutableMap.of(InterfaceInteractionType.NOTIFICATION.getValueFieldName(), json,

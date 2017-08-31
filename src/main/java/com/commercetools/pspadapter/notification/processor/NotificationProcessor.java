@@ -4,6 +4,7 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.paypal.api.payments.Event;
 import io.sphere.sdk.payments.Payment;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -11,7 +12,7 @@ import java.util.concurrent.CompletionStage;
  */
 public interface NotificationProcessor {
 
-    CompletionStage<Payment> processEventNotification(CtpFacade ctpFacade, Event event);
+    CompletionStage<Payment> processEventNotification(@Nonnull CtpFacade ctpFacade, @Nonnull Event event);
 
-    boolean canProcess(Event event);
+    boolean canProcess(@Nonnull Event event);
 }

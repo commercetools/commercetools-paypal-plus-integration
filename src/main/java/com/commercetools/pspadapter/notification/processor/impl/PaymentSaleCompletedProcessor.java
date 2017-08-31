@@ -21,7 +21,7 @@ import java.util.Optional;
 public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
 
     @Autowired
-    public PaymentSaleCompletedProcessor(Gson gson) {
+    public PaymentSaleCompletedProcessor(@Nonnull Gson gson) {
         super(gson);
     }
 

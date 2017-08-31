@@ -15,7 +15,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
-import static com.commercetools.payment.constants.Psp.PSP_NAME;
 
 /**
  * This filter enables multiple reads from request body that comes to
@@ -29,7 +28,7 @@ public class NotificationValidationFilter extends GenericFilterBean {
     private static final String REGEX_URL_PATTERN = "regexUrlPattern";
 
     private Pattern pattern;
-    
+
     private String urlPatternString = "/.*/" + NOTIFICATION_PATH_URL;
 
     @Override
@@ -50,14 +49,18 @@ public class NotificationValidationFilter extends GenericFilterBean {
                          @Nonnull ServletResponse response,
                          @Nonnull FilterChain chain)
             throws IOException, ServletException {
-        HttpServletRequest currentRequest = (HttpServletRequest) request;
-        Matcher m = pattern.matcher(currentRequest.getServletPath());
-        if (m.matches()) {
-            // if request is notification, then we use multiple read wrapper
-            ServletRequest wrappedRequest = new MultipleReadServletRequest(currentRequest);
-            chain.doFilter(wrappedRequest, response);
+        if (request instanceof HttpServletRequest) {
+            HttpServletRequest currentRequest = (HttpServletRequest) request;
+            Matcher m = pattern.matcher(currentRequest.getServletPath());
+            if (m.matches()) {
+                // if request is notification, then we use multiple read wrapper
+                ServletRequest wrappedRequest = new MultipleReadServletRequest(currentRequest);
+                chain.doFilter(wrappedRequest, response);
+            } else {
+                // if not, then just pass the original request and response
+                chain.doFilter(request, response);
+            }
         } else {
-            // if not, then just pass the original request and response
             chain.doFilter(request, response);
         }
     }

@@ -2,6 +2,9 @@ package com.commercetools.model;
 
 import com.paypal.api.payments.Event;
 
+/**
+ * Helper class for Spring to parse to request body to notification object
+ */
 public class PaypalPlusNotificationEvent extends Event {
 
     public void setEvent_type(String event_type) {

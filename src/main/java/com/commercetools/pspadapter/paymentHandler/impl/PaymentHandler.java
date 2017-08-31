@@ -52,6 +52,7 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.PAYER_ID;
+import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.REQUEST;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.RESPONSE;
@@ -186,7 +187,7 @@ public class PaymentHandler {
                                                 @Nonnull String paypalPlusPayerId) {
         CompletionStage<PaymentHandleResponse> executeCS = ctpFacade.getCartService()
                 .getByPaymentMethodAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS,
-                        paypalPlusPaymentId, "paymentInfo.payments[*]")
+                        paypalPlusPaymentId, PAYMENT_INFO_EXPANSION)
                 .thenCompose(cartOpt -> {
                     if (!cartOpt.isPresent()) {
                         return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
@@ -344,8 +345,8 @@ public class PaymentHandler {
         List<Reference<io.sphere.sdk.payments.Payment>> payments
                 = cartWithPaymentsExpansion.getPaymentInfo().getPayments();
         if (payments == null || payments.get(0).getObj() == null) {
-            throw new MissingExpansionException(format("Please expand Cart with cart.paymentInfo.payments[*] for cartId=[%s]",
-                    cartWithPaymentsExpansion.getId()));
+            throw new MissingExpansionException(format("Please expand Cart with cart.%s for cartId=[%s]",
+                    PAYMENT_INFO_EXPANSION, cartWithPaymentsExpansion.getId()));
         }
         return payments.stream()
                 .filter(paymentReference -> paypalPlusPaymentId.equals(paymentReference.getObj().getInterfaceId()))

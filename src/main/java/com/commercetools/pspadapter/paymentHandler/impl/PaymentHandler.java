@@ -98,7 +98,7 @@ public class PaymentHandler {
             CompletionStage<PaymentHandleResponse> createPaymentCS = ctpFacade.getPaymentService().getById(ctpPaymentId)
                     .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
                             // TODO: re-factor this wasps nest!!!
-                            (Optional<io.sphere.sdk.payments.Payment> optPayment, Optional<Cart> optCart) -> {
+                            (optPayment, optCart) -> {
                                 if (!(optPayment.isPresent() && optCart.isPresent())) {
                                     return completedFuture(of404NotFound(
                                             format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));

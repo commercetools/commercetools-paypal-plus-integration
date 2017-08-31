@@ -130,20 +130,16 @@ public class PaymentHandler {
                                                                 updateActions.add(interaction);
                                                                 // 3. save approval url and payment ID and response from paypal to ctp payment
                                                                 return ctpFacade.getPaymentService().updatePayment(payment, updateActions)
-                                                                        .thenApply(ignore -> {
-                                                                            return createdPpPayment;
-                                                                        });
+                                                                        .thenApply(ignore -> createdPpPayment);
                                                             }
                                                     );
                                         })
                                         // 4. return approval url
                                         .thenApply(PaymentMapper::getApprovalUrl)
-                                        .thenApply(approvalUrlOpt -> {
-                                            return approvalUrlOpt
-                                                    .map(PaymentHandleResponse::of201CreatedApprovalUrl)
-                                                    .orElseGet(() -> of400BadRequest(
-                                                            format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
-                                        });
+                                        .thenApply(approvalUrlOpt -> approvalUrlOpt
+                                                .map(PaymentHandleResponse::of201CreatedApprovalUrl)
+                                                .orElseGet(() -> of400BadRequest(
+                                                        format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId))));
                             })
                     // TODO: re-factor compose !!!!
                     .thenCompose(stage -> stage);

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
 import static com.commercetools.payment.constants.Psp.PSP_NAME;
 
 /**
@@ -25,15 +26,18 @@ import static com.commercetools.payment.constants.Psp.PSP_NAME;
  */
 public class NotificationValidationFilter extends GenericFilterBean {
 
+    private static final String REGEX_URL_PATTERN = "regexUrlPattern";
+
     private Pattern pattern;
-    private String urlPatternString = "/.*/" + PSP_NAME + "/notification";
+    
+    private String urlPatternString = "/.*/" + NOTIFICATION_PATH_URL;
 
     @Override
     protected void initFilterBean() throws ServletException {
         super.initFilterBean();
         FilterConfig filterConfig = getFilterConfig();
         if (filterConfig != null) {
-            String urlPatternString = filterConfig.getInitParameter("regexUrlPattern");
+            String urlPatternString = filterConfig.getInitParameter(REGEX_URL_PATTERN);
             if (urlPatternString != null) {
                 this.urlPatternString = urlPatternString;
             }

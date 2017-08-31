@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 
+import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
 import static com.commercetools.payment.constants.Psp.PSP_NAME;
 import static java.lang.String.format;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -51,7 +52,7 @@ public class CommercetoolsPaymentNotificationController extends BaseCommercetool
     @RequestMapping(
             method = RequestMethod.POST,
             consumes = APPLICATION_JSON_VALUE,
-            value = "/{tenantName}/" + PSP_NAME + "/notification")
+            value = "/{tenantName}/" + NOTIFICATION_PATH_URL)
     public ResponseEntity<HttpStatus> handleNotification(@PathVariable String tenantName,
                                                          @RequestBody PaypalPlusNotificationEvent eventFromPaypal) {
         return eventDispatcherProvider.getNotificationDispatcher(tenantName)

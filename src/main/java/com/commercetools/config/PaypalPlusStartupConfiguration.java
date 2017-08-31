@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.commercetools.payment.constants.Psp.PSP_NAME;
+import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
 import static java.lang.String.format;
 
 @Configuration
@@ -47,7 +47,7 @@ public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
                     return tenantConfigOpt.map(tenantConfig -> {
                         PaypalPlusFacade paypalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
                         return paypalPlusFacade.getPaymentService()
-                                .ensureWebhook(format(integrationServerUrl + "/%s/paypalplus/notification", tenantConfig.getCtpProjectKey()))
+                                .ensureWebhook(format(integrationServerUrl + "/%s/" + NOTIFICATION_PATH_URL, tenantConfig.getCtpProjectKey()))
                                 .thenApply(webhook -> new WebhookWithTenantName(webhook, tenantName))
                                 .toCompletableFuture().join();
                     }).orElse(null);
@@ -67,7 +67,7 @@ public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
         // so it does not directly call the method above, but Spring returns
         // interceptor with all correct autowired dependencies
         registry.addInterceptor(notificationValidationInterceptor())
-                .addPathPatterns("/*/" + PSP_NAME + "/notification");
+                .addPathPatterns("/*/" + NOTIFICATION_PATH_URL);
         super.addInterceptors(registry);
     }
 

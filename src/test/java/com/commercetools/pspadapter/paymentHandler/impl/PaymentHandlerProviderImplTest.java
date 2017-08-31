@@ -103,8 +103,8 @@ public class PaymentHandlerProviderImplTest {
         PaymentHandleResponse paymentHandleResult = paymentHandler.patchAddress(cartWithExpansion, paypalPlusPaymentId);
         assertThat(paymentHandleResult.getStatusCode()).isEqualTo(HttpStatus.OK.value());
 
-        Payment pPPayment = this.paypalPlusFacade.getPaymentService().lookUp(paypalPlusPaymentId).toCompletableFuture().join();
-        assertThat(pPPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
+        Payment paypalPlusPayment = this.paypalPlusFacade.getPaymentService().lookUp(paypalPlusPaymentId).toCompletableFuture().join();
+        assertThat(paypalPlusPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
     }
 
     @Test

@@ -233,7 +233,7 @@ public class PaymentHandler {
     protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(@Nullable String paypalPlusPaymentId,
                                                                                         @Nonnull String payerId) {
         return ctpFacade.getPaymentService().getByPaymentMethodAndInterfaceId(PAYPAL_PLUS, paypalPlusPaymentId)
-                .thenCompose((paymentOpt) -> paymentOpt.map(payment -> {
+                .thenCompose(paymentOpt -> paymentOpt.map(payment -> {
                     List<UpdateAction<io.sphere.sdk.payments.Payment>> updateActions = Collections.singletonList(SetCustomField.ofObject(PAYER_ID, payerId));
                     return ctpFacade.getPaymentService().updatePayment(payment, updateActions);
                 }).orElse(null));

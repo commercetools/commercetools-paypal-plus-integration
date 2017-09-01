@@ -75,6 +75,7 @@ public class PaymentHandler {
     private final PaypalPlusFacade paypalPlusFacade;
     private final PaymentMapper paymentMapper;
     private final ShippingAddressMapper shippingAddressMapper;
+    private final Gson gson;
 
     private final Logger logger;
 
@@ -86,11 +87,13 @@ public class PaymentHandler {
                           @Nonnull PaymentMapper paymentMapper,
                           @Nonnull ShippingAddressMapper shippingAddressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
-                          @Nonnull String tenantName) {
+                          @Nonnull String tenantName,
+                          @Nonnull Gson gson) {
         this.ctpFacade = ctpFacade;
         this.paymentMapper = paymentMapper;
         this.shippingAddressMapper = shippingAddressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
+        this.gson = gson;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
     }
 
@@ -213,11 +216,7 @@ public class PaymentHandler {
 
     private AddInterfaceInteraction createAddInterfaceInteractionAction(@Nonnull PayPalModel model,
                                                                         @Nonnull InterfaceInteractionType type) {
-        Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
-                .disableHtmlEscaping()
-                .create();
-        String json = gson.toJson(model);
+        String json = this.gson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(type.getInterfaceKey(),
                 ImmutableMap.of(type.getValueFieldName(), json,
                         "timestamp", ZonedDateTime.now()));
@@ -300,10 +299,8 @@ public class PaymentHandler {
                 .thenCompose(ctpPaymentId -> {
                     AddInterfaceInteraction action = createAddInterfaceInteractionAction(restException.getDetails(), RESPONSE);
                     return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, Collections.singletonList(action))
-                            .thenApply(ignore -> {
-                                return PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
-                                        format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, restException.getMessage()));
-                            });
+                            .thenApply(ignore -> PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
+                                    format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, restException.getMessage())));
                 });
         // todo: don't join here, but rather return completion stage
         return paymentHandleResponseStage;
@@ -326,6 +323,7 @@ public class PaymentHandler {
     /**
      * Create payment on paypal plus,
      * saves approval URL, payment ID and interface interactions to CTP payment
+     * @return Paypal Plus payment
      */
     private CompletionStage<Payment> createPaypalPlusPaymentAndUpdateCtpPayment(@Nonnull io.sphere.sdk.payments.Payment ctpPayment,
                                                                                 @Nonnull Cart ctpCart) {

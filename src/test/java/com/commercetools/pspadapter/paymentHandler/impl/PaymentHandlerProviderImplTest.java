@@ -25,6 +25,7 @@ import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +93,7 @@ public class PaymentHandlerProviderImplTest {
     }
 
     @Test
+    @Ignore("Bug in Paypal Plus: https://github.com/paypal/PayPal-REST-API-issues/issues/124")
     public void shouldPatchShippingAddress() {
         CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();

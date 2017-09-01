@@ -50,6 +50,9 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPatchConstants.ADD_ACTION;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPatchConstants.PAYER_INFO_PATH;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPatchConstants.SHIPPING_ADDRESS_PATH;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.REQUEST;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.RESPONSE;
@@ -158,13 +161,13 @@ public class PaymentHandler {
                 List<Patch> patches = new ArrayList<>(2);
 
                 io.sphere.sdk.models.Address shippingAddress = cartWithPaymentsExpansion.getShippingAddress();
-                Patch patchShippingAddress = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
+                Patch patchShippingAddress = new Patch(ADD_ACTION, SHIPPING_ADDRESS_PATH).setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
                 patches.add(patchShippingAddress);
 
                 // billing address is not mandatory
                 io.sphere.sdk.models.Address billingAddress = cartWithPaymentsExpansion.getBillingAddress();
                 if (billingAddress != null) {
-                    Patch patchBillingAddress = new Patch("add", "/payer/payer_info")
+                    Patch patchBillingAddress = new Patch(ADD_ACTION, PAYER_INFO_PATH)
                             .setValue(addressMapper.ctpAddressToPaypalPlusPayerInfo(billingAddress));
                     patches.add(patchBillingAddress);
                 }

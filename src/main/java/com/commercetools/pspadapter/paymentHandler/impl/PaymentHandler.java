@@ -52,6 +52,7 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.PAYER_ID;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
 import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.REQUEST;
@@ -80,6 +81,7 @@ public class PaymentHandler {
     private final Logger logger;
 
     private final String PAYPAL_PLUS_PAYMENT_ID = "Paypal Plus payment ID";
+
     private final String CTP_PAYMENT_ID = "CTP payment ID";
 
 
@@ -219,7 +221,7 @@ public class PaymentHandler {
         String json = this.gson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(type.getInterfaceKey(),
                 ImmutableMap.of(type.getValueFieldName(), json,
-                        "timestamp", ZonedDateTime.now()));
+                        TIMESTAMP_FIELD, ZonedDateTime.now()));
     }
 
     private CompletionStage<PaymentHandleResponse> executePaymentAndCreateTxn(@Nonnull String paypalPlusPaymentId,

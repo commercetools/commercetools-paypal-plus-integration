@@ -50,6 +50,7 @@ import java.util.regex.Pattern;
 
 import static com.commercetools.helper.mapper.PaymentMapper.getApprovalUrl;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
@@ -207,7 +208,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
                 .findAny();
 
         assertThat(requestInteractionOpt).isNotEmpty();
-        assertThat(requestInteractionOpt.get().getFieldAsString("timestamp")).isNotEmpty();
+        assertThat(requestInteractionOpt.get().getFieldAsString(TIMESTAMP_FIELD)).isNotEmpty();
         String request = requestInteractionOpt.get().getFieldAsString(
                 InterfaceInteractionType.REQUEST.getValueFieldName()
         );
@@ -219,7 +220,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
                 .findAny();
 
         assertThat(responseInteractionOpt).isNotEmpty();
-        assertThat(responseInteractionOpt.get().getFieldAsString("timestamp")).isNotEmpty();
+        assertThat(responseInteractionOpt.get().getFieldAsString(TIMESTAMP_FIELD)).isNotEmpty();
         String response = responseInteractionOpt.get().getFieldAsString(
                 InterfaceInteractionType.RESPONSE.getValueFieldName()
         );

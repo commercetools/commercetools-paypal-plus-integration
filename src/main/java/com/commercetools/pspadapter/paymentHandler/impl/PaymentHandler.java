@@ -305,7 +305,6 @@ public class PaymentHandler {
                             .thenApply(ignore -> PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
                                     format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, restException.getMessage())));
                 });
-        // todo: don't join here, but rather return completion stage
         return paymentHandleResponseStage;
     }
 

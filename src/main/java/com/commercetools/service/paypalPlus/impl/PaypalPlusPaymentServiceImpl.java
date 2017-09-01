@@ -122,7 +122,7 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
                 APIContext context = paypalPlusApiContextFactory.createAPIContext();
                 return supplier.apply(context);
             } catch (PayPalRESTException e) {
-                throw new PaypalPlusServiceException("Create Paypal Plus payment exception", e);
+                throw new PaypalPlusServiceException("Paypal Plus payment service exception", e);
             }
         });
     }

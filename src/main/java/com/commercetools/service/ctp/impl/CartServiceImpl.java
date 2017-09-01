@@ -4,7 +4,7 @@ import com.commercetools.service.ctp.CartService;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.queries.CartQuery;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.expansion.ExpansionPath;
+import io.sphere.sdk.expansion.ExpansionPathContainer;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.queries.PaymentQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
@@ -33,16 +32,14 @@ public class CartServiceImpl extends BaseSphereService implements CartService {
 
     @Override
     public CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String ctpPaymentId,
-                                                          @Nullable String expansionPath) {
+                                                          @Nullable ExpansionPathContainer<Cart> pathContainer) {
         if (StringUtils.isEmpty(ctpPaymentId)) {
             return completedFuture(Optional.empty());
         }
         CartQuery cartQuery = CartQuery.of()
                 .withPredicates(m -> m.paymentInfo().payments().id().is(ctpPaymentId));
-        if (StringUtils.isNotBlank(expansionPath)) {
-            cartQuery = cartQuery.plusExpansionPaths(
-                    Collections.singletonList(ExpansionPath.of(expansionPath))
-            );
+        if (pathContainer != null) {
+            cartQuery = cartQuery.plusExpansionPaths(pathContainer);
         }
         return sphereClient.execute(cartQuery).thenApplyAsync(PagedQueryResult::head);
     }
@@ -56,7 +53,7 @@ public class CartServiceImpl extends BaseSphereService implements CartService {
     @Override
     public CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface,
                                                                             @Nullable String interfaceId,
-                                                                            @Nullable String expansionPath) {
+                                                                            @Nullable ExpansionPathContainer<Cart> pathContainer) {
         if (isBlank(paymentMethodInterface) || isBlank(interfaceId)) {
             return completedFuture(null);
         }
@@ -65,6 +62,6 @@ public class CartServiceImpl extends BaseSphereService implements CartService {
                 .plusPredicates(p -> p.interfaceId().is(interfaceId));
         return sphereClient.execute(paymentQuery)
                 .thenApply(PagedResult::head)
-                .thenCompose(optPayment -> getByPaymentId(optPayment.map(Payment::getId).orElse(null), expansionPath));
+                .thenCompose(optPayment -> getByPaymentId(optPayment.map(Payment::getId).orElse(null), pathContainer));
     }
 }

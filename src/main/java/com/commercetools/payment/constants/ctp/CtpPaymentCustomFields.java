@@ -18,6 +18,8 @@ public final class CtpPaymentCustomFields {
     public static final String PAYMENT_DUE_DATE = "paymentDueDate";
     public static final String AMOUNT = "amount";
 
+    public static final String TIMESTAMP_FIELD = "timestamp";
+
     /**
      * <b>Note:</b> looks like for Paypal Plus in EU credit card token is never shared with payers, cos all the workflow
      * is executed in the iframe.

@@ -1,6 +1,7 @@
 package com.commercetools.service.ctp;
 
 import io.sphere.sdk.carts.Cart;
+import io.sphere.sdk.expansion.ExpansionPathContainer;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -14,12 +15,12 @@ public interface CartService {
     CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String ctpPaymentId);
 
     CompletionStage<Optional<Cart>> getByPaymentId(@Nullable String paymentId,
-                                                   @Nullable String expansionPath);
+                                                   @Nullable ExpansionPathContainer<Cart> pathContainer);
 
     CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface,
                                                                      @Nullable String interfaceId);
 
     CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface,
                                                                      @Nullable String interfaceId,
-                                                                     @Nullable String expansionPath);
+                                                                     @Nullable ExpansionPathContainer<Cart> pathContainer);
 }

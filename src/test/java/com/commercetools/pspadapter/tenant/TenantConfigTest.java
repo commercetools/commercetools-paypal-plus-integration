@@ -13,7 +13,7 @@ public class TenantConfigTest {
 
     @Test
     public void shouldCreateSphereClient() {
-        TenantConfig tenantConfig = new TenantConfig("ctpProjectKey", "ctpClientId", "ctpClientSecret",
+        TenantConfig tenantConfig = new TenantConfig("testTenant1", "ctpProjectKey", "ctpClientId", "ctpClientSecret",
                 "pPlusClientId", "pPlusClientSecret", "sandbox");
         SphereClient sphereClient = tenantConfig.createSphereClient();
         assertThat(sphereClient).isNotNull();
@@ -21,7 +21,7 @@ public class TenantConfigTest {
 
     @Test
     public void shouldCreateApiContext() {
-        TenantConfig tenantConfig = new TenantConfig("ctpProjectKey", "ctpClientId", "ctpClientSecret",
+        TenantConfig tenantConfig = new TenantConfig("testTenant2","ctpProjectKey", "ctpClientId", "ctpClientSecret",
                 "pPlusClientId", "pPlusClientSecret", "sandbox");
         APIContext apiContext = tenantConfig.createAPIContextFactory().createAPIContext();
         assertThat(apiContext).isNotNull();
@@ -29,7 +29,7 @@ public class TenantConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void whenPPlusClientModeIsEmpty_shouldThrowException() {
-        TenantConfig tenantConfig = new TenantConfig("ctpProjectKey", "ctpClientId", "ctpClientSecret",
+        TenantConfig tenantConfig = new TenantConfig("testTenant3", "ctpProjectKey", "ctpClientId", "ctpClientSecret",
                 "pPlusClientId", "pPlusClientSecret", "");
         tenantConfig.createAPIContextFactory().createAPIContext();
     }

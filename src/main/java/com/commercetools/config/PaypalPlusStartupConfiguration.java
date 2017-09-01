@@ -6,7 +6,6 @@ import com.commercetools.pspadapter.notification.validation.NotificationValidati
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
-import com.commercetools.pspadapter.tenant.TenantProperties;
 import com.paypal.api.payments.Webhook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,48 +16,55 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import javax.annotation.Nonnull;
 import javax.servlet.Filter;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
+import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Configuration
 public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
 
-    @Autowired
-    private TenantConfigFactory tenantConfigFactory;
+    private final TenantConfigFactory tenantConfigFactory;
 
-    @Autowired
-    TenantProperties tenantProperties;
+    private final List<TenantConfig> tenantConfigs;
 
     @Value("${ctp.paypal.plus.integration.server.url}")
     private String integrationServerUrl;
 
+    @Autowired
+    public PaypalPlusStartupConfiguration(TenantConfigFactory tenantConfigFactory, List<TenantConfig> tenantConfigs) {
+        this.tenantConfigFactory = tenantConfigFactory;
+        this.tenantConfigs = tenantConfigs;
+    }
+
     @Bean
-    public Map<String, Webhook> tenantNameToWebhookMap() {
+    public CompletableFuture<Map<String, Webhook>> tenantToWebhookMapFuture() {
         // create all necessary webhooks. This will certainly takes a while because it involves Paypal calls,
         // but without the webhooks configured correctly, the app cannot work properly
-        return tenantProperties.getTenants().keySet().stream()
-                .map(tenantName -> {
-                    Optional<TenantConfig> tenantConfigOpt = tenantConfigFactory.getTenantConfig(tenantName);
-                    return tenantConfigOpt.map(tenantConfig -> {
-                        PaypalPlusFacade paypalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
-                        return paypalPlusFacade.getPaymentService()
-                                .ensureWebhook(format(integrationServerUrl + "/%s/" + NOTIFICATION_PATH_URL, tenantConfig.getCtpProjectKey()))
-                                .thenApply(webhook -> new WebhookWithTenantName(webhook, tenantName))
-                                .toCompletableFuture().join();
-                    }).orElse(null);
+
+        List<CompletionStage<WebhookWithTenantName>> webhookStages = tenantConfigs.stream()
+                .map(tenantConfig -> {
+                    PaypalPlusFacade paypalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
+                    return paypalPlusFacade.getPaymentService()
+                            .ensureWebhook(format("%s/%s/%s", integrationServerUrl, tenantConfig.getCtpProjectKey(), NOTIFICATION_PATH_URL))
+                            .thenApply(webhook -> new WebhookWithTenantName(webhook, tenantConfig.getTenantName()));
                 })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(WebhookWithTenantName::getTenantName, WebhookWithTenantName::getWebhook));
+                .collect(toList());
+
+        return listOfFuturesToFutureOfList(webhookStages)
+                .thenApply(webhooks -> webhooks.stream()
+                        .collect(toMap(WebhookWithTenantName::getTenantName, WebhookWithTenantName::getWebhook)));
     }
 
     @Bean
     public NotificationValidationInterceptor notificationValidationInterceptor() {
-        return new NotificationValidationInterceptor(tenantNameToWebhookMap(), tenantConfigFactory);
+        return new NotificationValidationInterceptor(tenantToWebhookMapFuture(), tenantConfigFactory);
     }
 
     @Override

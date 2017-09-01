@@ -8,14 +8,16 @@ import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+
 /**
  * Mock interceptor which just let all the notification requests through
  * without validation
  */
 public class MockNotificationValidationInterceptor extends NotificationValidationInterceptor {
-    
+
     public MockNotificationValidationInterceptor(TenantConfigFactory tenantConfigFactory) {
-        super(ImmutableMap.of(), tenantConfigFactory);
+        super(supplyAsync(ImmutableMap::of), tenantConfigFactory);
     }
 
     @Override

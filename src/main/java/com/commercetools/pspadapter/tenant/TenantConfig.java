@@ -12,6 +12,8 @@ import javax.annotation.Nonnull;
  */
 public class TenantConfig {
 
+    private final String tenantName;
+
     private final String ctpProjectKey;
     private final String ctpClientId;
     private final String ctpClientSecret;
@@ -20,18 +22,24 @@ public class TenantConfig {
     private final String pPlusClientSecret;
     private final String pPlusClientMode;
 
-    public TenantConfig(@Nonnull String ctpProjectKey,
+    public TenantConfig(@Nonnull String tenantName,
+                        @Nonnull String ctpProjectKey,
                         @Nonnull String ctpClientId,
                         @Nonnull String ctpClientSecret,
                         @Nonnull String pPlusClientId,
                         @Nonnull String pPlusClientSecret,
                         @Nonnull String pPlusClientMode) {
+        this.tenantName = tenantName;
         this.ctpProjectKey = ctpProjectKey;
         this.ctpClientId = ctpClientId;
         this.ctpClientSecret = ctpClientSecret;
         this.pPlusClientId = pPlusClientId;
         this.pPlusClientSecret = pPlusClientSecret;
         this.pPlusClientMode = pPlusClientMode;
+    }
+
+    public String getTenantName() {
+        return tenantName;
     }
 
     public String getCtpProjectKey() {
@@ -58,7 +66,7 @@ public class TenantConfig {
         return pPlusClientMode;
     }
 
-    public SphereClient createSphereClient () {
+    public SphereClient createSphereClient() {
         return CtpClientConfigurationUtils.createClient(createCtpConfig());
     }
 

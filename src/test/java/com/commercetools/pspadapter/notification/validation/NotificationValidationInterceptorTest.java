@@ -19,6 +19,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMapOf;
@@ -34,7 +36,7 @@ public class NotificationValidationInterceptorTest {
         spyRequest.setAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE,
                 ImmutableMap.of("tenantName", MAIN_TEST_TENANT_NAME));
 
-        Map<String, Webhook> tenantNameToWebhookMap = ImmutableMap.of(MAIN_TEST_TENANT_NAME, new Webhook());
+        CompletableFuture<Map<String, Webhook>> tenantNameToWebhookMapFuture = supplyAsync(() -> ImmutableMap.of(MAIN_TEST_TENANT_NAME, new Webhook()));
 
         TenantConfigFactory configFactory = mock(TenantConfigFactory.class);
 
@@ -42,12 +44,12 @@ public class NotificationValidationInterceptorTest {
         when(configFactory.getTenantConfig(anyString())).thenReturn(Optional.of(tenantConfig));
 
         PaypalPlusPaymentService paymentService = mock(PaypalPlusPaymentService.class);
-        when(paymentService.validateNotificationEvent(any(), anyMapOf(String.class, String.class), any())).thenReturn(CompletableFuture.completedFuture(true));
+        when(paymentService.validateNotificationEvent(any(), anyMapOf(String.class, String.class), any())).thenReturn(completedFuture(true));
 
         PaypalPlusFacade paypalPlusFacade = mock(PaypalPlusFacade.class);
         when(paypalPlusFacade.getPaymentService()).thenReturn(paymentService);
 
-        NotificationValidationInterceptor theObject = new NotificationValidationInterceptor(tenantNameToWebhookMap, configFactory);
+        NotificationValidationInterceptor theObject = new NotificationValidationInterceptor(tenantNameToWebhookMapFuture, configFactory);
         NotificationValidationInterceptor interceptor = spy(theObject);
         doReturn(paypalPlusFacade).when(interceptor).getPaypalPlusFacade(any());
 

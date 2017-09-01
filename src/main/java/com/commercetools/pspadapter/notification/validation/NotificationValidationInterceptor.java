@@ -22,11 +22,12 @@ import java.io.InputStreamReader;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 /**
  * Validates if the notification request from PayPal Plus is a legit one. This intercepts all
@@ -37,14 +38,14 @@ import static java.lang.String.format;
 public class NotificationValidationInterceptor extends HandlerInterceptorAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationValidationInterceptor.class);
 
-    private final Map<String, Webhook> tenantNameToWebhookMap;
+    private final CompletableFuture<Map<String, Webhook>> tenantToWebhookMapFuture;
 
     private final TenantConfigFactory configFactory;
 
     @Autowired
-    public NotificationValidationInterceptor(@Nonnull Map<String, Webhook> tenantNameToWebhookMap,
+    public NotificationValidationInterceptor(@Nonnull CompletableFuture<Map<String, Webhook>> tenantToWebhookMapFuture,
                                              @Nonnull TenantConfigFactory configFactory) {
-        this.tenantNameToWebhookMap = tenantNameToWebhookMap;
+        this.tenantToWebhookMapFuture = tenantToWebhookMapFuture;
         this.configFactory = configFactory;
     }
 
@@ -54,23 +55,35 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
                              @Nonnull Object handler) throws Exception {
         Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
         String tenantName = (String) pathVariables.get("tenantName");
-        Webhook webhook = this.tenantNameToWebhookMap.get(tenantName);
-        if (webhook == null) {
-            LOG.error(format("Webhook not found for tenant tenantName=[%s]", tenantName));
-            return false;
+
+        TenantConfig tenantConfig = configFactory.getTenantConfig(tenantName).orElse(null);
+
+        if (tenantConfig == null) {
+            return false; // tenant config for this name not found - skip mapping
         }
-        Optional<TenantConfig> tenantConfigOpt = configFactory.getTenantConfig(tenantName);
-        return tenantConfigOpt
-                .map(this::getPaypalPlusFacade)
-                .map(paypalPlusFacade -> {
-                    try {
-                        return paypalPlusFacade.getPaymentService().validateNotificationEvent(webhook, getHeadersInfo(request), getBody(request));
-                    } catch (IOException e) {
-                        return CompletableFuture.completedFuture(false);
-                    }
-                })
-                .orElseGet(() -> CompletableFuture.completedFuture(false))
+
+        return this.tenantToWebhookMapFuture
+                .thenApply(webhooksMap -> webhooksMap.get(tenantName))
+                .thenCompose(validateWebhookIfExists(request, tenantConfig))
                 .toCompletableFuture().join();
+    }
+
+    private Function<Webhook, CompletionStage<Boolean>> validateWebhookIfExists(@Nonnull HttpServletRequest request,
+                                                                                @Nonnull TenantConfig tenantConfig) {
+        return webhook -> {
+            if (webhook == null) {
+                LOG.info("Webhook not found for tenant tenantName=[{}]", tenantConfig.getTenantName());
+                return completedFuture(false);
+            }
+
+            try {
+                return getPaypalPlusFacade(tenantConfig).getPaymentService().validateNotificationEvent(webhook, getHeadersInfo(request), getBody(request));
+            } catch (Throwable error) {
+                LOG.error("Webhook for tenantName=[{}] can't be initialized: ", tenantConfig.getTenantName(), error);
+            }
+
+            return completedFuture(false);
+        };
     }
 
     @VisibleForTesting

@@ -5,7 +5,6 @@ import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterface
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessor;
 import com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.paypal.api.payments.Event;
@@ -16,13 +15,12 @@ import io.sphere.sdk.payments.Transaction;
 import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.AddInterfaceInteraction;
-import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -31,15 +29,13 @@ import static java.lang.String.format;
 
 public abstract class NotificationProcessorBase implements NotificationProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(NotificationProcessorBase.class);
-
     private final Gson gson;
 
     NotificationProcessorBase(Gson gson) {
         this.gson = gson;
     }
 
-    abstract Optional<ChangeTransactionState> createChangeTransactionState(@Nonnull Payment ctpPayment);
+    abstract List<? extends UpdateAction<Payment>>  createChangeTransactionState(@Nonnull Payment ctpPayment);
 
     @Override
     public CompletionStage<Payment> processEventNotification(@Nonnull CtpFacade ctpFacade,
@@ -54,17 +50,15 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
                 );
     }
 
-    protected ImmutableList<UpdateAction<Payment>> createPaymentUpdates(@Nonnull Payment ctpPayment,
+    protected List<UpdateAction<Payment>> createPaymentUpdates(@Nonnull Payment ctpPayment,
                                                                         @Nonnull Event event) {
-        final ImmutableList.Builder<UpdateAction<Payment>> listBuilder = ImmutableList.builder();
-        listBuilder.add(createAddInterfaceInteractionAction(event));
-        Optional<ChangeTransactionState> changeTransactionOpt = createChangeTransactionState(ctpPayment);
-        if (changeTransactionOpt.isPresent()) {
-            listBuilder.add(changeTransactionOpt.get());
-        } else {
-            logger.warn("Notification event {} did not trigger change transaction state", event);
+        ArrayList<UpdateAction<Payment>> updateActions = new ArrayList<>();
+        updateActions.add(createAddInterfaceInteractionAction(event));
+        List<? extends UpdateAction<Payment>> updateAtions = createChangeTransactionState(ctpPayment);
+        if (!updateAtions.isEmpty()) {
+            updateActions.addAll(updateAtions);
         }
-        return listBuilder.build();
+        return updateActions;
     }
 
     @SuppressWarnings("unchecked")

@@ -2,15 +2,16 @@ package com.commercetools.pspadapter.notification.processor.impl;
 
 import com.google.gson.Gson;
 import com.paypal.api.payments.Event;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *  Notification that return true for all events. This event is then saved in
@@ -27,8 +28,8 @@ public class DefaultNotificationProcessor extends NotificationProcessorBase {
     }
 
     @Override
-    Optional<ChangeTransactionState> createChangeTransactionState(@Nonnull Payment ctpPayment) {
-        return Optional.empty();
+    List<UpdateAction<Payment>> createChangeTransactionState(@Nonnull Payment ctpPayment) {
+        return Collections.emptyList();
     }
 
     @Override

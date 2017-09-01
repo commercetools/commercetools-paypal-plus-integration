@@ -9,8 +9,6 @@ import io.sphere.sdk.payments.Transaction;
 import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -18,27 +16,25 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Processes event notification of type PAYMENT.SALE.COMPLETED
+ * Change charge state of the corresponding CTP payment to FAILURE
  */
-@Component
-public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
+public class PaymentSaleDeniedProcessor extends NotificationProcessorBase {
 
-    @Autowired
-    public PaymentSaleCompletedProcessor(@Nonnull Gson gson) {
+    PaymentSaleDeniedProcessor(Gson gson) {
         super(gson);
-    }
-
-    @Override
-    public boolean canProcess(@Nonnull Event event) {
-        return NotificationEventType.PAYMENT_SALE_COMPLETED.getPaypalEventTypeName()
-                .equalsIgnoreCase(event.getEventType());
     }
 
     @Override
     List<? extends UpdateAction<Payment>>  createChangeTransactionState(@Nonnull Payment ctpPayment) {
         Optional<Transaction> txnOpt = findMatchingTxn(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
         return txnOpt
-                .map(txn -> Collections.singletonList(ChangeTransactionState.of(TransactionState.SUCCESS, txn.getId())))
+                .map(txn -> Collections.singletonList(ChangeTransactionState.of(TransactionState.FAILURE, txn.getId())))
                 .orElse(Collections.emptyList());
+    }
+
+    @Override
+    public boolean canProcess(@Nonnull Event event) {
+        return NotificationEventType.PAYMENT_SALE_DENIED.getPaypalEventTypeName()
+                .equalsIgnoreCase(event.getEventType());
     }
 }

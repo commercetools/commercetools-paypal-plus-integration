@@ -201,7 +201,7 @@ public class PaymentHandler {
         return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, executeCS);
     }
 
-    protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(@Nullable String paypalPlusPaymentId,
+    protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(@Nonnull String paypalPlusPaymentId,
                                                                                         @Nonnull String payerId) {
         return ctpFacade.getPaymentService().getByPaymentMethodAndInterfaceId(PAYPAL_PLUS, paypalPlusPaymentId)
                 .thenCompose(paymentOpt -> paymentOpt.map(payment -> {

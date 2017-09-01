@@ -210,21 +210,6 @@ public class PaymentHandler {
                 }).orElse(null));
     }
 
-    protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull Payment paypalPayment,
-                                                                                      @Nonnull String ctpPaymentId,
-                                                                                      @Nullable TransactionState transactionState) {
-        Amount totalAmount = paypalPayment.getTransactions().get(0).getAmount();
-        BigDecimal total = new BigDecimal(totalAmount.getTotal());
-        String updateTimeStr = paypalPayment.getUpdateTime() == null ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
-        TransactionDraft transactionDraft = TransactionDraftBuilder
-                .of(TransactionType.CHARGE, Money.of(total, totalAmount.getCurrency()))
-                .timestamp(toZonedDateTime(updateTimeStr))
-                .state(transactionState)
-                .build();
-        return ctpFacade.getPaymentService()
-                .updatePayment(ctpPaymentId, Collections.singletonList(AddTransaction.of(transactionDraft)));
-    }
-
     protected List<UpdateAction<io.sphere.sdk.payments.Payment>> getApprovalUrlAndInterfaceIdAction(@Nonnull Payment paypalPayment) {
         return asList(
                 SetCustomField.ofObject(APPROVAL_URL, PaymentMapper.getApprovalUrl(paypalPayment).orElse("")),
@@ -291,6 +276,21 @@ public class PaymentHandler {
         setCustomFieldActions.add(SetCustomField.ofObject(AMOUNT, Money.of(new BigDecimal(paymentInstruction.getAmount().getValue()),
                 paymentInstruction.getAmount().getCurrency())));
         return setCustomFieldActions;
+    }
+
+    private CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull Payment paypalPayment,
+                                                                                    @Nonnull String ctpPaymentId,
+                                                                                    @Nullable TransactionState transactionState) {
+        Amount totalAmount = paypalPayment.getTransactions().get(0).getAmount();
+        BigDecimal total = new BigDecimal(totalAmount.getTotal());
+        String updateTimeStr = paypalPayment.getUpdateTime() == null ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
+        TransactionDraft transactionDraft = TransactionDraftBuilder
+                .of(TransactionType.CHARGE, Money.of(total, totalAmount.getCurrency()))
+                .timestamp(toZonedDateTime(updateTimeStr))
+                .state(transactionState)
+                .build();
+        return ctpFacade.getPaymentService()
+                .updatePayment(ctpPaymentId, Collections.singletonList(AddTransaction.of(transactionDraft)));
     }
 
     private CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull String paypalPlusPaymentId,

@@ -229,21 +229,22 @@ public class PaymentHandler {
 
         AddInterfaceInteraction interactionAction = createAddInterfaceInteractionAction(paymentExecution, REQUEST);
         return ctpFacade.getPaymentService()
-                // 1. add execute request to the ctp payment as interaction interface
                 .updatePayment(ctpPayment.getId(), Collections.singletonList(interactionAction))
-                .thenCompose(payment -> {
-                    // 2. send execute request to paypal
-                    return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
-                            paymentExecution)
-                            .thenCompose(paypalPayment -> {
-                                AddInterfaceInteraction addInteractionAction = createAddInterfaceInteractionAction(paypalPayment, RESPONSE);
-                                // 3. add paypal response to the ctp payment as interaction interface
-                                return ctpFacade.getPaymentService().updatePayment(payment, Collections.singletonList(addInteractionAction))
-                                        // 4. create charge transaction in the ctp payment
-                                        .thenApply(updatedCtpPayment -> createChargeTransaction(paypalPlusPaymentId, paypalPayment, updatedCtpPayment));
-                            });
-                })
+                .thenCompose(payment -> executeAndUpdatePayment(paypalPlusPaymentId, paymentExecution, payment))
                 .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.CREATED));
+    }
+
+    private CompletionStage<CompletionStage<io.sphere.sdk.payments.Payment>> executeAndUpdatePayment(@Nonnull String paypalPlusPaymentId,
+                                                                                                     @Nonnull PaymentExecution paymentExecution,
+                                                                                                     @Nonnull io.sphere.sdk.payments.Payment payment) {
+        return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId), paymentExecution)
+                .thenCompose(paypalPayment -> {
+                    AddInterfaceInteraction addInteractionAction = createAddInterfaceInteractionAction(paypalPayment, RESPONSE);
+                    // add paypal response to the ctp payment as interaction interface
+                    return ctpFacade.getPaymentService().updatePayment(payment, Collections.singletonList(addInteractionAction))
+                            // create charge transaction in the ctp payment
+                            .thenApply(updatedCtpPayment -> createChargeTransaction(paypalPlusPaymentId, paypalPayment, updatedCtpPayment));
+                });
     }
 
     private CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull String paypalPlusPaymentId,

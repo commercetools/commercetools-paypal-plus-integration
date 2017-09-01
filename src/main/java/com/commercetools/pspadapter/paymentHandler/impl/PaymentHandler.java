@@ -216,6 +216,35 @@ public class PaymentHandler {
                 SetInterfaceId.of(paypalPayment.getId()));
     }
 
+    protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull Payment paypalPayment,
+                                                                                    @Nonnull String ctpPaymentId,
+                                                                                    @Nullable TransactionState transactionState) {
+        Amount totalAmount = paypalPayment.getTransactions().get(0).getAmount();
+        BigDecimal total = new BigDecimal(totalAmount.getTotal());
+        String updateTimeStr = paypalPayment.getUpdateTime() == null ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
+        TransactionDraft transactionDraft = TransactionDraftBuilder
+                .of(TransactionType.CHARGE, Money.of(total, totalAmount.getCurrency()))
+                .timestamp(toZonedDateTime(updateTimeStr))
+                .state(transactionState)
+                .build();
+        return ctpFacade.getPaymentService()
+                .updatePayment(ctpPaymentId, Collections.singletonList(AddTransaction.of(transactionDraft)));
+    }
+
+    protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull String paypalPlusPaymentId,
+                                                                                    @Nonnull Payment paypalPayment,
+                                                                                    @Nonnull io.sphere.sdk.payments.Payment ctpPayment) {
+        if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
+            return createChargeTransaction(paypalPayment, ctpPayment.getId(), SUCCESS);
+        } else if (PaypalPlusPaymentStates.CREATED.equals(paypalPayment.getState())
+                || PaypalPlusPaymentStates.PENDING.equals(paypalPayment.getState())) {
+            return createChargeTransaction(paypalPayment, ctpPayment.getId(), PENDING);
+        } else {
+            throw new PaypalPlusException(format("Error when approving payment paypalPlusPaymentId=[%s], current state=[%s]",
+                    paypalPlusPaymentId, paypalPayment.getState()));
+        }
+    }
+
     /**
      * Private methods
      **/
@@ -276,35 +305,6 @@ public class PaymentHandler {
         setCustomFieldActions.add(SetCustomField.ofObject(AMOUNT, Money.of(new BigDecimal(paymentInstruction.getAmount().getValue()),
                 paymentInstruction.getAmount().getCurrency())));
         return setCustomFieldActions;
-    }
-
-    private CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull Payment paypalPayment,
-                                                                                    @Nonnull String ctpPaymentId,
-                                                                                    @Nullable TransactionState transactionState) {
-        Amount totalAmount = paypalPayment.getTransactions().get(0).getAmount();
-        BigDecimal total = new BigDecimal(totalAmount.getTotal());
-        String updateTimeStr = paypalPayment.getUpdateTime() == null ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
-        TransactionDraft transactionDraft = TransactionDraftBuilder
-                .of(TransactionType.CHARGE, Money.of(total, totalAmount.getCurrency()))
-                .timestamp(toZonedDateTime(updateTimeStr))
-                .state(transactionState)
-                .build();
-        return ctpFacade.getPaymentService()
-                .updatePayment(ctpPaymentId, Collections.singletonList(AddTransaction.of(transactionDraft)));
-    }
-
-    private CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull String paypalPlusPaymentId,
-                                                                                    @Nonnull Payment paypalPayment,
-                                                                                    @Nonnull io.sphere.sdk.payments.Payment ctpPayment) {
-        if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
-            return createChargeTransaction(paypalPayment, ctpPayment.getId(), SUCCESS);
-        } else if (PaypalPlusPaymentStates.CREATED.equals(paypalPayment.getState())
-                || PaypalPlusPaymentStates.PENDING.equals(paypalPayment.getState())) {
-            return createChargeTransaction(paypalPayment, ctpPayment.getId(), PENDING);
-        } else {
-            throw new PaypalPlusException(format("Error when approving payment paypalPlusPaymentId=[%s], current state=[%s]",
-                    paypalPlusPaymentId, paypalPayment.getState()));
-        }
     }
 
     private PaymentHandleResponse runWithExceptionallyHandling(@Nullable String paymentId,

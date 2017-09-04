@@ -1,7 +1,7 @@
 package com.commercetools.payment.notification;
 
 import com.commercetools.model.PaypalPlusNotificationEvent;
-import com.commercetools.payment.handler.BaseCommercetoolsPaymentsController;
+import com.commercetools.payment.handler.BaseCommercetoolsController;
 import com.commercetools.pspadapter.notification.NotificationEventDispatcherProvider;
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
 import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandler;
@@ -21,7 +21,6 @@ import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
-import static com.commercetools.payment.constants.Psp.PSP_NAME;
 import static java.lang.String.format;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -35,7 +34,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * and then read the request body. It will throw an error.
  */
 @RestController
-public class CommercetoolsPaymentNotificationController extends BaseCommercetoolsPaymentsController {
+public class CommercetoolsPaymentNotificationController extends BaseCommercetoolsController {
 
     private final NotificationEventDispatcherProvider eventDispatcherProvider;
 

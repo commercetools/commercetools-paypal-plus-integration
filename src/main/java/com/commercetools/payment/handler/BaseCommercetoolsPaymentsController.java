@@ -7,22 +7,12 @@ import org.springframework.web.bind.annotation.InitBinder;
 
 import javax.annotation.Nonnull;
 
-public class BaseCommercetoolsPaymentsController {
-    protected final StringTrimmerEditor stringTrimmerEditor;
+public class BaseCommercetoolsPaymentsController extends BaseCommercetoolsController {
     protected PaymentHandlerProvider paymentHandlerProvider;
 
     public BaseCommercetoolsPaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,
                                                @Nonnull PaymentHandlerProvider paymentHandlerProvider) {
-        this.stringTrimmerEditor = stringTrimmerEditor;
+        super(stringTrimmerEditor);
         this.paymentHandlerProvider = paymentHandlerProvider;
-    }
-
-    public BaseCommercetoolsPaymentsController(StringTrimmerEditor stringTrimmerEditor) {
-        this.stringTrimmerEditor = stringTrimmerEditor;
-    }
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(String.class, stringTrimmerEditor);
     }
 }

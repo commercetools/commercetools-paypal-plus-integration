@@ -1,6 +1,5 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
-import com.commercetools.exception.MissingExpansionException;
 import com.commercetools.exception.PaypalPlusException;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.helper.mapper.AddressMapper;
@@ -12,11 +11,7 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-import com.paypal.api.payments.Amount;
-import com.paypal.api.payments.Patch;
-import com.paypal.api.payments.Payment;
-import com.paypal.api.payments.PaymentExecution;
-import com.paypal.api.payments.PaymentInstruction;
+import com.paypal.api.payments.*;
 import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
 import io.sphere.sdk.carts.Cart;
@@ -42,14 +37,12 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Stream;
 
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
@@ -164,8 +157,7 @@ public class PaymentHandler {
                 io.sphere.sdk.models.Address shippingAddress = cartWithPaymentsExpansion.getShippingAddress();
                 if (shippingAddress == null) {
                     return PaymentHandleResponse.of400BadRequest(format("Shipping address must not be null for cartId=[%s]", cartWithPaymentsExpansion.getId()));
-                }
-                Patch patchShippingAddress = new Patch(ADD_ACTION, SHIPPING_ADDRESS_PATH).setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
+                }Patch patchShippingAddress = new Patch(ADD_ACTION, SHIPPING_ADDRESS_PATH).setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
                 patches.add(patchShippingAddress);
 
                 // billing address is not mandatory
@@ -174,11 +166,10 @@ public class PaymentHandler {
                     Patch patchBillingAddress = new Patch(ADD_ACTION, PAYER_INFO_PATH)
                             .setValue(addressMapper.ctpAddressToPaypalPlusPayerInfo(billingAddress));
                     patches.add(patchBillingAddress);
-                }
-                AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(patchShippingAddress, REQUEST);
+                }AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(patchShippingAddress, REQUEST);
                 CompletionStage<PaymentHandleResponse> patchCS = createPatchCompletionStage(paymentId, paypalPlusPayment, patches, addInterfaceInteractionAction);
-                return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
-            }).orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
+                return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);})
+            .orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
                     paypalPlusPaymentId, cartWithPaymentsExpansion.getId())));
         } catch (Throwable e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
@@ -364,26 +355,25 @@ public class PaymentHandler {
         return paymentHandleResponseStage;
     }
 
+    /**
+     * <b>Note:</b> the paymentInfo must be expanded in the {@code cartWithPaymentsExpansion}, otherwise payment
+     * won't be found.
+     */
     private Optional<String> getCtpPaymentId(@Nonnull Cart cartWithPaymentsExpansion,
-                                             @Nonnull String paypalPlusPaymentId) throws Throwable {
+                                             @Nonnull String paypalPlusPaymentId) {
         return Optional.of(cartWithPaymentsExpansion)
                 .map(Cart::getPaymentInfo)
                 .map(PaymentInfo::getPayments)
-                .map(Collection::stream)
-                .map(paymentsStream -> filterCtpPaymentIdByPaypalPlusPaymentId(paypalPlusPaymentId, paymentsStream))
-                .orElseThrow(() -> {
-                    throw new MissingExpansionException(format("Please expand Cart with cart.%s for cartId=[%s]",
-                            PAYMENT_INFO_EXPANSION, cartWithPaymentsExpansion.getId()));
-                });
+                .flatMap(paymentReferences -> filterCtpPaymentByPaypalPlusPaymentId(paypalPlusPaymentId, paymentReferences))
+                .map(Resource::getId);
     }
 
-    private Optional<String> filterCtpPaymentIdByPaypalPlusPaymentId(@Nonnull String paypalPlusPaymentId,
-                                                                     @Nonnull Stream<Reference<io.sphere.sdk.payments.Payment>> referenceStream) {
-        return referenceStream
+    private static Optional<io.sphere.sdk.payments.Payment> filterCtpPaymentByPaypalPlusPaymentId(@Nonnull String paypalPlusPaymentId,
+                                                                                                  @Nonnull List<Reference<io.sphere.sdk.payments.Payment>> paymentReferences) {
+        return paymentReferences.stream()
                 .map(Reference::getObj)
                 .filter(payment -> paypalPlusPaymentId.equals(payment.getInterfaceId()))
-                .findAny()
-                .map(Resource::getId);
+                .findFirst();
     }
 
     /**

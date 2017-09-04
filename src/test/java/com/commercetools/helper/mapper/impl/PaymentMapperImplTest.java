@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
@@ -50,13 +51,9 @@ public class PaymentMapperImplTest {
         assertThat(amount.getCurrency()).isEqualTo("USD");
         assertThat(amount.getTotal()).isEqualTo("596.85");
 
-        assertThat(transaction.getAmount().getDetails())
-                .withFailMessage("If you see this message - you should update the tests to validate payment details")
-                .isNull();
-//        Details details = amount.getDetails();
-//        assertThat(details.getSubtotal()).isEqualTo("496.60");
-//        assertThat(details.getShipping()).isEqualTo("4.95");
-//        assertThat(details.getTax()).isEqualTo("95.30");
+        Details details = amount.getDetails();
+        assertThat(details.getSubtotal()).isEqualTo("591.90");
+        assertThat(details.getShipping()).isEqualTo("4.95");
 
         ItemList itemList = transaction.getItemList();
         assertThat(itemList).isNotNull();
@@ -95,13 +92,9 @@ public class PaymentMapperImplTest {
         assertThat(amount.getCurrency()).isEqualTo("EUR");
         assertThat(amount.getTotal()).isEqualTo("309.00");
 
-        assertThat(transaction.getAmount().getDetails())
-                .withFailMessage("If you see this message - you should update the tests to validate payment details")
-                .isNull();
-//        Details details = amount.getDetails();
-//        assertThat(details.getSubtotal()).isEqualTo("259.66");
-//        assertThat(details.getShipping()).isEqualTo("0.00");
-//        assertThat(details.getTax()).isEqualTo("49.34");
+        Details details = amount.getDetails();
+        assertThat(details.getSubtotal()).isEqualTo("309.00");
+        assertThat(details.getShipping()).isEqualTo("0.00");
 
         ItemList itemList = transaction.getItemList();
         assertThat(itemList).isNotNull();
@@ -158,24 +151,19 @@ public class PaymentMapperImplTest {
      * @param transaction {@link Transaction} to validate.
      */
     private void assertTransactionAmounts(Transaction transaction) {
-        assertThat(transaction.getAmount().getDetails())
-                .withFailMessage("If you see this message - you should update the tests to validate payment details")
-                .isNull();
+        BigDecimal total = new BigDecimal(transaction.getAmount().getTotal());
+        Details details = transaction.getAmount().getDetails();
+        BigDecimal shippingCost = new BigDecimal(details.getShipping());
+        BigDecimal detailsTotal = shippingCost
+                .add(new BigDecimal(details.getSubtotal()));
 
-//        BigDecimal total = new BigDecimal(transaction.getAmount().getTotal());
-//        Details details = transaction.getAmount().getDetails();
-//        BigDecimal shippingCost = new BigDecimal(details.getShipping());
-//        BigDecimal detailsTotal = shippingCost
-//                .add(new BigDecimal(details.getTax()))
-//                .add(new BigDecimal(details.getSubtotal()));
-//
-//        assertThat(detailsTotal).isEqualTo(total);
-//
-//        BigDecimal totalLineItems = transaction.getItemList().getItems().stream()
-//                .map(item -> new BigDecimal(item.getPrice()).multiply(new BigDecimal(item.getQuantity())))
-//                .reduce(BigDecimal.ZERO, BigDecimal::add);
-//
-//        assertThat(totalLineItems.add(shippingCost)).isEqualTo(total);
+        assertThat(detailsTotal).isEqualTo(total);
+
+        BigDecimal totalLineItems = transaction.getItemList().getItems().stream()
+                .map(item -> new BigDecimal(item.getPrice()).multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        assertThat(totalLineItems.add(shippingCost)).isEqualTo(total);
     }
 
 }

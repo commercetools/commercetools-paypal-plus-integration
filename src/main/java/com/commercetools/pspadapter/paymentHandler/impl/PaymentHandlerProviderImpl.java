@@ -8,6 +8,7 @@ import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,14 +21,17 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
     private final TenantConfigFactory configFactory;
     private final PaymentMapper paymentMapper;
     private final ShippingAddressMapper shippingAddressMapper;
+    private final Gson gson;
 
     @Autowired
     public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory,
                                       @Nonnull PaymentMapper paymentMapper,
-                                      @Nonnull ShippingAddressMapper shippingAddressMapper) {
+                                      @Nonnull ShippingAddressMapper shippingAddressMapper,
+                                      @Nonnull Gson gson) {
         this.configFactory = configFactory;
         this.paymentMapper = paymentMapper;
         this.shippingAddressMapper = shippingAddressMapper;
+        this.gson = gson;
     }
 
     @Override
@@ -36,7 +40,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
                     PaypalPlusFacade payPalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
-                    return new PaymentHandler(ctpFacade, paymentMapper, shippingAddressMapper, payPalPlusFacade, tenantName);
+                    return new PaymentHandler(ctpFacade, paymentMapper, shippingAddressMapper, payPalPlusFacade, tenantName, gson);
                 });
     }
 

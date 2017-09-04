@@ -1,5 +1,6 @@
 package com.commercetools.testUtil.mockObjects;
 
+import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
 import com.commercetools.pspadapter.notification.webhook.impl.WebhookContainerImpl;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
@@ -16,7 +17,7 @@ import java.util.Collections;
 public class MockNotificationValidationInterceptor extends NotificationValidationInterceptor {
 
     public MockNotificationValidationInterceptor(TenantConfigFactory tenantConfigFactory) {
-        super(new WebhookContainerImpl(Collections.emptyList(),"http://test.com"), tenantConfigFactory);
+        super(new WebhookContainerImpl(Collections.emptyList(), new PaypalPlusFacadeFactory(), "http://test.com"), tenantConfigFactory, new PaypalPlusFacadeFactory());
     }
 
     @Override

@@ -1,6 +1,9 @@
 package com.commercetools.pspadapter.notification.validation;
 
+import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
+import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
+import com.commercetools.pspadapter.notification.webhook.WebhookContainer;
 import com.commercetools.pspadapter.notification.webhook.impl.WebhookContainerImpl;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
@@ -15,14 +18,11 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMapOf;
@@ -38,12 +38,11 @@ public class NotificationValidationInterceptorTest {
         spyRequest.setAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE,
                 ImmutableMap.of("tenantName", MAIN_TEST_TENANT_NAME));
 
-        CompletableFuture<Map<String, Webhook>> tenantNameToWebhookMapFuture = supplyAsync(() -> ImmutableMap.of(MAIN_TEST_TENANT_NAME, new Webhook()));
-
         TenantConfigFactory configFactory = mock(TenantConfigFactory.class);
 
         TenantConfig tenantConfig = mock(TenantConfig.class);
         when(configFactory.getTenantConfig(anyString())).thenReturn(Optional.of(tenantConfig));
+        when(tenantConfig.createAPIContextFactory()).thenReturn(mock(APIContextFactory.class));
 
         PaypalPlusPaymentService paymentService = mock(PaypalPlusPaymentService.class);
         when(paymentService.validateNotificationEvent(any(), anyMapOf(String.class, String.class), any())).thenReturn(completedFuture(true));
@@ -51,9 +50,10 @@ public class NotificationValidationInterceptorTest {
         PaypalPlusFacade paypalPlusFacade = mock(PaypalPlusFacade.class);
         when(paypalPlusFacade.getPaymentService()).thenReturn(paymentService);
 
-        WebhookContainerImpl mockContainer = new WebhookContainerImpl(Collections.singletonList(tenantConfig), "http://test.com");
+        WebhookContainer mockContainer = mock(WebhookContainerImpl.class);
+        when(mockContainer.getWebhookCompletionStageByTenantName(anyString())).thenReturn(CompletableFuture.completedFuture(new Webhook()));
 
-        NotificationValidationInterceptor theObject = new NotificationValidationInterceptor(mockContainer, configFactory);
+        NotificationValidationInterceptor theObject = new NotificationValidationInterceptor(mockContainer, configFactory, new PaypalPlusFacadeFactory());
         NotificationValidationInterceptor interceptor = spy(theObject);
         doReturn(paypalPlusFacade).when(interceptor).getPaypalPlusFacade(any());
 

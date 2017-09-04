@@ -41,12 +41,16 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
     private final WebhookContainer webhookContainer;
 
     private final TenantConfigFactory configFactory;
+    
+    private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
 
     @Autowired
     public NotificationValidationInterceptor(@Nonnull WebhookContainer webhookContainer,
-                                             @Nonnull TenantConfigFactory configFactory) {
+                                             @Nonnull TenantConfigFactory configFactory,
+                                             @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory) {
         this.webhookContainer = webhookContainer;
         this.configFactory = configFactory;
+        this.paypalPlusFacadeFactory = paypalPlusFacadeFactory;
     }
 
     @Override
@@ -87,7 +91,7 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
 
     @VisibleForTesting
     protected PaypalPlusFacade getPaypalPlusFacade(TenantConfig tenantConfig) {
-        return new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
+        return paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
     }
 
     private Map<String, String> getHeadersInfo(@Nonnull HttpServletRequest request) {

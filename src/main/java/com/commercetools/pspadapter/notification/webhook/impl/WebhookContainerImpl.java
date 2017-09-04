@@ -28,18 +28,20 @@ public class WebhookContainerImpl implements WebhookContainer {
 
     @Autowired
     public WebhookContainerImpl(@Nonnull List<TenantConfig> tenantConfigs,
+                                @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory,
                                 @Value("${ctp.paypal.plus.integration.server.url}") String integrationServerUrl) {
-        init(tenantConfigs, integrationServerUrl);
+        init(tenantConfigs, integrationServerUrl, paypalPlusFacadeFactory);
     }
 
     private void init(@Nonnull List<TenantConfig> tenantConfigs,
-                      @Nonnull String integrationServerUrl) {
+                      @Nonnull String integrationServerUrl,
+                      @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory) {
         // create all necessary webhooks. This will certainly takes a while because it involves Paypal calls,
         // but without the webhooks configured correctly, the app cannot work properly
 
         List<CompletionStage<WebhookWithTenantName>> webhookStages = tenantConfigs.stream()
                 .map(tenantConfig -> {
-                    PaypalPlusFacade paypalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
+                    PaypalPlusFacade paypalPlusFacade = paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
                     return paypalPlusFacade.getPaymentService()
                             .ensureWebhook(format("%s/%s/%s", integrationServerUrl, tenantConfig.getCtpProjectKey(), NOTIFICATION_PATH_URL))
                             .thenApply(webhook -> new WebhookWithTenantName(webhook, tenantConfig.getTenantName()));

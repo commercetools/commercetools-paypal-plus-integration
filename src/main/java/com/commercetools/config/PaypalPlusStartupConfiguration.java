@@ -1,5 +1,6 @@
 package com.commercetools.config;
 
+import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.notification.validation.NotificationValidationFilter;
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
 import com.commercetools.pspadapter.notification.webhook.WebhookContainer;
@@ -23,19 +24,23 @@ public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
     
     private final WebhookContainer webhookContainer;
 
+    private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
+
     @Value("${ctp.paypal.plus.integration.server.url}")
     private String integrationServerUrl;
 
     @Autowired
     public PaypalPlusStartupConfiguration(@Nonnull TenantConfigFactory tenantConfigFactory,
-                                          @Nonnull WebhookContainer webhookContainer) {
+                                          @Nonnull WebhookContainer webhookContainer,
+                                          @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory) {
         this.tenantConfigFactory = tenantConfigFactory;
         this.webhookContainer = webhookContainer;
+        this.paypalPlusFacadeFactory = paypalPlusFacadeFactory;
     }
 
     @Bean
     public NotificationValidationInterceptor notificationValidationInterceptor() {
-        return new NotificationValidationInterceptor(webhookContainer, tenantConfigFactory);
+        return new NotificationValidationInterceptor(webhookContainer, tenantConfigFactory, paypalPlusFacadeFactory);
     }
 
     @Override

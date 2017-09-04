@@ -48,6 +48,9 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
 
+    @Autowired
+    private PaypalPlusFacadeFactory paypalPlusFacadeFactory;
+
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
     private CtpFacade ctpFacade;
@@ -59,7 +62,7 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
                 .orElseThrow(IllegalStateException::new);
 
         ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-        paypalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
+        paypalPlusFacade = paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
 
         sphereClient = tenantConfig.createSphereClient();
     }

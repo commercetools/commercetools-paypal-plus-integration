@@ -2,6 +2,7 @@ package com.commercetools.pspadapter.notification.validation;
 
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
+import com.commercetools.pspadapter.notification.webhook.WebhookContainer;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.google.common.annotations.VisibleForTesting;
@@ -22,7 +23,6 @@ import java.io.InputStreamReader;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -38,14 +38,14 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 public class NotificationValidationInterceptor extends HandlerInterceptorAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationValidationInterceptor.class);
 
-    private final CompletableFuture<Map<String, Webhook>> tenantToWebhookMapFuture;
+    private final WebhookContainer webhookContainer;
 
     private final TenantConfigFactory configFactory;
 
     @Autowired
-    public NotificationValidationInterceptor(@Nonnull CompletableFuture<Map<String, Webhook>> tenantToWebhookMapFuture,
+    public NotificationValidationInterceptor(@Nonnull WebhookContainer webhookContainer,
                                              @Nonnull TenantConfigFactory configFactory) {
-        this.tenantToWebhookMapFuture = tenantToWebhookMapFuture;
+        this.webhookContainer = webhookContainer;
         this.configFactory = configFactory;
     }
 
@@ -62,8 +62,7 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
             return false; // tenant config for this name not found - skip mapping
         }
 
-        return this.tenantToWebhookMapFuture
-                .thenApply(webhooksMap -> webhooksMap.get(tenantName))
+        return this.webhookContainer.getWebhookCompletionStageByTenantName(tenantName)
                 .thenCompose(validateWebhookIfExists(request, tenantConfig))
                 .toCompletableFuture().join();
     }

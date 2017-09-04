@@ -5,7 +5,6 @@ import com.commercetools.payment.PaymentIntegrationTest;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
@@ -71,7 +70,6 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
     private CtpFacade ctpFacade;
-    private PaypalPlusFacade paypalPlusFacade;
 
     @Before
     public void setUp() throws Exception {

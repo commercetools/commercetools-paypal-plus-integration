@@ -1,14 +1,13 @@
 package com.commercetools.testUtil.mockObjects;
 
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
+import com.commercetools.pspadapter.notification.webhook.impl.WebhookContainerImpl;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
-import com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import static java.util.concurrent.CompletableFuture.supplyAsync;
+import java.util.Collections;
 
 /**
  * Mock interceptor which just let all the notification requests through
@@ -17,7 +16,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 public class MockNotificationValidationInterceptor extends NotificationValidationInterceptor {
 
     public MockNotificationValidationInterceptor(TenantConfigFactory tenantConfigFactory) {
-        super(supplyAsync(ImmutableMap::of), tenantConfigFactory);
+        super(new WebhookContainerImpl(Collections.emptyList(),"http://test.com"), tenantConfigFactory);
     }
 
     @Override

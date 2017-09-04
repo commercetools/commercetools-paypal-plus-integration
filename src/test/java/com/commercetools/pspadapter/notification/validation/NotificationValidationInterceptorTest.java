@@ -1,6 +1,7 @@
 package com.commercetools.pspadapter.notification.validation;
 
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
+import com.commercetools.pspadapter.notification.webhook.impl.WebhookContainerImpl;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
@@ -14,6 +15,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -49,7 +51,9 @@ public class NotificationValidationInterceptorTest {
         PaypalPlusFacade paypalPlusFacade = mock(PaypalPlusFacade.class);
         when(paypalPlusFacade.getPaymentService()).thenReturn(paymentService);
 
-        NotificationValidationInterceptor theObject = new NotificationValidationInterceptor(tenantNameToWebhookMapFuture, configFactory);
+        WebhookContainerImpl mockContainer = new WebhookContainerImpl(Collections.singletonList(tenantConfig), "http://test.com");
+
+        NotificationValidationInterceptor theObject = new NotificationValidationInterceptor(mockContainer, configFactory);
         NotificationValidationInterceptor interceptor = spy(theObject);
         doReturn(paypalPlusFacade).when(interceptor).getPaypalPlusFacade(any());
 

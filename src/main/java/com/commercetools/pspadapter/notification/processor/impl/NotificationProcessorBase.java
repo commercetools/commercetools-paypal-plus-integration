@@ -77,16 +77,6 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
                 .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, ppPlusPaymentId);
     }
 
-    protected Optional<Transaction> findMatchingTxn(@Nonnull Collection<Transaction> transactions,
-                                                    @Nonnull TransactionType transactionType,
-                                                    @Nonnull TransactionState transactionState) {
-        return transactions
-                .stream()
-                .filter(transaction -> transaction.getType().equals(transactionType))
-                .filter(transaction -> transaction.getState().equals(transactionState))
-                .findAny();
-    }
-
     protected AddInterfaceInteraction createAddInterfaceInteractionAction(@Nonnull PayPalModel model) {
         String json = gson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(InterfaceInteractionType.NOTIFICATION.getInterfaceKey(),

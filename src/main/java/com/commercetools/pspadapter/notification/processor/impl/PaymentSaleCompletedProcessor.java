@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
+import static com.commercetools.util.CtpPaymentUtil.findTransactionByTypeAndState;
+
 /**
  * Processes event notification of type PAYMENT.SALE.COMPLETED
  */
@@ -33,7 +35,7 @@ public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
 
     @Override
     Optional<ChangeTransactionState> createChangeTransactionState(@Nonnull Payment ctpPayment) {
-        Optional<Transaction> txnOpt = findMatchingTxn(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
+        Optional<Transaction> txnOpt = findTransactionByTypeAndState(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
         return txnOpt.map(txn -> ChangeTransactionState.of(TransactionState.SUCCESS, txn.getId()));
     }
 }

@@ -13,6 +13,8 @@ import com.paypal.api.payments.WebhookList;
 import com.paypal.base.Constants;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.security.InvalidKeyException;
@@ -28,6 +30,8 @@ import java.util.concurrent.CompletionStage;
  * {@link PaypalPlusPaymentServiceImpl} for multiple Paypal requests.
  */
 public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implements PaypalPlusPaymentService {
+
+    private final Logger logger = LoggerFactory.getLogger(PaypalPlusPaymentServiceImpl.class);
 
     public PaypalPlusPaymentServiceImpl(@Nonnull APIContextFactory paypalPlusApiContextFactory) {
         super(paypalPlusApiContextFactory);
@@ -96,8 +100,8 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
                 apiContext.addConfiguration(Constants.PAYPAL_WEBHOOK_ID, webhook.getId());
                 return Event.validateReceivedEvent(apiContext, headersInfo, requestBody);
             } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-                // todo: handle the errors better
-                throw new PayPalRESTException("Cannot validate notification event.");
+                logger.info("Cannot validate notification event, details:", e);
+                throw new PayPalRESTException("Cannot validate notification event, see the logs.");
             }
         });
     }

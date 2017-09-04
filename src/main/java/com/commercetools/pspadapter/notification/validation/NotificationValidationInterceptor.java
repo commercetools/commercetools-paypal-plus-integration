@@ -38,6 +38,8 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 public class NotificationValidationInterceptor extends HandlerInterceptorAdapter {
     private static final Logger logger = LoggerFactory.getLogger(NotificationValidationInterceptor.class);
 
+    private static final String TENANT_NAME_PATH_VARIABLE = "tenantName";
+
     private final WebhookContainer webhookContainer;
 
     private final TenantConfigFactory configFactory;
@@ -59,7 +61,7 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
                              @Nonnull Object handler) {
         try {
             Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-            String tenantName = (String) pathVariables.get("tenantName");
+            String tenantName = (String) pathVariables.get(TENANT_NAME_PATH_VARIABLE);
 
             TenantConfig tenantConfig = configFactory.getTenantConfig(tenantName).orElse(null);
 

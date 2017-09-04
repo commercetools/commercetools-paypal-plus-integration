@@ -20,6 +20,7 @@ import com.paypal.api.payments.PaymentInstruction;
 import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
 import io.sphere.sdk.carts.Cart;
+import io.sphere.sdk.carts.PaymentInfo;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.Resource;
@@ -41,12 +42,14 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Stream;
 
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
@@ -177,7 +180,7 @@ public class PaymentHandler {
                 return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
             }).orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
                     paypalPlusPaymentId, cartWithPaymentsExpansion.getId())));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return PaymentHandleResponse.of500InternalServerError(
                     format("Error while processing paymentId==[%s]", paypalPlusPaymentId));
@@ -354,22 +357,31 @@ public class PaymentHandler {
     }
 
     private Optional<String> getCtpPaymentId(@Nonnull Cart cartWithPaymentsExpansion,
-                                             @Nonnull String paypalPlusPaymentId) {
-        List<Reference<io.sphere.sdk.payments.Payment>> payments
-                = cartWithPaymentsExpansion.getPaymentInfo().getPayments();
-        if (payments == null || payments.get(0).getObj() == null) {
-            throw new MissingExpansionException(format("Please expand Cart with cart.%s for cartId=[%s]",
-                    PAYMENT_INFO_EXPANSION, cartWithPaymentsExpansion.getId()));
-        }
-        return payments.stream()
-                .filter(paymentReference -> paypalPlusPaymentId.equals(paymentReference.getObj().getInterfaceId()))
+                                             @Nonnull String paypalPlusPaymentId) throws Throwable {
+        return Optional.of(cartWithPaymentsExpansion)
+                .map(Cart::getPaymentInfo)
+                .map(PaymentInfo::getPayments)
+                .map(Collection::stream)
+                .map(paymentsStream -> filterCtpPaymentIdByPaypalPlusPaymentId(paypalPlusPaymentId, paymentsStream))
+                .orElseThrow(() -> {
+                    throw new MissingExpansionException(format("Please expand Cart with cart.%s for cartId=[%s]",
+                            PAYMENT_INFO_EXPANSION, cartWithPaymentsExpansion.getId()));
+                });
+    }
+
+    private Optional<String> filterCtpPaymentIdByPaypalPlusPaymentId(@Nonnull String paypalPlusPaymentId,
+                                                                     @Nonnull Stream<Reference<io.sphere.sdk.payments.Payment>> referenceStream) {
+        return referenceStream
+                .map(Reference::getObj)
+                .filter(payment -> paypalPlusPaymentId.equals(payment.getInterfaceId()))
                 .findAny()
-                .map(paymentReference -> paymentReference.getObj().getId());
+                .map(Resource::getId);
     }
 
     /**
      * Create payment on paypal plus,
      * saves approval URL, payment ID and interface interactions to CTP payment
+     *
      * @return Paypal Plus payment
      */
     private CompletionStage<Payment> createPaypalPlusPaymentAndUpdateCtpPayment(@Nonnull io.sphere.sdk.payments.Payment ctpPayment,

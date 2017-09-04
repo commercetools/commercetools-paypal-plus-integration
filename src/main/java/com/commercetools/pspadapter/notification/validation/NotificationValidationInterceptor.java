@@ -36,7 +36,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
  * otherwise the request is ended immediately.
  */
 public class NotificationValidationInterceptor extends HandlerInterceptorAdapter {
-    private static final Logger LOG = LoggerFactory.getLogger(NotificationValidationInterceptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(NotificationValidationInterceptor.class);
 
     private final WebhookContainer webhookContainer;
 
@@ -56,33 +56,38 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
     @Override
     public boolean preHandle(@Nonnull HttpServletRequest request,
                              @Nonnull HttpServletResponse response,
-                             @Nonnull Object handler) throws Exception {
-        Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-        String tenantName = (String) pathVariables.get("tenantName");
+                             @Nonnull Object handler) {
+        try {
+            Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+            String tenantName = (String) pathVariables.get("tenantName");
 
-        TenantConfig tenantConfig = configFactory.getTenantConfig(tenantName).orElse(null);
+            TenantConfig tenantConfig = configFactory.getTenantConfig(tenantName).orElse(null);
 
-        if (tenantConfig == null) {
-            return false; // tenant config for this name not found - skip mapping
+            if (tenantConfig == null) {
+                return false; // tenant config for this name not found - skip mapping
+            }
+
+            return this.webhookContainer.getWebhookCompletionStageByTenantName(tenantName)
+                    .thenCompose(validateWebhookIfExists(request, tenantConfig))
+                    .toCompletableFuture().join();
+        } catch (Throwable t) {
+            logger.error("Error when validating the notification request from Paypal Plus", t);
+            return false;
         }
-
-        return this.webhookContainer.getWebhookCompletionStageByTenantName(tenantName)
-                .thenCompose(validateWebhookIfExists(request, tenantConfig))
-                .toCompletableFuture().join();
     }
 
     private Function<Webhook, CompletionStage<Boolean>> validateWebhookIfExists(@Nonnull HttpServletRequest request,
                                                                                 @Nonnull TenantConfig tenantConfig) {
         return webhook -> {
             if (webhook == null) {
-                LOG.info("Webhook not found for tenant tenantName=[{}]", tenantConfig.getTenantName());
+                logger.info("Webhook not found for tenant tenantName=[{}]", tenantConfig.getTenantName());
                 return completedFuture(false);
             }
 
             try {
                 return getPaypalPlusFacade(tenantConfig).getPaymentService().validateNotificationEvent(webhook, getHeadersInfo(request), getBody(request));
             } catch (Throwable error) {
-                LOG.error("Webhook for tenantName=[{}] can't be initialized: ", tenantConfig.getTenantName(), error);
+                logger.error("Webhook for tenantName=[{}] can't be initialized: ", tenantConfig.getTenantName(), error);
             }
 
             return completedFuture(false);

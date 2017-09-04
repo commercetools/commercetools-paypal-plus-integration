@@ -2,7 +2,7 @@ package com.commercetools.pspadapter.notification.processor.impl;
 
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.notification.NotificationDispatcher;
-import com.google.common.collect.ImmutableMap;
+import com.commercetools.pspadapter.notification.processor.NotificationProcessorContainer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
@@ -30,14 +30,17 @@ public class DefaultNotificationProcessorTest {
     public void whenNotificationHasNoProcessor_defaultProcessorIsUsed () {
         CtpFacade ctpFacade = mock(CtpFacade.class);
         Payment mockPayment = mock(Payment.class);
-        DefaultNotificationProcessor mockProcessor = mock(DefaultNotificationProcessor.class);
-        when(mockProcessor.processEventNotification(any(), any()))
+        DefaultNotificationProcessor mockDefaultProcessor = mock(DefaultNotificationProcessor.class);
+        when(mockDefaultProcessor.processEventNotification(any(), any()))
                 .thenReturn(CompletableFuture.completedFuture(mockPayment));
+        PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
+        
+        NotificationProcessorContainer container = new NotificationProcessorContainerImpl(paymentCompletedProcessor, mockDefaultProcessor);
 
         Event event = new Event();
         event.setEventType("testEventType");
 
-        NotificationDispatcher dispatcher = new NotificationDispatcher(ImmutableMap.of(), ctpFacade, mockProcessor);
+        NotificationDispatcher dispatcher = new NotificationDispatcher(container, ctpFacade);
         CompletionStage<Payment> paymentCompletionStage = dispatcher.dispatchEvent(event);
         assertThat(paymentCompletionStage.toCompletableFuture().join()).isEqualTo(mockPayment);
     }

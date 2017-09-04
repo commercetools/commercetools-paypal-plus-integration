@@ -10,6 +10,8 @@ public final class CtpPaymentCustomFields {
     public static final String LANGUAGE_CODE_FIELD = "languageCode";
     public static final String REFERENCE = "reference";
 
+    public static final String TIMESTAMP_FIELD = "timestamp";
+
     /**
      * <b>Note:</b> looks like for Paypal Plus in EU credit card token is never shared with payers, cos all the workflow
      * is executed in the iframe.

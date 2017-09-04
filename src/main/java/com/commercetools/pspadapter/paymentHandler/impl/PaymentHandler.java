@@ -2,8 +2,8 @@ package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.exception.PaypalPlusException;
 import com.commercetools.exception.PaypalPlusServiceException;
+import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
-import com.commercetools.helper.mapper.ShippingAddressMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates;
@@ -46,6 +46,7 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPatchConstants.*;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.REQUEST;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.RESPONSE;
@@ -67,7 +68,7 @@ public class PaymentHandler {
     private final CtpFacade ctpFacade;
     private final PaypalPlusFacade paypalPlusFacade;
     private final PaymentMapper paymentMapper;
-    private final ShippingAddressMapper shippingAddressMapper;
+    private final AddressMapper addressMapper;
     private final Gson gson;
 
     private final Logger logger;
@@ -79,13 +80,13 @@ public class PaymentHandler {
 
     public PaymentHandler(@Nonnull CtpFacade ctpFacade,
                           @Nonnull PaymentMapper paymentMapper,
-                          @Nonnull ShippingAddressMapper shippingAddressMapper,
+                          @Nonnull AddressMapper addressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName,
                           @Nonnull Gson gson) {
         this.ctpFacade = ctpFacade;
         this.paymentMapper = paymentMapper;
-        this.shippingAddressMapper = shippingAddressMapper;
+        this.addressMapper = addressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
         this.gson = gson;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
@@ -129,21 +130,47 @@ public class PaymentHandler {
         }
     }
 
+    public PaymentHandleResponse patchAddress(@Nonnull String ctpPaymentId) {
+        return ctpFacade.getCartService().getByPaymentId(ctpPaymentId, PAYMENT_INFO_EXPANSION)
+                .thenCombineAsync(ctpFacade.getPaymentService().getById(ctpPaymentId),
+                        (cartOpt, ctpPaymentOpt) -> {
+                            if (cartOpt.isPresent() && ctpPaymentOpt.isPresent()
+                                    && ctpPaymentOpt.get().getInterfaceId() != null) {
+                                return patchAddress(cartOpt.get(), ctpPaymentOpt.get().getInterfaceId());
+                            } else {
+                                return PaymentHandleResponse.of400BadRequest(
+                                        format("Payment payment=[%s] does not exists or does not have a connected cart.",
+                                                ctpPaymentId));
+                            }
+                        })
+                .toCompletableFuture().join();
+    }
+
     public PaymentHandleResponse patchAddress(@Nonnull Cart cartWithPaymentsExpansion,
                                               @Nonnull String paypalPlusPaymentId) {
         try {
             Optional<String> paymentIdOpt = getCtpPaymentId(cartWithPaymentsExpansion, paypalPlusPaymentId);
-            return paymentIdOpt
-                    .map(paymentId -> {
-                        Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
-                        ShippingAddress shippingAddress = shippingAddressMapper.ctpAddressToPaypalPlusAddress(cartWithPaymentsExpansion.getShippingAddress());
-                        Patch replace = new Patch("add", "/transactions/0/item_list/shipping_address").setValue(shippingAddress);
-                        AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(replace, REQUEST);
-                        CompletionStage<PaymentHandleResponse> patchCS = createPatchCompletionStage(paymentId, paypalPlusPayment, replace, addInterfaceInteractionAction);
-                        return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
-                    })
-                    .orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
-                            paypalPlusPaymentId, cartWithPaymentsExpansion.getId())));
+            return paymentIdOpt.map(paymentId -> {
+                Payment paypalPlusPayment = new Payment().setId(paypalPlusPaymentId);
+                List<Patch> patches = new ArrayList<>(2);
+
+                io.sphere.sdk.models.Address shippingAddress = cartWithPaymentsExpansion.getShippingAddress();
+                if (shippingAddress == null) {
+                    return PaymentHandleResponse.of400BadRequest(format("Shipping address must not be null for cartId=[%s]", cartWithPaymentsExpansion.getId()));
+                }Patch patchShippingAddress = new Patch(ADD_ACTION, SHIPPING_ADDRESS_PATH).setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
+                patches.add(patchShippingAddress);
+
+                // billing address is not mandatory
+                io.sphere.sdk.models.Address billingAddress = cartWithPaymentsExpansion.getBillingAddress();
+                if (billingAddress != null) {
+                    Patch patchBillingAddress = new Patch(ADD_ACTION, PAYER_INFO_PATH)
+                            .setValue(addressMapper.ctpAddressToPaypalPlusPayerInfo(billingAddress));
+                    patches.add(patchBillingAddress);
+                }AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(patchShippingAddress, REQUEST);
+                CompletionStage<PaymentHandleResponse> patchCS = createPatchCompletionStage(paymentId, paypalPlusPayment, patches, addInterfaceInteractionAction);
+                return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);})
+            .orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
+                    paypalPlusPaymentId, cartWithPaymentsExpansion.getId())));
         } catch (Throwable e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return PaymentHandleResponse.of500InternalServerError(
@@ -159,35 +186,41 @@ public class PaymentHandler {
                 .thenCompose(cartOpt -> {
                     if (!cartOpt.isPresent()) {
                         return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
-                                format("Can't find cart with interfaceId==[%s]", paypalPlusPaymentId)));
+                                format("Can't find cart with interfaceId=[%s]", paypalPlusPaymentId)));
                     } else {
-                        Cart cart = cartOpt.get();
-                        PaymentHandleResponse paymentHandleResponse = patchAddress(cart, paypalPlusPaymentId);
-                        boolean isSuccessful = HttpStatus.valueOf(paymentHandleResponse.getStatusCode()).is2xxSuccessful();
-                        if (isSuccessful) {
-                            // execute payment only when patching was successful
-                            return updatePayerIdInCtpPayment(paypalPlusPaymentId, paypalPlusPayerId)
-                                    .thenCompose(ctpPayment -> executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment));
-                        } else {
-                            return CompletableFuture.completedFuture(paymentHandleResponse);
-                        }
+                        return updatePayerIdInCtpPayment(paypalPlusPaymentId, paypalPlusPayerId)
+                                .thenCompose(ctpPayment -> {
+                                    if (ctpPayment == null) {
+                                        return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
+                                                format("Payment not found for interfaceid=[%s]", paypalPlusPaymentId))
+                                        );
+                                    } else {
+                                        return executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment);
+                                    }
+                                });
                     }
                 });
         return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, executeCS);
     }
 
-    protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(@Nullable String paypalPlusPaymentId,
+    protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(@Nonnull String paypalPlusPaymentId,
                                                                                         @Nonnull String payerId) {
         return ctpFacade.getPaymentService().getByPaymentMethodAndInterfaceId(PAYPAL_PLUS, paypalPlusPaymentId)
-                .thenCompose((paymentOpt) -> paymentOpt.map(payment -> {
+                .thenCompose(paymentOpt -> paymentOpt.map(payment -> {
                     List<UpdateAction<io.sphere.sdk.payments.Payment>> updateActions = Collections.singletonList(SetCustomField.ofObject(PAYER_ID, payerId));
                     return ctpFacade.getPaymentService().updatePayment(payment, updateActions);
                 }).orElse(null));
     }
 
+    protected List<UpdateAction<io.sphere.sdk.payments.Payment>> getApprovalUrlAndInterfaceIdAction(@Nonnull Payment paypalPayment) {
+        return asList(
+                SetCustomField.ofObject(APPROVAL_URL, PaymentMapper.getApprovalUrl(paypalPayment).orElse("")),
+                SetInterfaceId.of(paypalPayment.getId()));
+    }
+
     protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull Payment paypalPayment,
-                                                                                      @Nonnull String ctpPaymentId,
-                                                                                      @Nullable TransactionState transactionState) {
+                                                                                    @Nonnull String ctpPaymentId,
+                                                                                    @Nullable TransactionState transactionState) {
         Amount totalAmount = paypalPayment.getTransactions().get(0).getAmount();
         BigDecimal total = new BigDecimal(totalAmount.getTotal());
         String updateTimeStr = paypalPayment.getUpdateTime() == null ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
@@ -200,10 +233,18 @@ public class PaymentHandler {
                 .updatePayment(ctpPaymentId, Collections.singletonList(AddTransaction.of(transactionDraft)));
     }
 
-    protected List<UpdateAction<io.sphere.sdk.payments.Payment>> getApprovalUrlAndInterfaceIdAction(@Nonnull Payment paypalPayment) {
-        return asList(
-                SetCustomField.ofObject(APPROVAL_URL, PaymentMapper.getApprovalUrl(paypalPayment).orElse("")),
-                SetInterfaceId.of(paypalPayment.getId()));
+    protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull String paypalPlusPaymentId,
+                                                                                    @Nonnull Payment paypalPayment,
+                                                                                    @Nonnull io.sphere.sdk.payments.Payment ctpPayment) {
+        if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
+            return createChargeTransaction(paypalPayment, ctpPayment.getId(), SUCCESS);
+        } else if (PaypalPlusPaymentStates.CREATED.equals(paypalPayment.getState())
+                || PaypalPlusPaymentStates.PENDING.equals(paypalPayment.getState())) {
+            return createChargeTransaction(paypalPayment, ctpPayment.getId(), PENDING);
+        } else {
+            throw new PaypalPlusException(format("Error when approving payment paypalPlusPaymentId=[%s], current state=[%s]",
+                    paypalPlusPaymentId, paypalPayment.getState()));
+        }
     }
 
     /**
@@ -226,34 +267,46 @@ public class PaymentHandler {
         AddInterfaceInteraction interactionAction = createAddInterfaceInteractionAction(paymentExecution, REQUEST);
         return ctpFacade.getPaymentService()
                 .updatePayment(ctpPayment.getId(), Collections.singletonList(interactionAction))
-                .thenCompose(payment -> executeAndUpdatePayment(paypalPlusPaymentId, paymentExecution, payment))
-                .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.CREATED));
+                .thenCompose(updatedCtpPayment -> executeAndUpdatePayment(paypalPlusPaymentId, paymentExecution, updatedCtpPayment))
+                    .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.CREATED));
     }
 
     private CompletionStage<CompletionStage<io.sphere.sdk.payments.Payment>> executeAndUpdatePayment(@Nonnull String paypalPlusPaymentId,
                                                                                                      @Nonnull PaymentExecution paymentExecution,
                                                                                                      @Nonnull io.sphere.sdk.payments.Payment payment) {
-        return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId), paymentExecution)
-                .thenCompose(paypalPayment -> {
-                    AddInterfaceInteraction addInteractionAction = createAddInterfaceInteractionAction(paypalPayment, RESPONSE);
-                    // add paypal response to the ctp payment as interaction interface
-                    return ctpFacade.getPaymentService().updatePayment(payment, Collections.singletonList(addInteractionAction))
-                            // create charge transaction in the ctp payment
-                            .thenApply(updatedCtpPayment -> createChargeTransaction(paypalPlusPaymentId, paypalPayment, updatedCtpPayment));
-                });
+                    return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
+                            paymentExecution)
+                            .thenCompose(paypalPayment -> {
+
+                                //  add paypal response to the ctp payment as interaction interface
+                                return updateCtpPayment(paypalPayment, payment)
+                                        //  create charge transaction in the ctp payment
+                                        .thenApply(updatedCtpPayment2 -> createChargeTransaction(paypalPlusPaymentId, paypalPayment, updatedCtpPayment2));
+                            });
+
     }
 
-    private CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull String paypalPlusPaymentId,
-                                                                                    @Nonnull Payment paypalPayment,
-                                                                                    @Nonnull io.sphere.sdk.payments.Payment ctpPayment) {
-        if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
-            return createChargeTransaction(paypalPayment, ctpPayment.getId(), SUCCESS);
-        } else if (PaypalPlusPaymentStates.CREATED.equals(paypalPayment.getState())) {
-            return createChargeTransaction(paypalPayment, ctpPayment.getId(), PENDING);
-        } else {
-            throw new PaypalPlusException(format("Error when approving payment paypalPlusPaymentId=[%s], current state=[%s]",
-                    paypalPlusPaymentId, paypalPayment.getState()));
+    private CompletionStage<io.sphere.sdk.payments.Payment> updateCtpPayment(Payment paypalPayment, io.sphere.sdk.payments.Payment ctpPayment) {
+        List<UpdateAction<io.sphere.sdk.payments.Payment>> actions = new ArrayList<>();
+        actions.add(createAddInterfaceInteractionAction(paypalPayment, RESPONSE));
+        PaymentInstruction paymentInstruction = paypalPayment.getPaymentInstruction();
+        if (paymentInstruction != null) {
+            actions.addAll(createAddPaymentInstructionAction(paymentInstruction));
         }
+        return ctpFacade.getPaymentService().updatePayment(ctpPayment, actions);
+    }
+
+    private List<SetCustomField> createAddPaymentInstructionAction(PaymentInstruction paymentInstruction) {
+        List<SetCustomField> setCustomFieldActions = new ArrayList<>(7);
+        setCustomFieldActions.add(SetCustomField.ofObject(REFERENCE, paymentInstruction.getReferenceNumber()));
+        setCustomFieldActions.add(SetCustomField.ofObject(BANK_NAME, paymentInstruction.getRecipientBankingInstruction().getBankName()));
+        setCustomFieldActions.add(SetCustomField.ofObject(ACCOUNT_HOLDER_NAME, paymentInstruction.getRecipientBankingInstruction().getAccountHolderName()));
+        setCustomFieldActions.add(SetCustomField.ofObject(IBAN, paymentInstruction.getRecipientBankingInstruction().getInternationalBankAccountNumber()));
+        setCustomFieldActions.add(SetCustomField.ofObject(BIC, paymentInstruction.getRecipientBankingInstruction().getBankIdentifierCode()));
+        setCustomFieldActions.add(SetCustomField.ofObject(PAYMENT_DUE_DATE, paymentInstruction.getPaymentDueDate()));
+        setCustomFieldActions.add(SetCustomField.ofObject(AMOUNT, Money.of(new BigDecimal(paymentInstruction.getAmount().getValue()),
+                paymentInstruction.getAmount().getCurrency())));
+        return setCustomFieldActions;
     }
 
     private PaymentHandleResponse runWithExceptionallyHandling(@Nullable String paymentId,
@@ -355,14 +408,14 @@ public class PaymentHandler {
 
     private CompletionStage<PaymentHandleResponse> createPatchCompletionStage(@Nonnull String paymentId,
                                                                               @Nonnull Payment paypalPlusPayment,
-                                                                              @Nonnull Patch replace,
+                                                                              @Nonnull List<Patch> patches,
                                                                               @Nonnull AddInterfaceInteraction addInterfaceInteractionAction) {
         return ctpFacade.getPaymentService()
                 // 1. add patch request to the ctp payment interface interaction
                 .updatePayment(paymentId, Collections.singletonList(addInterfaceInteractionAction))
                 .thenCompose(payment -> paypalPlusFacade.getPaymentService()
                         // 2. patch payment on paypal
-                        .patch(paypalPlusPayment, replace)
+                        .patch(paypalPlusPayment, patches)
                         .thenCompose(pPPayment -> {
                             List<UpdateAction<io.sphere.sdk.payments.Payment>> actionList
                                     = Collections.singletonList(createAddInterfaceInteractionAction(pPPayment, REQUEST));

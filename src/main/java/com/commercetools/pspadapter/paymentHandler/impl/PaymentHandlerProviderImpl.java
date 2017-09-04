@@ -1,7 +1,7 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.helper.mapper.PaymentMapper;
-import com.commercetools.helper.mapper.ShippingAddressMapper;
+import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
@@ -20,17 +20,17 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
 
     private final TenantConfigFactory configFactory;
     private final PaymentMapper paymentMapper;
-    private final ShippingAddressMapper shippingAddressMapper;
+    private final AddressMapper addressMapper;
     private final Gson gson;
 
     @Autowired
     public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory,
                                       @Nonnull PaymentMapper paymentMapper,
-                                      @Nonnull ShippingAddressMapper shippingAddressMapper,
+                                      @Nonnull AddressMapper addressMapper,
                                       @Nonnull Gson gson) {
         this.configFactory = configFactory;
         this.paymentMapper = paymentMapper;
-        this.shippingAddressMapper = shippingAddressMapper;
+        this.addressMapper = addressMapper;
         this.gson = gson;
     }
 
@@ -40,7 +40,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
                     PaypalPlusFacade payPalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
-                    return new PaymentHandler(ctpFacade, paymentMapper, shippingAddressMapper, payPalPlusFacade, tenantName, gson);
+                    return new PaymentHandler(ctpFacade, paymentMapper, addressMapper, payPalPlusFacade, tenantName, gson);
                 });
     }
 

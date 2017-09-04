@@ -51,7 +51,27 @@ In this process, there are 3 parties involved:
         If request was successful both response body and CTP payment object will have `approvalUrl` defined.
     1. Frontend uses returned `approvalUrl` to render available payment methods as described in the Paypal Plus integration documentation.
 
-2. Execute payment after user successfully finished PayPal Plus checkout and was redirected back to the shop through `successUrl`.
+2. Add user's addresses to Paypal Plus
+    1. Before redirect the user to Paypal, backend POSTs CTP payment ID to Paypal-integration:
+        ```
+        POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/patch/payments/${ctpPaymentId}
+        ```
+    2. NOTICE: frontend developers should refer to the newest version of Paypal Plus Integration documentation to know how to make a request
+    before redirect in Javascript. As of August 2017, on submit should call `ppp.doContinue()`. Additionally,
+    `ppp` object must be created with the following option:
+     ```javascript
+         var ppp = PAYPAL.apps.PPP({
+             onContinue: function () {
+                   $.post("/url-to-your-shop-that-will-make-call-to-paypal-integration", function (data) {
+                   if (data != false) {
+                     ppp.doCheckout();
+                   }
+               });
+             }
+         });
+     ```
+
+3. Execute payment after user successfully finished PayPal Plus checkout and was redirected back to the shop through `successUrl`.
     PayPal Plus will set 3 request parameters to `successUrl`:
     - `token`
     - `paymentId` - identifies this particular payment. **Required for execute payment.**
@@ -61,11 +81,34 @@ In this process, there are 3 parties involved:
     ```
     http://example.com/checkout/payment/success?paymentId=${paymentId}&token=${token}&PayerID=${payerId} 
     ```
-    1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them to Paypal-integration for payment execution. Example:
+    1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them in the request body to Paypal-integration for payment execution. Example:
     ```
     POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
     {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
     ```
+    2. In case of **invoice payment**, the bank details for the invoice will be saved as custom fields in the Payment object. Example:
+    ```json
+    {
+       "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "1455d4e6-41b4-yyyy-xxxx-4f120864e231"
+        },
+        "fields": {
+          "reference": "6KF07542JV235932C",
+          "paymentDueDate": "2017-09-27",
+          "amount": {
+            "centAmount": 200,
+            "currencyCode": "EUR"
+          },
+          "paidToIBAN": "DE1212121212123456789",
+          "paidToAccountBankName": "Deutsche Bank",
+          "paidToAccountHolderName": "PayPal Europe",
+          "paidToBIC": "DEUTDEDBPAL"
+        }
+      }
+    }
+    ``` 
     
 ## HTTP Responses
 All endpoints accept and return data as JSON.

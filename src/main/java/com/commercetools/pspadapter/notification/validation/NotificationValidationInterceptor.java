@@ -87,18 +87,13 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
             }
 
             try {
-                return getPaypalPlusFacade(tenantConfig).getPaymentService().validateNotificationEvent(webhook, getHeadersInfo(request), getBody(request));
+                return paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig).getPaymentService().validateNotificationEvent(webhook, getHeadersInfo(request), getBody(request));
             } catch (Throwable error) {
                 logger.error("Webhook for tenantName=[{}] can't be initialized: ", tenantConfig.getTenantName(), error);
             }
 
             return completedFuture(false);
         };
-    }
-
-    @VisibleForTesting
-    protected PaypalPlusFacade getPaypalPlusFacade(TenantConfig tenantConfig) {
-        return paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
     }
 
     private Map<String, String> getHeadersInfo(@Nonnull HttpServletRequest request) {

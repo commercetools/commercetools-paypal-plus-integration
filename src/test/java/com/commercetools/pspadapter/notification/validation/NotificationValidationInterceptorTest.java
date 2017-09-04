@@ -53,9 +53,10 @@ public class NotificationValidationInterceptorTest {
         WebhookContainer mockContainer = mock(WebhookContainerImpl.class);
         when(mockContainer.getWebhookCompletionStageByTenantName(anyString())).thenReturn(CompletableFuture.completedFuture(new Webhook()));
 
-        NotificationValidationInterceptor theObject = new NotificationValidationInterceptor(mockContainer, configFactory, new PaypalPlusFacadeFactory());
+        PaypalPlusFacadeFactory paypalPlusFacadeFactory = mock(PaypalPlusFacadeFactory.class);
+        when(paypalPlusFacadeFactory.getPaypalPlusFacade(any())).thenReturn(paypalPlusFacade);
+        NotificationValidationInterceptor theObject = new NotificationValidationInterceptor(mockContainer, configFactory, paypalPlusFacadeFactory);
         NotificationValidationInterceptor interceptor = spy(theObject);
-        doReturn(paypalPlusFacade).when(interceptor).getPaypalPlusFacade(any());
 
         boolean result = interceptor.preHandle(spyRequest, new MockHttpServletResponse(), new Object());
 

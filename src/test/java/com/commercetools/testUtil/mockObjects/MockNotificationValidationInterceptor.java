@@ -23,7 +23,7 @@ public class MockNotificationValidationInterceptor extends NotificationValidatio
     @Override
     public boolean preHandle(@Nonnull HttpServletRequest request,
                              @Nonnull HttpServletResponse response,
-                             @Nonnull Object handler) throws Exception {
+                             @Nonnull Object handler) {
         return true;
     }
 }

@@ -35,12 +35,12 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
 
     @Override
     public CompletionStage<Payment> create(@Nonnull Payment payment) {
-        return paymentStageWrapper((paypalPlusApiContext) -> payment.create(paypalPlusApiContext));
+        return paymentStageWrapper(payment::create);
     }
 
     @Override
     public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull Patch patch) {
-        return paymentStageWrapper((paypalPlusApiContext) -> {
+        return paymentStageWrapper(paypalPlusApiContext -> {
             payment.update(paypalPlusApiContext, Collections.singletonList(patch));
             return payment;
         });
@@ -53,12 +53,12 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
      */
     @Override
     public CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution) {
-        return paymentStageWrapper((paypalPlusApiContext) -> payment.execute(paypalPlusApiContext, paymentExecution));
+        return paymentStageWrapper(paypalPlusApiContext -> payment.execute(paypalPlusApiContext, paymentExecution));
     }
 
     @Override
     public CompletionStage<Payment> getByPaymentId(@Nonnull String paymentId) {
-        return paymentStageWrapper((paypalPlusApiContext) -> Payment.get(paypalPlusApiContext, paymentId));
+        return paymentStageWrapper(paypalPlusApiContext -> Payment.get(paypalPlusApiContext, paymentId));
     }
 
     @Override

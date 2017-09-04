@@ -195,10 +195,18 @@ public class PaymentHandler {
                 .thenCompose(cartOpt -> {
                     if (!cartOpt.isPresent()) {
                         return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
-                                format("Can't find cart with interfaceId==[%s]", paypalPlusPaymentId)));
+                                format("Can't find cart with interfaceId=[%s]", paypalPlusPaymentId)));
                     } else {
                         return updatePayerIdInCtpPayment(paypalPlusPaymentId, paypalPlusPayerId)
-                                .thenCompose(ctpPayment -> executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment));
+                                .thenCompose(ctpPayment -> {
+                                    if (ctpPayment == null) {
+                                        return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
+                                                format("Payment not found for interfaceid=[%s]", paypalPlusPaymentId))
+                                        );
+                                    } else {
+                                        return executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment);
+                                    }
+                                });
                     }
                 });
         return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, executeCS);

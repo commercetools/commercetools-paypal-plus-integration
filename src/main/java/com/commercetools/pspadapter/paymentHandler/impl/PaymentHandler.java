@@ -11,9 +11,7 @@ import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.google.common.collect.ImmutableMap;
-import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Amount;
 import com.paypal.api.payments.Patch;
 import com.paypal.api.payments.Payment;
@@ -22,6 +20,7 @@ import com.paypal.api.payments.ShippingAddress;
 import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
 import io.sphere.sdk.carts.Cart;
+import io.sphere.sdk.carts.PaymentInfo;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.Resource;
@@ -43,16 +42,16 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Stream;
 
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.PAYER_ID;
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.REQUEST;
@@ -310,21 +309,30 @@ public class PaymentHandler {
 
     private Optional<String> getCtpPaymentId(@Nonnull Cart cartWithPaymentsExpansion,
                                              @Nonnull String paypalPlusPaymentId) {
-        List<Reference<io.sphere.sdk.payments.Payment>> payments
-                = cartWithPaymentsExpansion.getPaymentInfo().getPayments();
-        if (payments == null || payments.get(0).getObj() == null) {
-            throw new MissingExpansionException(format("Please expand Cart with cart.%s for cartId=[%s]",
-                    PAYMENT_INFO_EXPANSION, cartWithPaymentsExpansion.getId()));
-        }
-        return payments.stream()
-                .filter(paymentReference -> paypalPlusPaymentId.equals(paymentReference.getObj().getInterfaceId()))
+        return Optional.of(cartWithPaymentsExpansion)
+                .map(Cart::getPaymentInfo)
+                .map(PaymentInfo::getPayments)
+                .map(Collection::stream)
+                .map(paymentsStream -> filterCtpPaymentIdByPaypalPlusPaymentId(paypalPlusPaymentId, paymentsStream))
+                .orElseThrow(() -> {
+                    throw new MissingExpansionException(format("Please expand Cart with cart.%s for cartId=[%s]",
+                            PAYMENT_INFO_EXPANSION, cartWithPaymentsExpansion.getId()));
+                });
+    }
+
+    private Optional<String> filterCtpPaymentIdByPaypalPlusPaymentId(@Nonnull String paypalPlusPaymentId,
+                                                                     @Nonnull Stream<Reference<io.sphere.sdk.payments.Payment>> referenceStream) {
+        return referenceStream
+                .map(Reference::getObj)
+                .filter(payment -> paypalPlusPaymentId.equals(payment.getInterfaceId()))
                 .findAny()
-                .map(paymentReference -> paymentReference.getObj().getId());
+                .map(Resource::getId);
     }
 
     /**
      * Create payment on paypal plus,
      * saves approval URL, payment ID and interface interactions to CTP payment
+     *
      * @return Paypal Plus payment
      */
     private CompletionStage<Payment> createPaypalPlusPaymentAndUpdateCtpPayment(@Nonnull io.sphere.sdk.payments.Payment ctpPayment,

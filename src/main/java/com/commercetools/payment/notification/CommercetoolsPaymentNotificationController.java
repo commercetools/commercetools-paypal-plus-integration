@@ -56,16 +56,7 @@ public class CommercetoolsPaymentNotificationController extends BaseCommercetool
     public ResponseEntity handleNotification(@PathVariable String tenantName,
                                                     @RequestBody PaypalPlusNotificationEvent eventFromPaypal) {
         return eventDispatcherProvider.getNotificationDispatcher(tenantName)
-                .map(notificationDispatcher -> notificationDispatcher.dispatchEvent(eventFromPaypal)
-                        .handle((payment, throwable) -> {
-                            if (throwable != null) {
-                                logger.error(format("Unexpected exception processing event=[%s] for tenant=[%s]",
-                                        eventFromPaypal.toJSON(), tenantName), throwable);
-                                return PaymentHandleResponse.ofHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-                            } else {
-                                return PaymentHandleResponse.ofHttpStatus(HttpStatus.OK);
-                            }
-                        }))
+                .map(notificationDispatcher -> notificationDispatcher.handleEvent(eventFromPaypal, tenantName))
                 .orElseGet(() -> {
                     // we don't return any error in this case, because notification is mostly send automatically
                     // and in case of error response, paypal can retry the notification again and again

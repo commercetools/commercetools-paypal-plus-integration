@@ -3,6 +3,7 @@ package com.commercetools.pspadapter.notification.processor.impl;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.notification.NotificationDispatcher;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessorContainer;
+import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -41,7 +43,8 @@ public class DefaultNotificationProcessorTest {
         event.setEventType("testEventType");
 
         NotificationDispatcher dispatcher = new NotificationDispatcher(container, ctpFacade);
-        CompletionStage<Payment> paymentCompletionStage = dispatcher.dispatchEvent(event);
-        assertThat(paymentCompletionStage.toCompletableFuture().join()).isEqualTo(mockPayment);
+        PaymentHandleResponse response = dispatcher.handleEvent(event, "testTenant")
+                .toCompletableFuture().join();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK.value());
     }
 }

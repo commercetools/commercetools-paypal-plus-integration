@@ -57,7 +57,7 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
     }
 
     @Override
-    public CompletionStage<Payment> lookUp(@Nonnull String paymentId) {
+    public CompletionStage<Payment> getByPaymentId(@Nonnull String paymentId) {
         return paymentStageWrapper((paypalPlusApiContext) -> Payment.get(paypalPlusApiContext, paymentId));
     }
 

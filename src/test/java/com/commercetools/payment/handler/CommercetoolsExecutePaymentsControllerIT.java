@@ -93,7 +93,7 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        com.paypal.api.payments.Payment pPPayment = executeBlocking(paypalPlusFacade.getPaymentService().lookUp(interfaceId));
+        com.paypal.api.payments.Payment pPPayment = executeBlocking(paypalPlusFacade.getPaymentService().getByPaymentId(interfaceId));
         Optional<Payment> ctpPaymentOpt = executeBlocking(ctpFacade.getPaymentService().getById(paymentId));
         assertThat(pPPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
         assertThat(ctpPaymentOpt).isNotEmpty();

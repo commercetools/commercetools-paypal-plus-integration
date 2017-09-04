@@ -26,7 +26,7 @@ public interface PaypalPlusPaymentService {
 
     CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution);
 
-    CompletionStage<Payment> lookUp(@Nonnull String paymentId);
+    CompletionStage<Payment> getByPaymentId(@Nonnull String paymentId);
 
     CompletionStage<Webhook> createWebhook(@Nonnull String notificationUrl);
 

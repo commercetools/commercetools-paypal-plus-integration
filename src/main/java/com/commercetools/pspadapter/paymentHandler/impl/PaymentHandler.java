@@ -149,7 +149,7 @@ public class PaymentHandler {
                 return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
             }).orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
                     paypalPlusPaymentId, cartWithPaymentsExpansion.getId())));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
             return PaymentHandleResponse.of500InternalServerError(
                     format("Error while processing paymentId==[%s]", paypalPlusPaymentId));
@@ -308,7 +308,7 @@ public class PaymentHandler {
     }
 
     private Optional<String> getCtpPaymentId(@Nonnull Cart cartWithPaymentsExpansion,
-                                             @Nonnull String paypalPlusPaymentId) {
+                                             @Nonnull String paypalPlusPaymentId) throws Throwable {
         return Optional.of(cartWithPaymentsExpansion)
                 .map(Cart::getPaymentInfo)
                 .map(PaymentInfo::getPayments)

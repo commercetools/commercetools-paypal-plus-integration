@@ -17,12 +17,12 @@ public class PaypalPlusServiceException extends RuntimeException {
         this.cause = null;
     }
 
-    public PaypalPlusServiceException(String message, PayPalRESTException cause) {
+    public PaypalPlusServiceException(String message, @Nullable PayPalRESTException cause) {
         super(message, cause);
         this.cause = cause;
     }
 
-    public PaypalPlusServiceException(PayPalRESTException cause) {
+    public PaypalPlusServiceException(@Nullable PayPalRESTException cause) {
         super(cause);
         this.cause = cause;
     }

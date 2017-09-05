@@ -17,9 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
+import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -96,13 +94,8 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
                                                               @Nonnull Map<String, String> headersInfo,
                                                               @Nonnull String requestBody) {
         return paymentStageWrapper(apiContext -> {
-            try {
-                apiContext.addConfiguration(Constants.PAYPAL_WEBHOOK_ID, webhook.getId());
-                return Event.validateReceivedEvent(apiContext, headersInfo, requestBody);
-            } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-                logger.info("Cannot validate notification event, details:", e);
-                throw new PayPalRESTException("Cannot validate notification event, see the logs.");
-            }
+            apiContext.addConfiguration(Constants.PAYPAL_WEBHOOK_ID, webhook.getId());
+            return Event.validateReceivedEvent(apiContext, headersInfo, requestBody);
         });
     }
 
@@ -126,13 +119,16 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
                 APIContext context = paypalPlusApiContextFactory.createAPIContext();
                 return supplier.apply(context);
             } catch (PayPalRESTException e) {
-                throw new PaypalPlusServiceException("Paypal Plus payment service exception", e);
+                throw new PaypalPlusServiceException("Paypal Plus payment service REST exception", e);
+            } catch (Throwable e) {
+                logger.error("Paypal Plus payment service unexpected exception. ", e);
+                throw new PaypalPlusServiceException("Paypal Plus payment service unexpected exception, see the logs");
             }
         });
     }
 
     @FunctionalInterface
     private interface PayPalRESTExceptionSupplier<T, R> {
-        R apply(T apiContext) throws PayPalRESTException;
+        R apply(T apiContext) throws PayPalRESTException, GeneralSecurityException;
     }
 }

@@ -11,25 +11,27 @@ import com.paypal.api.payments.Event;
 import com.paypal.base.rest.PayPalModel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.Transaction;
-import io.sphere.sdk.payments.TransactionState;
-import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.AddInterfaceInteraction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
+import static java.util.Optional.empty;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public abstract class NotificationProcessorBase implements NotificationProcessor {
 
     private final Gson gson;
+
+    private final static Logger logger = LoggerFactory.getLogger(NotificationProcessorBase.class);
 
     NotificationProcessorBase(Gson gson) {
         this.gson = gson;
@@ -54,21 +56,22 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
                                                                         @Nonnull Event event) {
         ArrayList<UpdateAction<Payment>> updateActions = new ArrayList<>();
         updateActions.add(createAddInterfaceInteractionAction(event));
-        List<? extends UpdateAction<Payment>> updateAtions = createChangeTransactionState(ctpPayment);
-        if (!updateAtions.isEmpty()) {
-            updateActions.addAll(updateAtions);
-        }
+        updateActions.addAll(createChangeTransactionState(ctpPayment));
         return updateActions;
     }
 
-    @SuppressWarnings("unchecked")
     protected CompletionStage<Optional<Payment>> getRelatedCtpPayment(@Nonnull CtpFacade ctpFacade,
                                                                       @Nonnull Event event) {
-        Map<String, String> resource = (Map<String, String>) event.getResource();
-        String ppPlusPaymentId = resource.get("parent_payment");
+        try {
+            Map resource = (Map) event.getResource();
+            String ppPlusPaymentId = (String) resource.get("parent_payment");
 
-        return ctpFacade.getPaymentService()
-                .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, ppPlusPaymentId);
+            return ctpFacade.getPaymentService()
+                    .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, ppPlusPaymentId);
+        } catch (Throwable t) {
+            logger.error("Error when getting related ctp payment for eventId={}", event.getId(), t);
+            return completedFuture(empty());
+        }
     }
 
     protected AddInterfaceInteraction createAddInterfaceInteractionAction(@Nonnull PayPalModel model) {

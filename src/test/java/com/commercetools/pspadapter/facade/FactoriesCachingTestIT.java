@@ -32,7 +32,6 @@ public class FactoriesCachingTestIT {
      */
     @Test
     public void getTenantConfig_shouldCacheResults() {
-        //
         TenantConfig tenantConfig1_1 = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME).orElseThrow(IllegalStateException::new);
         TenantConfig tenantConfig1_2 = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME).orElseThrow(IllegalStateException::new);
         assertThat(tenantConfig1_1).isSameAs(tenantConfig1_2);

@@ -19,8 +19,12 @@ public class NotificationProcessorContainerImpl implements NotificationProcessor
 
     @Autowired
     public NotificationProcessorContainerImpl(@Nonnull PaymentSaleCompletedProcessor paymentSaleCompletedProcessor,
+                                              @Nonnull PaymentSaleDeniedProcessor paymentSaleDeniedProcessor,
+                                              @Nonnull PaymentSaleRefundedProcessor paymentSaleRefundedProcessor,
                                               @Nonnull DefaultNotificationProcessor defaultNotificationProcessor) {
         this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_COMPLETED.getPaypalEventTypeName(), paymentSaleCompletedProcessor);
+        this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_DENIED.getPaypalEventTypeName(), paymentSaleDeniedProcessor);
+        this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_REFUNDED.getPaypalEventTypeName(), paymentSaleRefundedProcessor);
         this.defaultNotificationProcessor = defaultNotificationProcessor;
     }
 

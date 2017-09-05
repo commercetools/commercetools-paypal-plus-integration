@@ -37,7 +37,7 @@ public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
     }
 
     @Override
-    List<? extends UpdateAction<Payment>>  createChangeTransactionState(@Nonnull Payment ctpPayment) {
+    List<? extends UpdateAction<Payment>> updateCtpTransactions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
         Optional<Transaction> txnOpt = findTransactionByTypeAndState(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
         return txnOpt
                 .map(txn -> Collections.singletonList(ChangeTransactionState.of(TransactionState.SUCCESS, txn.getId())))

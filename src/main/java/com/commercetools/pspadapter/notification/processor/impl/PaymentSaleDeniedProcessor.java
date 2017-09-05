@@ -9,6 +9,8 @@ import io.sphere.sdk.payments.Transaction;
 import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -18,16 +20,18 @@ import java.util.Optional;
 import static com.commercetools.util.CtpPaymentUtil.findTransactionByTypeAndState;
 
 /**
- * Change charge state of the corresponding CTP payment to FAILURE
+ * Processes PAYMENT.SALE.DENIED event. Change charge state of the corresponding CTP payment to FAILURE
  */
+@Component
 public class PaymentSaleDeniedProcessor extends NotificationProcessorBase {
 
-    PaymentSaleDeniedProcessor(Gson gson) {
+    @Autowired
+    public PaymentSaleDeniedProcessor(@Nonnull Gson gson) {
         super(gson);
     }
 
     @Override
-    List<? extends UpdateAction<Payment>>  createChangeTransactionState(@Nonnull Payment ctpPayment) {
+    List<? extends UpdateAction<Payment>> updateCtpTransactions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
         Optional<Transaction> txnOpt = findTransactionByTypeAndState(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
         return txnOpt
                 .map(txn -> Collections.singletonList(ChangeTransactionState.of(TransactionState.FAILURE, txn.getId())))

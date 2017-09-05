@@ -28,7 +28,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 /**
  * Process the valid notification event from Paypal Plus. Validation is done in
  * {@link NotificationValidationInterceptor}.
- * 
+ *
  * For devs: validation of Paypal notification cannot be done here because it needs HTTP request headers and body. However,
  * {@link CommercetoolsPaymentNotificationController#handleNotification(String, PaypalPlusNotificationEvent)} also requires
  * RequestBody to parse the Event object. In Spring, you cannot inject both RequestBody and HttpRequest in one method

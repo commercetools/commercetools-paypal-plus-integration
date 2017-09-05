@@ -3,13 +3,7 @@ package com.commercetools.service.paypalPlus.impl;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
-import com.paypal.api.payments.Event;
-import com.paypal.api.payments.EventType;
-import com.paypal.api.payments.Patch;
-import com.paypal.api.payments.Payment;
-import com.paypal.api.payments.PaymentExecution;
-import com.paypal.api.payments.Webhook;
-import com.paypal.api.payments.WebhookList;
+import com.paypal.api.payments.*;
 import com.paypal.base.Constants;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
@@ -18,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.security.GeneralSecurityException;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -41,18 +35,13 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
     }
 
     @Override
-    public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull Patch patch) {
+    public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull List<Patch> patches) {
         return paymentStageWrapper(paypalPlusApiContext -> {
-            payment.update(paypalPlusApiContext, Collections.singletonList(patch));
+            payment.update(paypalPlusApiContext, patches);
             return payment;
         });
     }
 
-    /**
-     * @param payment
-     * @param paymentExecution
-     * @return
-     */
     @Override
     public CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution) {
         return paymentStageWrapper(paypalPlusApiContext -> payment.execute(paypalPlusApiContext, paymentExecution));

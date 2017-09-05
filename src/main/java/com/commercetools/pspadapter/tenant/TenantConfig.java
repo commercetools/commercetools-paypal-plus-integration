@@ -4,13 +4,16 @@ import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.util.CtpClientConfigurationUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.models.Base;
 
 import javax.annotation.Nonnull;
 
 /**
- * Stores all the configs related to one tenant
+ * Stores all the configs related to one tenant.
+ * <p>
+ * Note: extending {@link Base} is necessary since we want to cache services factories bases on tenant configs.
  */
-public class TenantConfig {
+public class TenantConfig extends Base {
 
     private final String tenantName;
 

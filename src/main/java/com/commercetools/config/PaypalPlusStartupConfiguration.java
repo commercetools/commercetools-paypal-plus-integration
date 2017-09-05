@@ -7,8 +7,10 @@ import com.commercetools.pspadapter.notification.webhook.WebhookContainer;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -18,10 +20,12 @@ import javax.servlet.Filter;
 import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
 
 @Configuration
+@Import(ApplicationConfiguration.class)
+@EnableCaching // used for cacheNames = "PaypalPlusConfigurationCache"
 public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
 
     private final TenantConfigFactory tenantConfigFactory;
-    
+
     private final WebhookContainer webhookContainer;
 
     private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;

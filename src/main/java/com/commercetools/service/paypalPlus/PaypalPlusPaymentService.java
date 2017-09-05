@@ -8,6 +8,7 @@ import com.paypal.api.payments.Webhook;
 
 import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 public interface PaypalPlusPaymentService {
@@ -22,7 +23,7 @@ public interface PaypalPlusPaymentService {
      */
     CompletionStage<Payment> create(@Nonnull Payment payment);
 
-    CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull Patch patch);
+    CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull List<Patch> patches);
 
     CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution);
 

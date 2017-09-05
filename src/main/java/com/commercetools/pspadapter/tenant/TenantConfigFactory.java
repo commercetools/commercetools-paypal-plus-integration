@@ -1,6 +1,8 @@
 package com.commercetools.pspadapter.tenant;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 @Component
+@CacheConfig(cacheNames = "PaypalPlusConfigurationCache")
 public class TenantConfigFactory {
 
     private final TenantProperties tenantProperties;
@@ -20,6 +23,7 @@ public class TenantConfigFactory {
         this.tenantProperties = tenantProperties;
     }
 
+    @Cacheable(sync = true)
     public Optional<TenantConfig> getTenantConfig(@Nonnull String tenantName) {
         TenantProperties.Tenant tenant = tenantProperties.getTenants().get(tenantName);
 

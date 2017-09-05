@@ -8,7 +8,15 @@ public final class CtpPaymentCustomFields {
     public static final String PAYER_ID = "payerId";
 
     public static final String LANGUAGE_CODE_FIELD = "languageCode";
+
+    // payment by invoice
     public static final String REFERENCE = "reference";
+    public static final String BANK_NAME = "paidToAccountBankName";
+    public static final String ACCOUNT_HOLDER_NAME = "paidToAccountHolderName";
+    public static final String IBAN = "paidToIBAN";
+    public static final String BIC = "paidToBIC";
+    public static final String PAYMENT_DUE_DATE = "paymentDueDate";
+    public static final String AMOUNT = "amount";
 
     public static final String TIMESTAMP_FIELD = "timestamp";
 

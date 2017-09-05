@@ -16,23 +16,23 @@ import static java.lang.String.format;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-public class CommercetoolsCreatePaymentsController extends BaseCommercetoolsPaymentsHandleController {
+public class CommercetoolsPatchPaymentsController extends BaseCommercetoolsPaymentsHandleController {
 
     @Autowired
-    public CommercetoolsCreatePaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,
-                                                 @Nonnull PaymentHandlerProvider paymentHandlerProvider) {
+    public CommercetoolsPatchPaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,
+                                                @Nonnull PaymentHandlerProvider paymentHandlerProvider) {
         super(stringTrimmerEditor, paymentHandlerProvider);
     }
 
     @RequestMapping(
             method = RequestMethod.POST,
-            value = "/{tenantName}/commercetools/create/payments/{ctpPaymentId}",
+            value = "/{tenantName}/commercetools/patch/payments/{ctpPaymentId}",
             produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity createPayment(@PathVariable String tenantName,
-                                        @PathVariable String ctpPaymentId) {
+    public ResponseEntity patchPayment(@PathVariable String tenantName,
+                                       @PathVariable String ctpPaymentId) {
         PaymentHandleResponse paymentHandleResponse = paymentHandlerProvider
                 .getPaymentHandler(tenantName)
-                .map(paymentHandler -> paymentHandler.createPayment(ctpPaymentId))
+                .map(paymentHandler -> paymentHandler.patchAddress(ctpPaymentId))
                 .orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Tenant [%s] not found", tenantName)));
         return paymentHandleResponse.toResponseEntity();
     }

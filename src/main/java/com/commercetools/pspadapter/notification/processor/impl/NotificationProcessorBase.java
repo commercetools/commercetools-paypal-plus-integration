@@ -23,12 +23,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
 import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public abstract class NotificationProcessorBase implements NotificationProcessor {
 
+    private static final String PARENT_PAYMENT_ATTRIBUTE = "parent_payment";
+    
     private final Gson gson;
 
     private final static Logger logger = LoggerFactory.getLogger(NotificationProcessorBase.class);
@@ -64,7 +67,7 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
                                                                       @Nonnull Event event) {
         try {
             Map resource = (Map) event.getResource();
-            String ppPlusPaymentId = (String) resource.get("parent_payment");
+            String ppPlusPaymentId = (String) resource.get(PARENT_PAYMENT_ATTRIBUTE);
 
             return ctpFacade.getPaymentService()
                     .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, ppPlusPaymentId);
@@ -78,7 +81,7 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
         String json = gson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(InterfaceInteractionType.NOTIFICATION.getInterfaceKey(),
                 ImmutableMap.of(InterfaceInteractionType.NOTIFICATION.getValueFieldName(), json,
-                        "timestamp", ZonedDateTime.now()));
+                        TIMESTAMP_FIELD, ZonedDateTime.now()));
     }
 
 }

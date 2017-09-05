@@ -2,6 +2,7 @@ package com.commercetools.exception;
 
 import com.paypal.base.rest.PayPalRESTException;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -12,12 +13,12 @@ public class PaypalPlusServiceException extends RuntimeException {
 
     private final PayPalRESTException cause;
 
-    public PaypalPlusServiceException(String message) {
+    public PaypalPlusServiceException(@Nonnull String message) {
         super(message);
         this.cause = null;
     }
 
-    public PaypalPlusServiceException(String message, @Nullable PayPalRESTException cause) {
+    public PaypalPlusServiceException(@Nonnull String message, @Nullable PayPalRESTException cause) {
         super(message, cause);
         this.cause = cause;
     }

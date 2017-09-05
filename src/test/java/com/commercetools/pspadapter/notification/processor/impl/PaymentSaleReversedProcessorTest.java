@@ -31,23 +31,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
-public class PaymentSaleRefundedProcessorTest {
+public class PaymentSaleReversedProcessorTest {
 
     private static final String CREATE_TIME_VALUE = "2014-10-31T15:41:51Z";
 
-    private static final String REFUNDED_AMOUNT = "-0.01";
+    private static final String REVERSED_AMOUNT = "-0.49";
 
-    private static final String REFUNDED_CURRENCY = "USD";
+    private static final String REVERSED_CURRENCY = "USD";
 
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
         // set up
         Payment ctpMockPayment = mock(Payment.class);
 
-        NotificationProcessorBase processorBase = spy(new PaymentSaleRefundedProcessor(new GsonBuilder().create()));
+        NotificationProcessorBase processorBase = spy(new PaymentSaleReversedProcessor(new GsonBuilder().create()));
 
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpMockPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());
@@ -59,16 +61,16 @@ public class PaymentSaleRefundedProcessorTest {
                 new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService)
         );
 
-        Map<String, String> amountMap = ImmutableMap.of(TOTAL, REFUNDED_AMOUNT, CURRENCY, REFUNDED_CURRENCY);
+        Map<String, String> amountMap = ImmutableMap.of(TOTAL, REVERSED_AMOUNT, CURRENCY, REVERSED_CURRENCY);
         Map<String, Object> resourceMap = ImmutableMap.of(AMOUNT, amountMap, CREATE_TIME, CREATE_TIME_VALUE);
 
         Event event = new Event();
-        event.setEventType(NotificationEventType.PAYMENT_SALE_REFUNDED.toString());
+        event.setEventType(NotificationEventType.PAYMENT_SALE_REVERSED.toString());
         event.setResource(resourceMap);
 
         // test
         doAnswer(invocation -> {
-            verifyUpdatePaymentCall(ctpMockPayment, REFUNDED_AMOUNT, REFUNDED_CURRENCY, invocation);
+            verifyUpdatePaymentCall(ctpMockPayment, REVERSED_AMOUNT, REVERSED_CURRENCY, invocation);
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 
@@ -82,13 +84,14 @@ public class PaymentSaleRefundedProcessorTest {
                 .updatePayment(any(Payment.class), anyList());
     }
 
-    private void verifyUpdatePaymentCall(Payment ctpMockPayment, String refundedAmount, String refundedCurrency, InvocationOnMock invocation) {
+    private void verifyUpdatePaymentCall(Payment ctpMockPayment, String reversedAmount, String reversedCurrency, InvocationOnMock invocation) {
         Payment payment = invocation.getArgumentAt(0, Payment.class);
         List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
         assertThat(payment).isEqualTo(ctpMockPayment);
         assertThat(updateActions.size()).isEqualTo(2);
         AddTransaction addTransaction = (AddTransaction) updateActions.get(1);
-        assertThat(addTransaction.getTransaction().getType()).isEqualTo(TransactionType.REFUND);
-        assertThat(addTransaction.getTransaction().getAmount()).isEqualTo(Money.of(new BigDecimal(refundedAmount), refundedCurrency));
+        assertThat(addTransaction.getTransaction().getType()).isEqualTo(TransactionType.CHARGEBACK);
+        assertThat(addTransaction.getTransaction().getAmount()).isEqualTo(Money.of(new BigDecimal(reversedAmount), reversedCurrency));
     }
+
 }

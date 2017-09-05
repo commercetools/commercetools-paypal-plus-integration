@@ -21,10 +21,12 @@ public class NotificationProcessorContainerImpl implements NotificationProcessor
     public NotificationProcessorContainerImpl(@Nonnull PaymentSaleCompletedProcessor paymentSaleCompletedProcessor,
                                               @Nonnull PaymentSaleDeniedProcessor paymentSaleDeniedProcessor,
                                               @Nonnull PaymentSaleRefundedProcessor paymentSaleRefundedProcessor,
+                                              @Nonnull PaymentSaleReversedProcessor paymentSaleReversedProcessor,
                                               @Nonnull DefaultNotificationProcessor defaultNotificationProcessor) {
         this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_COMPLETED.getPaypalEventTypeName(), paymentSaleCompletedProcessor);
         this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_DENIED.getPaypalEventTypeName(), paymentSaleDeniedProcessor);
         this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_REFUNDED.getPaypalEventTypeName(), paymentSaleRefundedProcessor);
+        this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_REVERSED.getPaypalEventTypeName(), paymentSaleReversedProcessor);
         this.defaultNotificationProcessor = defaultNotificationProcessor;
     }
 

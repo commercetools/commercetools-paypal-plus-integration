@@ -37,9 +37,10 @@ public class DefaultNotificationProcessorTest {
         PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
         PaymentSaleRefundedProcessor paymentRefundedProcessor = new PaymentSaleRefundedProcessor(new GsonBuilder().create());
         PaymentSaleDeniedProcessor paymentDeniedProcessor = new PaymentSaleDeniedProcessor(new GsonBuilder().create());
+        PaymentSaleReversedProcessor paymentReversedProcessor = new PaymentSaleReversedProcessor(new GsonBuilder().create());
 
         NotificationProcessorContainer container = new NotificationProcessorContainerImpl(paymentCompletedProcessor,
-                paymentDeniedProcessor, paymentRefundedProcessor, mockDefaultProcessor);
+                paymentDeniedProcessor, paymentRefundedProcessor, paymentReversedProcessor, mockDefaultProcessor);
 
         Event event = new Event();
         event.setEventType("testEventType");

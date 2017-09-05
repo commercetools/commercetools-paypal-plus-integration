@@ -13,6 +13,8 @@ import com.paypal.api.payments.WebhookList;
 import com.paypal.base.Constants;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.security.InvalidKeyException;
@@ -29,18 +31,20 @@ import java.util.concurrent.CompletionStage;
  */
 public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implements PaypalPlusPaymentService {
 
+    private final Logger logger = LoggerFactory.getLogger(PaypalPlusPaymentServiceImpl.class);
+
     public PaypalPlusPaymentServiceImpl(@Nonnull APIContextFactory paypalPlusApiContextFactory) {
         super(paypalPlusApiContextFactory);
     }
 
     @Override
     public CompletionStage<Payment> create(@Nonnull Payment payment) {
-        return paymentStageWrapper((paypalPlusApiContext) -> payment.create(paypalPlusApiContext));
+        return paymentStageWrapper(payment::create);
     }
 
     @Override
     public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull Patch patch) {
-        return paymentStageWrapper((paypalPlusApiContext) -> {
+        return paymentStageWrapper(paypalPlusApiContext -> {
             payment.update(paypalPlusApiContext, Collections.singletonList(patch));
             return payment;
         });
@@ -53,12 +57,12 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
      */
     @Override
     public CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution) {
-        return paymentStageWrapper((paypalPlusApiContext) -> payment.execute(paypalPlusApiContext, paymentExecution));
+        return paymentStageWrapper(paypalPlusApiContext -> payment.execute(paypalPlusApiContext, paymentExecution));
     }
 
     @Override
-    public CompletionStage<Payment> lookUp(@Nonnull String paymentId) {
-        return paymentStageWrapper((paypalPlusApiContext) -> Payment.get(paypalPlusApiContext, paymentId));
+    public CompletionStage<Payment> getByPaymentId(@Nonnull String paymentId) {
+        return paymentStageWrapper(paypalPlusApiContext -> Payment.get(paypalPlusApiContext, paymentId));
     }
 
     @Override
@@ -96,8 +100,8 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
                 apiContext.addConfiguration(Constants.PAYPAL_WEBHOOK_ID, webhook.getId());
                 return Event.validateReceivedEvent(apiContext, headersInfo, requestBody);
             } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-                // todo: handle the errors better
-                throw new PayPalRESTException("Cannot validate notification event.");
+                logger.info("Cannot validate notification event, details:", e);
+                throw new PayPalRESTException("Cannot validate notification event, see the logs.");
             }
         });
     }
@@ -122,7 +126,7 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
                 APIContext context = paypalPlusApiContextFactory.createAPIContext();
                 return supplier.apply(context);
             } catch (PayPalRESTException e) {
-                throw new PaypalPlusServiceException("Create Paypal Plus payment exception", e);
+                throw new PaypalPlusServiceException("Paypal Plus payment service exception", e);
             }
         });
     }

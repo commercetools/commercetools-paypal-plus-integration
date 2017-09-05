@@ -1,14 +1,18 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
 public enum InterfaceInteractionType {
-    REQUEST("paypal-plus-interaction-request"),
-    RESPONSE("paypal-plus-interaction-response"),
-    NOTIFICATION("paypal-plus-interaction-notification");
+    REQUEST("request", "paypal-plus-interaction-request"),
+    RESPONSE("response", "paypal-plus-interaction-response"),
+    NOTIFICATION("notification", "paypal-plus-interaction-notification");
+
+    private final String valueFieldName;
 
     private final String interfaceKey;
 
-    InterfaceInteractionType(String interfaceKey) {
+    InterfaceInteractionType(String valueFieldName,
+                             String interfaceKey) {
         this.interfaceKey = interfaceKey;
+        this.valueFieldName = valueFieldName;
     }
 
     public String getInterfaceKey() {
@@ -16,6 +20,6 @@ public enum InterfaceInteractionType {
     }
 
     public String getValueFieldName() {
-        return name().toLowerCase();
+        return valueFieldName;
     }
 }

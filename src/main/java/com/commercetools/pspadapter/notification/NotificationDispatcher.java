@@ -2,32 +2,44 @@ package com.commercetools.pspadapter.notification;
 
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessor;
-import com.commercetools.pspadapter.notification.processor.impl.DefaultNotificationProcessor;
+import com.commercetools.pspadapter.notification.processor.NotificationProcessorContainer;
+import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
 import com.paypal.api.payments.Event;
-import io.sphere.sdk.payments.Payment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
+
+import static java.lang.String.format;
 
 public class NotificationDispatcher {
 
-    private final Map<String, NotificationProcessor> processors;
+    private static final Logger logger = LoggerFactory.getLogger(NotificationDispatcher.class);
+
+    private final NotificationProcessorContainer processors;
 
     private final CtpFacade ctpFacade;
-    
-    private NotificationProcessor defaultNotificationProcessor;
 
-    public NotificationDispatcher(@Nonnull Map<String, NotificationProcessor> processors,
-                                  @Nonnull CtpFacade ctpFacade,
-                                  @Nonnull DefaultNotificationProcessor defaultNotificationProcessor) {
-        this.processors = processors;
+    public NotificationDispatcher(@Nonnull NotificationProcessorContainer processorContainer,
+                                  @Nonnull CtpFacade ctpFacade) {
+        this.processors = processorContainer;
         this.ctpFacade = ctpFacade;
-        this.defaultNotificationProcessor = defaultNotificationProcessor;
     }
 
-    public CompletionStage<Payment> dispatchEvent(@Nonnull Event event) {
-        NotificationProcessor notificationProcessor = processors.getOrDefault(event.getEventType(), this.defaultNotificationProcessor);
-        return notificationProcessor.processEventNotification(this.ctpFacade, event);
+    public CompletionStage<PaymentHandleResponse> handleEvent(@Nonnull Event event,
+                                                              @Nonnull String tenantName) {
+        NotificationProcessor notificationProcessor = processors.getNotificationProcessorOrDefault(event.getEventType());
+        return notificationProcessor.processEventNotification(this.ctpFacade, event)
+                .handle((payment, throwable) -> {
+                    if (throwable != null) {
+                        logger.error(format("Unexpected exception processing event=[%s] for tenant=[%s]",
+                                event.toJSON(), tenantName), throwable);
+                        return PaymentHandleResponse.ofHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+                    } else {
+                        return PaymentHandleResponse.ofHttpStatus(HttpStatus.OK);
+                    }
+                });
     }
 }

@@ -2,6 +2,7 @@ package com.commercetools.pspadapter.notification.validation;
 
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
+import com.commercetools.pspadapter.notification.webhook.WebhookContainer;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.google.common.annotations.VisibleForTesting;
@@ -22,11 +23,11 @@ import java.io.InputStreamReader;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 /**
  * Validates if the notification request from PayPal Plus is a legit one. This intercepts all
@@ -35,47 +36,64 @@ import static java.lang.String.format;
  * otherwise the request is ended immediately.
  */
 public class NotificationValidationInterceptor extends HandlerInterceptorAdapter {
-    private static final Logger LOG = LoggerFactory.getLogger(NotificationValidationInterceptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(NotificationValidationInterceptor.class);
 
-    private final Map<String, Webhook> tenantNameToWebhookMap;
+    private static final String TENANT_NAME_PATH_VARIABLE = "tenantName";
+
+    private final WebhookContainer webhookContainer;
 
     private final TenantConfigFactory configFactory;
+    
+    private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
 
     @Autowired
-    public NotificationValidationInterceptor(@Nonnull Map<String, Webhook> tenantNameToWebhookMap,
-                                             @Nonnull TenantConfigFactory configFactory) {
-        this.tenantNameToWebhookMap = tenantNameToWebhookMap;
+    public NotificationValidationInterceptor(@Nonnull WebhookContainer webhookContainer,
+                                             @Nonnull TenantConfigFactory configFactory,
+                                             @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory) {
+        this.webhookContainer = webhookContainer;
         this.configFactory = configFactory;
+        this.paypalPlusFacadeFactory = paypalPlusFacadeFactory;
     }
 
     @Override
     public boolean preHandle(@Nonnull HttpServletRequest request,
                              @Nonnull HttpServletResponse response,
-                             @Nonnull Object handler) throws Exception {
-        Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-        String tenantName = (String) pathVariables.get("tenantName");
-        Webhook webhook = this.tenantNameToWebhookMap.get(tenantName);
-        if (webhook == null) {
-            LOG.error(format("Webhook not found for tenant tenantName=[%s]", tenantName));
+                             @Nonnull Object handler) {
+        try {
+            Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+            String tenantName = (String) pathVariables.get(TENANT_NAME_PATH_VARIABLE);
+
+            TenantConfig tenantConfig = configFactory.getTenantConfig(tenantName).orElse(null);
+
+            if (tenantConfig == null) {
+                return false; // tenant config for this name not found - skip mapping
+            }
+
+            return this.webhookContainer.getWebhookCompletionStageByTenantName(tenantName)
+                    .thenCompose(validateWebhookIfExists(request, tenantConfig))
+                    .toCompletableFuture().join();
+        } catch (Throwable t) {
+            logger.error("Error when validating the notification request from Paypal Plus", t);
             return false;
         }
-        Optional<TenantConfig> tenantConfigOpt = configFactory.getTenantConfig(tenantName);
-        return tenantConfigOpt
-                .map(this::getPaypalPlusFacade)
-                .map(paypalPlusFacade -> {
-                    try {
-                        return paypalPlusFacade.getPaymentService().validateNotificationEvent(webhook, getHeadersInfo(request), getBody(request));
-                    } catch (IOException e) {
-                        return CompletableFuture.completedFuture(false);
-                    }
-                })
-                .orElseGet(() -> CompletableFuture.completedFuture(false))
-                .toCompletableFuture().join();
     }
 
-    @VisibleForTesting
-    protected PaypalPlusFacade getPaypalPlusFacade(TenantConfig tenantConfig) {
-        return new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
+    private Function<Webhook, CompletionStage<Boolean>> validateWebhookIfExists(@Nonnull HttpServletRequest request,
+                                                                                @Nonnull TenantConfig tenantConfig) {
+        return webhook -> {
+            if (webhook == null) {
+                logger.info("Webhook not found for tenant tenantName=[{}]", tenantConfig.getTenantName());
+                return completedFuture(false);
+            }
+
+            try {
+                return paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig).getPaymentService().validateNotificationEvent(webhook, getHeadersInfo(request), getBody(request));
+            } catch (Throwable error) {
+                logger.error("Webhook for tenantName=[{}] can't be initialized: ", tenantConfig.getTenantName(), error);
+            }
+
+            return completedFuture(false);
+        };
     }
 
     private Map<String, String> getHeadersInfo(@Nonnull HttpServletRequest request) {

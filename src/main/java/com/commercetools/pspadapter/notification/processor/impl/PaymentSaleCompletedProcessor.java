@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static com.commercetools.util.CtpPaymentUtil.findTransactionByTypeAndState;
+
 /**
  * Processes event notification of type PAYMENT.SALE.COMPLETED
  */
@@ -36,7 +38,7 @@ public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
 
     @Override
     List<? extends UpdateAction<Payment>>  createChangeTransactionState(@Nonnull Payment ctpPayment) {
-        Optional<Transaction> txnOpt = findMatchingTxn(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
+        Optional<Transaction> txnOpt = findTransactionByTypeAndState(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
         return txnOpt
                 .map(txn -> Collections.singletonList(ChangeTransactionState.of(TransactionState.SUCCESS, txn.getId())))
                 .orElse(Collections.emptyList());

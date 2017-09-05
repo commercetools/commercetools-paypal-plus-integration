@@ -25,6 +25,7 @@ import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import java.util.Optional;
 
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
+import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
@@ -58,6 +60,9 @@ public class PaymentHandlerProviderImplTest {
     @Autowired
     private PaymentMapper paymentMapper;
 
+    @Autowired
+    private PaypalPlusFacadeFactory paypalPlusFacadeFactory;
+
     private SphereClient sphereClient;
 
     private PaypalPlusFacade paypalPlusFacade;
@@ -70,7 +75,7 @@ public class PaymentHandlerProviderImplTest {
         sphereClient = tenantConfigOpt.map(TenantConfig::createSphereClient).orElse(null);
 
         this.paypalPlusFacade = tenantConfigOpt
-                .map(tenantConfig -> new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade())
+                .map(tenantConfig -> paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig))
                 .orElse(null);
 
         this.ctpFacade = tenantConfigOpt
@@ -91,19 +96,20 @@ public class PaymentHandlerProviderImplTest {
     }
 
     @Test
+    @Ignore("Bug in Paypal Plus: https://github.com/paypal/PayPal-REST-API-issues/issues/124")
     public void shouldPatchShippingAddress() {
         CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
         paymentHandler.createPayment(ctpPaymentWithCart.getPayment().getId());
 
         Cart cartWithExpansion = executeBlocking(this.ctpFacade.getCartService().getByPaymentId(ctpPaymentWithCart.getPayment().getId(),
-                "paymentInfo.payments[*]")).get();
+                PAYMENT_INFO_EXPANSION)).get();
         String paypalPlusPaymentId = cartWithExpansion.getPaymentInfo().getPayments().get(0).getObj().getInterfaceId();
         PaymentHandleResponse paymentHandleResult = paymentHandler.patchAddress(cartWithExpansion, paypalPlusPaymentId);
         assertThat(paymentHandleResult.getStatusCode()).isEqualTo(HttpStatus.OK.value());
 
-        Payment pPPayment = this.paypalPlusFacade.getPaymentService().lookUp(paypalPlusPaymentId).toCompletableFuture().join();
-        assertThat(pPPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
+        Payment paypalPlusPayment = this.paypalPlusFacade.getPaymentService().getByPaymentId(paypalPlusPaymentId).toCompletableFuture().join();
+        assertThat(paypalPlusPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
     }
 
     @Test

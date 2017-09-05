@@ -1,9 +1,10 @@
 package com.commercetools.payment.notification;
 
 import com.commercetools.model.PaypalPlusNotificationEvent;
-import com.commercetools.payment.handler.BaseCommercetoolsPaymentsController;
+import com.commercetools.payment.handler.BaseCommercetoolsController;
 import com.commercetools.pspadapter.notification.NotificationEventDispatcherProvider;
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
+import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
 import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
-import static com.commercetools.payment.constants.Psp.PSP_NAME;
 import static java.lang.String.format;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -35,7 +35,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * and then read the request body. It will throw an error.
  */
 @RestController
-public class CommercetoolsPaymentNotificationController extends BaseCommercetoolsPaymentsController {
+public class CommercetoolsPaymentNotificationController extends BaseCommercetoolsController {
 
     private final NotificationEventDispatcherProvider eventDispatcherProvider;
 
@@ -53,26 +53,18 @@ public class CommercetoolsPaymentNotificationController extends BaseCommercetool
             method = RequestMethod.POST,
             consumes = APPLICATION_JSON_VALUE,
             value = "/{tenantName}/" + NOTIFICATION_PATH_URL)
-    public ResponseEntity<HttpStatus> handleNotification(@PathVariable String tenantName,
-                                                         @RequestBody PaypalPlusNotificationEvent eventFromPaypal) {
+    public ResponseEntity handleNotification(@PathVariable String tenantName,
+                                                    @RequestBody PaypalPlusNotificationEvent eventFromPaypal) {
         return eventDispatcherProvider.getNotificationDispatcher(tenantName)
-                .map(notificationDispatcher -> notificationDispatcher.dispatchEvent(eventFromPaypal)
-                        .handle((payment, throwable) -> {
-                            if (throwable != null) {
-                                logger.error(format("Unexpected exception processing event=[%s] for tenant=[%s]",
-                                        eventFromPaypal.toJSON(), tenantName), throwable);
-                                return new ResponseEntity<HttpStatus>(HttpStatus.INTERNAL_SERVER_ERROR);
-                            } else {
-                                return new ResponseEntity<HttpStatus>(HttpStatus.OK);
-                            }
-                        }))
+                .map(notificationDispatcher -> notificationDispatcher.handleEvent(eventFromPaypal, tenantName))
                 .orElseGet(() -> {
                     // we don't return any error in this case, because notification is mostly send automatically
                     // and in case of error response, paypal can retry the notification again and again
                     logger.error(format("No notification handler found for tenant [%s] and event [%s].",
                             tenantName, eventFromPaypal.toJSON()));
-                    return CompletableFuture.completedFuture(new ResponseEntity<>(HttpStatus.OK));
+                    return CompletableFuture.completedFuture(PaymentHandleResponse.ofHttpStatus(HttpStatus.OK));
                 })
+                .thenApply(PaymentHandleResponse::toResponseEntity)
                 .toCompletableFuture().join();
     }
 

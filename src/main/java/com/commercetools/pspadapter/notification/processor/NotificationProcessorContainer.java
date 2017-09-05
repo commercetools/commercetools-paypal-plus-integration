@@ -8,5 +8,5 @@ public interface NotificationProcessorContainer {
      * For a Paypal Plus event, returns a corresponding processor.
      * If none is found, return {@link com.commercetools.pspadapter.notification.processor.impl.DefaultNotificationProcessor}
      */
-    NotificationProcessor getNotificationProcessor(@Nonnull String paypalEventTypeName);
+    NotificationProcessor getNotificationProcessorOrDefault(@Nonnull String paypalEventTypeName);
 }

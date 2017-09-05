@@ -30,7 +30,7 @@ public class NotificationDispatcher {
 
     public CompletionStage<PaymentHandleResponse> handleEvent(@Nonnull Event event,
                                                               @Nonnull String tenantName) {
-        NotificationProcessor notificationProcessor = processors.getNotificationProcessor(event.getEventType());
+        NotificationProcessor notificationProcessor = processors.getNotificationProcessorOrDefault(event.getEventType());
         return notificationProcessor.processEventNotification(this.ctpFacade, event)
                 .handle((payment, throwable) -> {
                     if (throwable != null) {

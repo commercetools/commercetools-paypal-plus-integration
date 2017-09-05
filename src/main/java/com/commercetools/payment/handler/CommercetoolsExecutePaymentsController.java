@@ -23,7 +23,7 @@ import static java.lang.String.format;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPaymentsController {
+public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPaymentsHandleController {
 
     @Autowired
     public CommercetoolsExecutePaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,

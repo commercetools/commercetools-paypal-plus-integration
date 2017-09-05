@@ -6,10 +6,16 @@ import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
 import io.sphere.sdk.carts.CartDraftBuilder;
 import io.sphere.sdk.carts.CustomLineItemDraft;
+import io.sphere.sdk.carts.commands.CartCreateCommand;
+import io.sphere.sdk.carts.commands.CartUpdateCommand;
+import io.sphere.sdk.carts.commands.updateactions.AddPayment;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
+import io.sphere.sdk.payments.PaymentDraftDsl;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
+import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.javamoney.moneta.Money;
@@ -18,11 +24,13 @@ import javax.annotation.Nonnull;
 import javax.money.MonetaryAmount;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
+import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Collections.singletonList;
@@ -110,5 +118,30 @@ public class CtpResourcesUtil extends ResourcesUtil {
     public static CartDraftBuilder createCartDraftBuilder() {
         return CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
                 .currency(EUR);
+    }
+
+    public static String createCartAndPayment(SphereClient sphereClient) {
+        Cart updatedCart = executeBlocking(createCartCS(sphereClient)
+                .thenCompose(cart -> createPaymentCS(cart.getTotalPrice(), cart.getLocale(), sphereClient)
+                        .thenApply(payment -> new CtpPaymentWithCart(payment, cart))
+                        .thenCompose(ctpPaymentWithCart -> sphereClient.execute(CartUpdateCommand.of(ctpPaymentWithCart.getCart(),
+                                AddPayment.of(ctpPaymentWithCart.getPayment()))))));
+
+        return updatedCart.getPaymentInfo().getPayments().get(0).getId();
+    }
+
+    public static CompletionStage<Cart> createCartCS(SphereClient sphereClient) {
+        CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
+                .currency(EUR)
+                .build();
+        return sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts));
+    }
+
+    public static CompletionStage<Payment> createPaymentCS(@Nonnull MonetaryAmount totalPrice,
+                                                     Locale locale,
+                                                     SphereClient sphereClient) {
+        PaymentDraftDsl dsl = createPaymentDraftBuilder(totalPrice, locale)
+                .build();
+        return sphereClient.execute(PaymentCreateCommand.of(dsl));
     }
 }

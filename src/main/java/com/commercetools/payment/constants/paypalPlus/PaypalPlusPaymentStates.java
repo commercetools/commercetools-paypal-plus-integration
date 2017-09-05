@@ -3,6 +3,7 @@ package com.commercetools.payment.constants.paypalPlus;
 public final class PaypalPlusPaymentStates {
 
     public static final String CREATED = "created";
+    public static final String PENDING = "pending";
     public static final String APPROVED = "approved";
     public static final String FAILED = "failed";
 

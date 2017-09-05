@@ -3,13 +3,7 @@ package com.commercetools.service.paypalPlus.impl;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
-import com.paypal.api.payments.Event;
-import com.paypal.api.payments.EventType;
-import com.paypal.api.payments.Patch;
-import com.paypal.api.payments.Payment;
-import com.paypal.api.payments.PaymentExecution;
-import com.paypal.api.payments.Webhook;
-import com.paypal.api.payments.WebhookList;
+import com.paypal.api.payments.*;
 import com.paypal.base.Constants;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
@@ -17,10 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.util.Collections;
+import java.security.GeneralSecurityException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -43,18 +35,13 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
     }
 
     @Override
-    public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull Patch patch) {
+    public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull List<Patch> patches) {
         return paymentStageWrapper(paypalPlusApiContext -> {
-            payment.update(paypalPlusApiContext, Collections.singletonList(patch));
+            payment.update(paypalPlusApiContext, patches);
             return payment;
         });
     }
 
-    /**
-     * @param payment
-     * @param paymentExecution
-     * @return
-     */
     @Override
     public CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution) {
         return paymentStageWrapper(paypalPlusApiContext -> payment.execute(paypalPlusApiContext, paymentExecution));
@@ -96,13 +83,8 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
                                                               @Nonnull Map<String, String> headersInfo,
                                                               @Nonnull String requestBody) {
         return paymentStageWrapper(apiContext -> {
-            try {
-                apiContext.addConfiguration(Constants.PAYPAL_WEBHOOK_ID, webhook.getId());
-                return Event.validateReceivedEvent(apiContext, headersInfo, requestBody);
-            } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-                logger.info("Cannot validate notification event, details:", e);
-                throw new PayPalRESTException("Cannot validate notification event, see the logs.");
-            }
+            apiContext.addConfiguration(Constants.PAYPAL_WEBHOOK_ID, webhook.getId());
+            return Event.validateReceivedEvent(apiContext, headersInfo, requestBody);
         });
     }
 
@@ -126,13 +108,16 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
                 APIContext context = paypalPlusApiContextFactory.createAPIContext();
                 return supplier.apply(context);
             } catch (PayPalRESTException e) {
-                throw new PaypalPlusServiceException("Paypal Plus payment service exception", e);
+                throw new PaypalPlusServiceException("Paypal Plus payment service REST exception", e);
+            } catch (Throwable e) {
+                logger.error("Paypal Plus payment service unexpected exception. ", e);
+                throw new PaypalPlusServiceException("Paypal Plus payment service unexpected exception, see the logs");
             }
         });
     }
 
     @FunctionalInterface
     private interface PayPalRESTExceptionSupplier<T, R> {
-        R apply(T apiContext) throws PayPalRESTException;
+        R apply(T apiContext) throws PayPalRESTException, GeneralSecurityException;
     }
 }

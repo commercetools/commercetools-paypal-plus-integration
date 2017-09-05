@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static com.commercetools.util.CtpPaymentUtil.findTransactionByTypeAndState;
+
 /**
  * Change charge state of the corresponding CTP payment to FAILURE
  */
@@ -26,7 +28,7 @@ public class PaymentSaleDeniedProcessor extends NotificationProcessorBase {
 
     @Override
     List<? extends UpdateAction<Payment>>  createChangeTransactionState(@Nonnull Payment ctpPayment) {
-        Optional<Transaction> txnOpt = findMatchingTxn(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
+        Optional<Transaction> txnOpt = findTransactionByTypeAndState(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING);
         return txnOpt
                 .map(txn -> Collections.singletonList(ChangeTransactionState.of(TransactionState.FAILURE, txn.getId())))
                 .orElse(Collections.emptyList());

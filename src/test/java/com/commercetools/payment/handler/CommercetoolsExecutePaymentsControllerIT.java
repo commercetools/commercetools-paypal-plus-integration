@@ -1,10 +1,9 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
+import com.commercetools.payment.PaymentIntegrationTest;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.facade.PaypalPlusFacade;
-import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
@@ -29,7 +28,6 @@ import java.util.UUID;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createCartAndPayment;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
-public class CommercetoolsExecutePaymentsControllerIT {
+public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,7 +49,6 @@ public class CommercetoolsExecutePaymentsControllerIT {
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
     private CtpFacade ctpFacade;
-    private PaypalPlusFacade paypalPlusFacade;
 
     @Before
     public void setUp() throws Exception {
@@ -59,7 +56,6 @@ public class CommercetoolsExecutePaymentsControllerIT {
                 .orElseThrow(IllegalStateException::new);
 
         ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-        paypalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
 
         sphereClient = tenantConfig.createSphereClient();
     }

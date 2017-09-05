@@ -17,11 +17,11 @@ public interface PaymentService {
     /**
      * Fetch payment with by its {@link Payment#getInterfaceId()} and {@link PaymentMethodInfo#getPaymentInterface()}.
      *
-     * @param paymentMethodInterface name of payment interface, like "PAYONE"
+     * @param paymentInterfaceName name of payment interface, like "PAYONE"
      * @param interfaceId            the payment's {@link Payment#getInterfaceId()}
      * @return completion stage with optional found payment.
      */
-    CompletionStage<Optional<Payment>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface, @Nullable String interfaceId);
+    CompletionStage<Optional<Payment>> getByPaymentInterfaceNameAndInterfaceId(@Nullable String paymentInterfaceName, @Nullable String interfaceId);
 
     /**
      * Apply {@code updateActions} to the {@code payment}

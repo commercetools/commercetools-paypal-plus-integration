@@ -60,6 +60,9 @@ public class PaymentHandlerProviderImplTest {
     @Autowired
     private PaymentMapper paymentMapper;
 
+    @Autowired
+    private PaypalPlusFacadeFactory paypalPlusFacadeFactory;
+
     private SphereClient sphereClient;
 
     private PaypalPlusFacade paypalPlusFacade;
@@ -72,7 +75,7 @@ public class PaymentHandlerProviderImplTest {
         sphereClient = tenantConfigOpt.map(TenantConfig::createSphereClient).orElse(null);
 
         this.paypalPlusFacade = tenantConfigOpt
-                .map(tenantConfig -> new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade())
+                .map(tenantConfig -> paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig))
                 .orElse(null);
 
         this.ctpFacade = tenantConfigOpt
@@ -105,7 +108,7 @@ public class PaymentHandlerProviderImplTest {
         PaymentHandleResponse paymentHandleResult = paymentHandler.patchAddress(cartWithExpansion, paypalPlusPaymentId);
         assertThat(paymentHandleResult.getStatusCode()).isEqualTo(HttpStatus.OK.value());
 
-        Payment paypalPlusPayment = this.paypalPlusFacade.getPaymentService().lookUp(paypalPlusPaymentId).toCompletableFuture().join();
+        Payment paypalPlusPayment = this.paypalPlusFacade.getPaymentService().getByPaymentId(paypalPlusPaymentId).toCompletableFuture().join();
         assertThat(paypalPlusPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
     }
 

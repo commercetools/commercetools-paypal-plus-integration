@@ -3,15 +3,17 @@ package com.commercetools.service.paypalPlus.impl;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
-import com.paypal.api.payments.Patch;
-import com.paypal.api.payments.Payment;
-import com.paypal.api.payments.PaymentExecution;
+import com.paypal.api.payments.*;
+import com.paypal.base.Constants;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -21,37 +23,69 @@ import java.util.concurrent.CompletionStage;
  */
 public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implements PaypalPlusPaymentService {
 
-    @Autowired
+    private final Logger logger = LoggerFactory.getLogger(PaypalPlusPaymentServiceImpl.class);
+
     public PaypalPlusPaymentServiceImpl(@Nonnull APIContextFactory paypalPlusApiContextFactory) {
         super(paypalPlusApiContextFactory);
     }
 
     @Override
     public CompletionStage<Payment> create(@Nonnull Payment payment) {
-        return paymentStageWrapper((paypalPlusApiContext) -> payment.create(paypalPlusApiContext));
+        return paymentStageWrapper(payment::create);
     }
 
     @Override
     public CompletionStage<Payment> patch(@Nonnull Payment payment, @Nonnull List<Patch> patches) {
-        return paymentStageWrapper((paypalPlusApiContext) -> {
+        return paymentStageWrapper(paypalPlusApiContext -> {
             payment.update(paypalPlusApiContext, patches);
             return payment;
         });
     }
 
-    /**
-     * @param payment
-     * @param paymentExecution
-     * @return
-     */
     @Override
     public CompletionStage<Payment> execute(@Nonnull Payment payment, @Nonnull PaymentExecution paymentExecution) {
-        return paymentStageWrapper((paypalPlusApiContext) -> payment.execute(paypalPlusApiContext, paymentExecution));
+        return paymentStageWrapper(paypalPlusApiContext -> payment.execute(paypalPlusApiContext, paymentExecution));
     }
 
     @Override
-    public CompletionStage<Payment> lookUp(@Nonnull String paymentId) {
-        return paymentStageWrapper((paypalPlusApiContext) -> Payment.get(paypalPlusApiContext, paymentId));
+    public CompletionStage<Payment> getByPaymentId(@Nonnull String paymentId) {
+        return paymentStageWrapper(paypalPlusApiContext -> Payment.get(paypalPlusApiContext, paymentId));
+    }
+
+    @Override
+    public CompletionStage<Webhook> createWebhook(@Nonnull String notificationUrl) {
+        // https://github.com/paypal/PayPal-Java-SDK/blob/1f85723f3df153e6b876dc2325dcef464af8b6e4/rest-api-sdk/src/test/java/com/paypal/api/payments/WebhookTestCase.java#L105
+        return paymentStageWrapper(EventType::availableEventTypes)
+                .thenCompose(eventTypeList -> paymentStageWrapper(apiContext -> {
+                    Webhook webhook = new Webhook();
+                    webhook.setUrl(notificationUrl);
+                    webhook.setEventTypes(eventTypeList.getEventTypes());
+                    return webhook.create(apiContext, webhook);
+                }));
+    }
+
+    @Override
+    public CompletionStage<Webhook> ensureWebhook(@Nonnull String notificationUrl) {
+        return paymentStageWrapper(apiContext -> {
+            WebhookList webhookList = new WebhookList();
+            webhookList = webhookList.getAll(apiContext);
+            return webhookList.getWebhooks().stream()
+                    .filter(webhook -> notificationUrl.equalsIgnoreCase(webhook.getUrl()))
+                    .findAny();
+        }).thenCompose(webhookOpt -> webhookOpt
+                .map(webhook -> CompletableFuture.completedFuture(webhookOpt.get()))
+                .orElseGet(() -> createWebhook(notificationUrl).toCompletableFuture())
+        );
+    }
+
+    @Override
+    public CompletionStage<Boolean> validateNotificationEvent(@Nonnull Webhook webhook,
+                                                              @Nonnull Map<String, String> headersInfo,
+                                                              @Nonnull String requestBody) {
+        return paymentStageWrapper(apiContext -> {
+            apiContext.addConfiguration(Constants.PAYPAL_WEBHOOK_ID, webhook.getId());
+            return Event.validateReceivedEvent(apiContext, headersInfo, requestBody);
+        });
     }
 
     /**
@@ -74,13 +108,16 @@ public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implemen
                 APIContext context = paypalPlusApiContextFactory.createAPIContext();
                 return supplier.apply(context);
             } catch (PayPalRESTException e) {
-                throw new PaypalPlusServiceException("Create Paypal Plus payment exception", e);
+                throw new PaypalPlusServiceException("Paypal Plus payment service REST exception", e);
+            } catch (Throwable e) {
+                logger.error("Paypal Plus payment service unexpected exception. ", e);
+                throw new PaypalPlusServiceException("Paypal Plus payment service unexpected exception, see the logs");
             }
         });
     }
 
     @FunctionalInterface
     private interface PayPalRESTExceptionSupplier<T, R> {
-        R apply(T apiContext) throws PayPalRESTException;
+        R apply(T apiContext) throws PayPalRESTException, GeneralSecurityException;
     }
 }

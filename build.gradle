@@ -45,6 +45,7 @@ dependencies {
 
     compile "com.commercetools.sdk.jvm.core:commercetools-models:${depVersions.commercetoolsSdkJvm}"
     compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${depVersions.commercetoolsSdkJvm}"
+    compile "com.commercetools.sdk.jvm.core:commercetools-convenience:${depVersions.commercetoolsSdkJvm}"
     compile "com.google.guava:guava:${depVersions.guava}"
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${depVersions.springBoot}") {

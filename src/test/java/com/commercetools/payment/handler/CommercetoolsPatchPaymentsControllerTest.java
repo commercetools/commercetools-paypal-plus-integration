@@ -3,8 +3,6 @@ package com.commercetools.payment.handler;
 import com.commercetools.Application;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.facade.PaypalPlusFacade;
-import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
@@ -54,7 +52,6 @@ public class CommercetoolsPatchPaymentsControllerTest {
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
     private CtpFacade ctpFacade;
-    private PaypalPlusFacade ppFacade;
 
     @Before
     public void setUp() throws Exception {
@@ -62,7 +59,6 @@ public class CommercetoolsPatchPaymentsControllerTest {
                 .orElseThrow(IllegalStateException::new);
 
         ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-        ppFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
 
         sphereClient = tenantConfig.createSphereClient();
     }

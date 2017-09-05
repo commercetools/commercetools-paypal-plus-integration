@@ -1,6 +1,8 @@
 # settings from /config/application.yml re-write settings from /application.yml
 # rename to application.yml and fill-in to use it in local run/debug mode
 
+logging.level.com.paypal: INFO
+
 tenantConfig:
   tenants:
     paypalplus-dev:
@@ -12,3 +14,5 @@ tenantConfig:
         id:
         secret:
         mode: sandbox
+
+ctp.paypal.plus.integration.server.url: https://integration-server-url.com

@@ -1,7 +1,7 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
-import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.helper.mapper.AddressMapper;
+import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
@@ -22,13 +22,16 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
     private final PaymentMapper paymentMapper;
     private final AddressMapper addressMapper;
     private final Gson gson;
+    private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
 
     @Autowired
     public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory,
+                                      @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory,
                                       @Nonnull PaymentMapper paymentMapper,
                                       @Nonnull AddressMapper addressMapper,
                                       @Nonnull Gson gson) {
         this.configFactory = configFactory;
+        this.paypalPlusFacadeFactory = paypalPlusFacadeFactory;
         this.paymentMapper = paymentMapper;
         this.addressMapper = addressMapper;
         this.gson = gson;
@@ -39,7 +42,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
         return configFactory.getTenantConfig(tenantName)
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-                    PaypalPlusFacade payPalPlusFacade = new PaypalPlusFacadeFactory(tenantConfig).getPaypalPlusFacade();
+                    PaypalPlusFacade payPalPlusFacade = paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
                     return new PaymentHandler(ctpFacade, paymentMapper, addressMapper, payPalPlusFacade, tenantName, gson);
                 });
     }

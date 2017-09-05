@@ -16,7 +16,7 @@ import static java.lang.String.format;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-public class CommercetoolsCreatePaymentsController extends BaseCommercetoolsPaymentsController {
+public class CommercetoolsCreatePaymentsController extends BaseCommercetoolsPaymentsHandleController {
 
     @Autowired
     public CommercetoolsCreatePaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,

@@ -75,5 +75,38 @@
         "inputHint": "MultiLine"
       }
     ]
+  },
+  {
+    "key": "paypal-plus-interaction-notification",
+    "name": {
+      "en": "paypal-plus-interaction-notification"
+    },
+    "resourceTypeIds": [
+      "payment-interface-interaction"
+    ],
+    "fieldDefinitions": [
+      {
+        "name": "timestamp",
+        "label": {
+          "en": "timestamp"
+        },
+        "required": true,
+        "type": {
+          "name": "String"
+        },
+        "inputHint": "SingleLine"
+      },
+      {
+        "name": "notification",
+        "label": {
+          "en": "notification"
+        },
+        "required": true,
+        "type": {
+          "name": "String"
+        },
+        "inputHint": "MultiLine"
+      }
+    ]
   }
 ]

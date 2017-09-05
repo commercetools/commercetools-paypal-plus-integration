@@ -16,7 +16,7 @@ import static java.lang.String.format;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-public class CommercetoolsPatchPaymentsController extends BaseCommercetoolsPaymentsController {
+public class CommercetoolsPatchPaymentsController extends BaseCommercetoolsPaymentsHandleController {
 
     @Autowired
     public CommercetoolsPatchPaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,
@@ -29,7 +29,7 @@ public class CommercetoolsPatchPaymentsController extends BaseCommercetoolsPayme
             value = "/{tenantName}/commercetools/patch/payments/{ctpPaymentId}",
             produces = APPLICATION_JSON_VALUE)
     public ResponseEntity patchPayment(@PathVariable String tenantName,
-                                        @PathVariable String ctpPaymentId) {
+                                       @PathVariable String ctpPaymentId) {
         PaymentHandleResponse paymentHandleResponse = paymentHandlerProvider
                 .getPaymentHandler(tenantName)
                 .map(paymentHandler -> paymentHandler.patchAddress(ctpPaymentId))

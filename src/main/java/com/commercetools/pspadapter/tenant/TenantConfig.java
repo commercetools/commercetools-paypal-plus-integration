@@ -4,13 +4,18 @@ import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.util.CtpClientConfigurationUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.models.Base;
 
 import javax.annotation.Nonnull;
 
 /**
- * Stores all the configs related to one tenant
+ * Stores all the configs related to one tenant.
+ * <p>
+ * Note: extending {@link Base} is necessary since we want to cache services factories bases on tenant configs.
  */
-public class TenantConfig {
+public class TenantConfig extends Base {
+
+    private final String tenantName;
 
     private final String ctpProjectKey;
     private final String ctpClientId;
@@ -20,18 +25,24 @@ public class TenantConfig {
     private final String pPlusClientSecret;
     private final String pPlusClientMode;
 
-    public TenantConfig(@Nonnull String ctpProjectKey,
+    public TenantConfig(@Nonnull String tenantName,
+                        @Nonnull String ctpProjectKey,
                         @Nonnull String ctpClientId,
                         @Nonnull String ctpClientSecret,
                         @Nonnull String pPlusClientId,
                         @Nonnull String pPlusClientSecret,
                         @Nonnull String pPlusClientMode) {
+        this.tenantName = tenantName;
         this.ctpProjectKey = ctpProjectKey;
         this.ctpClientId = ctpClientId;
         this.ctpClientSecret = ctpClientSecret;
         this.pPlusClientId = pPlusClientId;
         this.pPlusClientSecret = pPlusClientSecret;
         this.pPlusClientMode = pPlusClientMode;
+    }
+
+    public String getTenantName() {
+        return tenantName;
     }
 
     public String getCtpProjectKey() {
@@ -58,7 +69,7 @@ public class TenantConfig {
         return pPlusClientMode;
     }
 
-    public SphereClient createSphereClient () {
+    public SphereClient createSphereClient() {
         return CtpClientConfigurationUtils.createClient(createCtpConfig());
     }
 

@@ -2,6 +2,7 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.PaymentIntegrationTest;
 import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
@@ -11,9 +12,6 @@ import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
-import io.sphere.sdk.carts.CartDraft;
-import io.sphere.sdk.carts.CartDraftBuilder;
-import io.sphere.sdk.carts.commands.CartCreateCommand;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
 import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
@@ -37,14 +35,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import javax.annotation.Nonnull;
-import javax.money.MonetaryAmount;
 import java.net.URL;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletionStage;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,7 +48,7 @@ import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIM
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.*;
+import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentDraftBuilder;
 import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.lang.String.format;
@@ -72,7 +66,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
 // completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
-public class CommercetoolsCreatePaymentsControllerIT {
+public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -164,7 +158,7 @@ public class CommercetoolsCreatePaymentsControllerIT {
 
     @Test
     public void whenCartIsMissing_shouldReturn404() throws Exception {
-        Payment payment = executeBlocking(createPaymentCS(Money.of(10, EUR), Locale.ENGLISH, sphereClient));
+        Payment payment = executeBlocking(createPaymentCS(sphereClient, Money.of(10, EUR), Locale.ENGLISH));
         MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andDo(print())
                 .andExpect(status().isNotFound())

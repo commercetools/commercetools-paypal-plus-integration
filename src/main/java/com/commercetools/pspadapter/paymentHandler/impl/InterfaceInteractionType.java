@@ -2,7 +2,8 @@ package com.commercetools.pspadapter.paymentHandler.impl;
 
 public enum InterfaceInteractionType {
     REQUEST("request", "paypal-plus-interaction-request"),
-    RESPONSE("response", "paypal-plus-interaction-response");
+    RESPONSE("response", "paypal-plus-interaction-response"),
+    NOTIFICATION("notification", "paypal-plus-interaction-notification");
 
     private final String valueFieldName;
 

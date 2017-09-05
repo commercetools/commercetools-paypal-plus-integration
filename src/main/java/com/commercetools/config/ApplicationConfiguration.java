@@ -4,6 +4,9 @@ import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.helper.mapper.impl.PaymentMapperImpl;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.annotation.Bean;
@@ -40,5 +43,13 @@ public class ApplicationConfiguration {
     @Bean
     public StringTrimmerEditor stringTrimmerEditor() {
         return new StringTrimmerEditor(false);
+    }
+
+    @Bean
+    public Gson gson() {
+        return new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
+                .disableHtmlEscaping()
+                .create();
     }
 }

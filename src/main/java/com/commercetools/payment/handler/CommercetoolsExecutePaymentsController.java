@@ -15,7 +15,6 @@ import javax.validation.Valid;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -35,7 +34,7 @@ public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPay
             value = "/{tenantName}/commercetools/execute/payments")
     public CompletionStage<ResponseEntity> executePayments(@PathVariable String tenantName,
                                                            @Valid @RequestBody PaypalPlusExecuteParams params,
-                                                           BindingResult result) {
+                                                           @Nonnull BindingResult result) {
         if (result.hasErrors()) {
             String errorMessage = result.getAllErrors().stream()
                     .map(ObjectError::toString)
@@ -43,11 +42,8 @@ public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPay
             return completedFuture(PaymentHandleResponse.of400BadRequest(errorMessage).toResponseEntity());
         }
 
-        return paymentHandlerProvider
-                .getPaymentHandler(tenantName)
-                .map(paymentHandler -> paymentHandler.executePayment(params.getPaypalPlusPaymentId(), params.getPaypalPlusPayerId()))
-                .orElseGet(() -> completedFuture(PaymentHandleResponse.of404NotFound(format("Tenant [%s] not found", tenantName))))
-                .thenApply(PaymentHandleResponse::toResponseEntity);
+        return getTenantHandlerResponse(tenantName,
+                paymentHandler -> paymentHandler.executePayment(params.getPaypalPlusPaymentId(), params.getPaypalPlusPayerId()));
     }
 
 }

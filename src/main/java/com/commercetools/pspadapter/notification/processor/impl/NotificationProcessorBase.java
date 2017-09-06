@@ -40,7 +40,7 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
         this.gson = gson;
     }
 
-    abstract List<? extends UpdateAction<Payment>> updateCtpTransactions(@Nonnull Payment ctpPayment, @Nonnull Event event);
+    abstract List<? extends UpdateAction<Payment>> createUpdateCtpTransactionActions(@Nonnull Payment ctpPayment, @Nonnull Event event);
 
     @Override
     public CompletionStage<Payment> processEventNotification(@Nonnull CtpFacade ctpFacade,
@@ -59,7 +59,7 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
                                                                @Nonnull Event event) {
         ArrayList<UpdateAction<Payment>> updateActions = new ArrayList<>();
         updateActions.add(createAddInterfaceInteractionAction(event));
-        updateActions.addAll(updateCtpTransactions(ctpPayment, event));
+        updateActions.addAll(createUpdateCtpTransactionActions(ctpPayment, event));
         return updateActions;
     }
 

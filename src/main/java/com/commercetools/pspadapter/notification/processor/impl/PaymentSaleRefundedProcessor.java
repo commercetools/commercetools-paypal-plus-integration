@@ -40,7 +40,7 @@ public class PaymentSaleRefundedProcessor extends NotificationProcessorBase {
     }
 
     @Override
-    List<? extends UpdateAction<Payment>> updateCtpTransactions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
+    List<? extends UpdateAction<Payment>> createUpdateCtpTransactionActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
         try {
             Map resource = (Map) event.getResource();
             Map amount = (Map) resource.get(AMOUNT);

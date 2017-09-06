@@ -52,7 +52,7 @@ public class PaymentSaleCompletedProcessorTest {
         PaymentSaleCompletedProcessor processor
                 = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
 
-        assertThat(processor.updateCtpTransactions(ctpPayment, mock(Event.class))).isNotEmpty();
+        assertThat(processor.createUpdateCtpTransactionActions(ctpPayment, mock(Event.class))).isNotEmpty();
     }
 
     @Test
@@ -69,7 +69,7 @@ public class PaymentSaleCompletedProcessorTest {
         PaymentSaleCompletedProcessor processor
                 = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
 
-        assertThat(processor.updateCtpTransactions(ctpPayment, mock(Event.class))).isEmpty();
+        assertThat(processor.createUpdateCtpTransactionActions(ctpPayment, mock(Event.class))).isEmpty();
     }
 
     @Test

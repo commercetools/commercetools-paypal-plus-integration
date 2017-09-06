@@ -7,11 +7,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class WebConfig extends WebMvcConfigurerAdapter {
 
-
-
+    /**
+     * Default timeout for async operations in the tests. This is useful for operations from
+     * {@link com.commercetools.test.web.servlet.MockMvcAsync}
+     *
+     * @param configurer {@link AsyncSupportConfigurer} where to set properties.
+     */
     @Override
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
-        configurer.setDefaultTimeout(100000); //in milliseconds
+        configurer.setDefaultTimeout(60_000);
         super.configureAsyncSupport(configurer);
     }
 }

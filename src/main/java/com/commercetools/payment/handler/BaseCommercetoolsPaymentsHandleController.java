@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
+import static com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse.of404NotFound;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -27,7 +28,7 @@ public class BaseCommercetoolsPaymentsHandleController extends BaseCommercetools
         return paymentHandlerProvider
                 .getPaymentHandler(tenantName)
                 .map(paymentHandlerCaller)
-                .orElseGet(() -> completedFuture(PaymentHandleResponse.of404NotFound(format("Tenant [%s] not found", tenantName))))
+                .orElseGet(() -> completedFuture(of404NotFound(format("Tenant [%s] not found", tenantName))))
                 .thenApply(PaymentHandleResponse::toResponseEntity);
     }
 }

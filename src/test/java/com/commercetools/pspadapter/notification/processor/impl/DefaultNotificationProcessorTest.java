@@ -11,7 +11,6 @@ import io.sphere.sdk.payments.Payment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import java.util.concurrent.CompletableFuture;
@@ -24,20 +23,19 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultNotificationProcessorTest {
 
-    @Autowired
-    Gson gson;
-
     @Test
     public void whenNotificationHasNoProcessor_defaultProcessorIsUsed() {
+        Gson gson = new GsonBuilder().create();
+
         CtpFacade ctpFacade = mock(CtpFacade.class);
         Payment mockPayment = mock(Payment.class);
         DefaultNotificationProcessor mockDefaultProcessor = mock(DefaultNotificationProcessor.class);
         when(mockDefaultProcessor.processEventNotification(any(), any()))
                 .thenReturn(CompletableFuture.completedFuture(mockPayment));
-        PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
-        PaymentSaleRefundedProcessor paymentRefundedProcessor = new PaymentSaleRefundedProcessor(new GsonBuilder().create());
-        PaymentSaleDeniedProcessor paymentDeniedProcessor = new PaymentSaleDeniedProcessor(new GsonBuilder().create());
-        PaymentSaleReversedProcessor paymentReversedProcessor = new PaymentSaleReversedProcessor(new GsonBuilder().create());
+        PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(gson);
+        PaymentSaleRefundedProcessor paymentRefundedProcessor = new PaymentSaleRefundedProcessor(gson);
+        PaymentSaleDeniedProcessor paymentDeniedProcessor = new PaymentSaleDeniedProcessor(gson);
+        PaymentSaleReversedProcessor paymentReversedProcessor = new PaymentSaleReversedProcessor(gson);
 
         NotificationProcessorContainer container = new NotificationProcessorContainerImpl(paymentCompletedProcessor,
                 paymentDeniedProcessor, paymentRefundedProcessor, paymentReversedProcessor, mockDefaultProcessor);

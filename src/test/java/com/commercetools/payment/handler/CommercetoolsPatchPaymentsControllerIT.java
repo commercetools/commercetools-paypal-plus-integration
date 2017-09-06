@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
-public class CommercetoolsPatchPaymentsControllerTest {
+public class CommercetoolsPatchPaymentsControllerIT {
 
     @Autowired
     private MockMvcAsync mockMvcAsync;

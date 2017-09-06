@@ -11,6 +11,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Auto-configuration for {@link MockMvcAsync}.
+ * <p>
+ * <b>Note:</b> if you know how to exclude the configuration from non-MockMvc tests - do this,
+ * i've not found better solutions besides mark {@link #asyncMockMvc(MockMvc)} as {@link Lazy} so the bean is not
+ * initialized for simple tests without MockMvc (but the configuration is still created for all the tests).
  */
 @Configuration
 @ConditionalOnWebApplication

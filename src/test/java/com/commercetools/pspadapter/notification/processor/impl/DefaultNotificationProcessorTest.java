@@ -13,6 +13,8 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,8 +39,11 @@ public class DefaultNotificationProcessorTest {
         PaymentSaleDeniedProcessor paymentDeniedProcessor = new PaymentSaleDeniedProcessor(gson);
         PaymentSaleReversedProcessor paymentReversedProcessor = new PaymentSaleReversedProcessor(gson);
 
-        NotificationProcessorContainer container = new NotificationProcessorContainerImpl(paymentCompletedProcessor,
-                paymentDeniedProcessor, paymentRefundedProcessor, paymentReversedProcessor, mockDefaultProcessor);
+        List<PaymentSaleNotificationProcessor> processors = Arrays.asList(
+                paymentCompletedProcessor, paymentRefundedProcessor, paymentDeniedProcessor, paymentReversedProcessor
+        );
+
+        NotificationProcessorContainer container = new NotificationProcessorContainerImpl(processors, mockDefaultProcessor);
 
         Event event = new Event();
         event.setEventType("testEventType");

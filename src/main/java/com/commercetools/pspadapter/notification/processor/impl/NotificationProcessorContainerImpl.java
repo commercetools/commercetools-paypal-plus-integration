@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -18,15 +19,12 @@ public class NotificationProcessorContainerImpl implements NotificationProcessor
     private final DefaultNotificationProcessor defaultNotificationProcessor;
 
     @Autowired
-    public NotificationProcessorContainerImpl(@Nonnull PaymentSaleCompletedProcessor paymentSaleCompletedProcessor,
-                                              @Nonnull PaymentSaleDeniedProcessor paymentSaleDeniedProcessor,
-                                              @Nonnull PaymentSaleRefundedProcessor paymentSaleRefundedProcessor,
-                                              @Nonnull PaymentSaleReversedProcessor paymentSaleReversedProcessor,
+    public NotificationProcessorContainerImpl(@Nonnull List<PaymentSaleNotificationProcessor> paymentSaleProcessors,
                                               @Nonnull DefaultNotificationProcessor defaultNotificationProcessor) {
-        this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_COMPLETED.getPaypalEventTypeName(), paymentSaleCompletedProcessor);
-        this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_DENIED.getPaypalEventTypeName(), paymentSaleDeniedProcessor);
-        this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_REFUNDED.getPaypalEventTypeName(), paymentSaleRefundedProcessor);
-        this.notificationProcessorsMap.put(NotificationEventType.PAYMENT_SALE_REVERSED.getPaypalEventTypeName(), paymentSaleReversedProcessor);
+        paymentSaleProcessors.forEach(paymentSaleNotificationProcessor -> {
+            String paypalEventTypeName = paymentSaleNotificationProcessor.getNotificationEventType().getPaypalEventTypeName();
+            this.notificationProcessorsMap.put(paypalEventTypeName, paymentSaleNotificationProcessor);
+        });
         this.defaultNotificationProcessor = defaultNotificationProcessor;
     }
 

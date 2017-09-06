@@ -23,7 +23,7 @@ import static com.commercetools.util.CtpPaymentUtil.findTransactionByTypeAndStat
  * Processes event notification of type PAYMENT.SALE.COMPLETED
  */
 @Component
-public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
+public class PaymentSaleCompletedProcessor extends PaymentSaleNotificationProcessor {
 
     @Autowired
     public PaymentSaleCompletedProcessor(@Nonnull Gson gson) {
@@ -31,9 +31,8 @@ public class PaymentSaleCompletedProcessor extends NotificationProcessorBase {
     }
 
     @Override
-    public boolean canProcess(@Nonnull Event event) {
-        return NotificationEventType.PAYMENT_SALE_COMPLETED.getPaypalEventTypeName()
-                .equalsIgnoreCase(event.getEventType());
+    public NotificationEventType getNotificationEventType() {
+        return NotificationEventType.PAYMENT_SALE_COMPLETED;
     }
 
     @Override

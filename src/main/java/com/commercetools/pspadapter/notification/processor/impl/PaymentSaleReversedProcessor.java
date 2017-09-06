@@ -29,7 +29,7 @@ import static com.commercetools.util.TimeUtil.toZonedDateTime;
  * Processes PAYMENT.SALE.REVERSED event. Updates CTP payment with a new chargeback transaction.
  */
 @Component
-public class PaymentSaleReversedProcessor extends NotificationProcessorBase {
+public class PaymentSaleReversedProcessor extends PaymentSaleNotificationProcessor {
 
     private final static Logger logger = LoggerFactory.getLogger(PaymentSaleReversedProcessor.class);
 
@@ -39,30 +39,17 @@ public class PaymentSaleReversedProcessor extends NotificationProcessorBase {
     }
 
     @Override
+    public NotificationEventType getNotificationEventType() {
+        return NotificationEventType.PAYMENT_SALE_REVERSED;
+    }
+
+    @Override
     List<? extends UpdateAction<Payment>> createUpdateCtpTransactionActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
         try {
-            Map resource = (Map) event.getResource();
-            Map amount = (Map) resource.get(AMOUNT);
-            BigDecimal total = new BigDecimal((String) amount.get(TOTAL));
-            String currencyCode = (String) amount.get(CURRENCY);
-            String createTime = (String) resource.get(CREATE_TIME);
-
-            TransactionDraft transactionDraft = TransactionDraftBuilder
-                    .of(TransactionType.CHARGEBACK, Money.of(total, currencyCode))
-                    .timestamp(toZonedDateTime(createTime))
-                    .state(TransactionState.SUCCESS)
-                    .build();
-
-            return Collections.singletonList(AddTransaction.of(transactionDraft));
+            return Collections.singletonList(createAddTransactionAction(event, TransactionType.CHARGEBACK));
         } catch (Throwable t) {
             logger.error("Error when create update actions for eventId={}, ctpPaymentId={}", event.getId(), ctpPayment.getId(), t);
             return Collections.emptyList();
         }
-    }
-
-    @Override
-    public boolean canProcess(@Nonnull Event event) {
-        return NotificationEventType.PAYMENT_SALE_REVERSED.getPaypalEventTypeName()
-                .equalsIgnoreCase(event.getEventType());
     }
 }

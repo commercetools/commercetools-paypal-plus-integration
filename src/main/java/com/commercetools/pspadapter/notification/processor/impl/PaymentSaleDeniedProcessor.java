@@ -23,11 +23,16 @@ import static com.commercetools.util.CtpPaymentUtil.findTransactionByTypeAndStat
  * Processes PAYMENT.SALE.DENIED event. Change charge state of the corresponding CTP payment to FAILURE
  */
 @Component
-public class PaymentSaleDeniedProcessor extends NotificationProcessorBase {
+public class PaymentSaleDeniedProcessor extends PaymentSaleNotificationProcessor {
 
     @Autowired
     public PaymentSaleDeniedProcessor(@Nonnull Gson gson) {
         super(gson);
+    }
+
+    @Override
+    public NotificationEventType getNotificationEventType() {
+        return NotificationEventType.PAYMENT_SALE_DENIED;
     }
 
     @Override
@@ -36,11 +41,5 @@ public class PaymentSaleDeniedProcessor extends NotificationProcessorBase {
         return txnOpt
                 .map(txn -> Collections.singletonList(ChangeTransactionState.of(TransactionState.FAILURE, txn.getId())))
                 .orElse(Collections.emptyList());
-    }
-
-    @Override
-    public boolean canProcess(@Nonnull Event event) {
-        return NotificationEventType.PAYMENT_SALE_DENIED.getPaypalEventTypeName()
-                .equalsIgnoreCase(event.getEventType());
     }
 }

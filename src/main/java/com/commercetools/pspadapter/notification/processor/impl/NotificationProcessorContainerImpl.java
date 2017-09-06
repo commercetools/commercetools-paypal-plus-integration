@@ -1,8 +1,7 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
-import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
-import com.commercetools.pspadapter.notification.processor.NotificationProcessorContainer;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessor;
+import com.commercetools.pspadapter.notification.processor.NotificationProcessorContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ public class NotificationProcessorContainerImpl implements NotificationProcessor
     private final DefaultNotificationProcessor defaultNotificationProcessor;
 
     @Autowired
-    public NotificationProcessorContainerImpl(@Nonnull List<PaymentSaleNotificationProcessor> paymentSaleProcessors,
+    public NotificationProcessorContainerImpl(@Nonnull List<PaymentSaleNotificationProcessorBase> paymentSaleProcessors,
                                               @Nonnull DefaultNotificationProcessor defaultNotificationProcessor) {
         paymentSaleProcessors.forEach(paymentSaleNotificationProcessor -> {
             String paypalEventTypeName = paymentSaleNotificationProcessor.getNotificationEventType().getPaypalEventTypeName();

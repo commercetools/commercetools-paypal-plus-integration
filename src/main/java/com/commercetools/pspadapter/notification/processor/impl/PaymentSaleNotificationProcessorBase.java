@@ -9,8 +9,6 @@ import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import org.javamoney.moneta.Money;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
@@ -22,13 +20,13 @@ import static com.commercetools.util.TimeUtil.toZonedDateTime;
 /**
  * Base class for all Payment Sale notification processors
  */
-public abstract class PaymentSaleNotificationProcessor extends NotificationProcessorBase {
-    private static final Logger LOG = LoggerFactory.getLogger(PaymentSaleNotificationProcessor.class);
+public abstract class PaymentSaleNotificationProcessorBase extends NotificationProcessorBase {
 
-    PaymentSaleNotificationProcessor(Gson gson) {
+    PaymentSaleNotificationProcessorBase(Gson gson) {
         super(gson);
     }
 
+    @Nonnull
     public abstract NotificationEventType getNotificationEventType();
 
     @Override

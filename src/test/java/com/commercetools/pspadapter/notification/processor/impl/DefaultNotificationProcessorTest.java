@@ -39,7 +39,7 @@ public class DefaultNotificationProcessorTest {
         PaymentSaleDeniedProcessor paymentDeniedProcessor = new PaymentSaleDeniedProcessor(gson);
         PaymentSaleReversedProcessor paymentReversedProcessor = new PaymentSaleReversedProcessor(gson);
 
-        List<PaymentSaleNotificationProcessor> processors = Arrays.asList(
+        List<PaymentSaleNotificationProcessorBase> processors = Arrays.asList(
                 paymentCompletedProcessor, paymentRefundedProcessor, paymentDeniedProcessor, paymentReversedProcessor
         );
 

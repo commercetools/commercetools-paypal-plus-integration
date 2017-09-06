@@ -30,9 +30,6 @@ public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
 
     private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
 
-    @Value("${ctp.paypal.plus.integration.server.url}")
-    private String integrationServerUrl;
-
     @Autowired
     public PaypalPlusStartupConfiguration(@Nonnull TenantConfigFactory tenantConfigFactory,
                                           @Nonnull WebhookContainer webhookContainer,

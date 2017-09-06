@@ -1,4 +1,4 @@
-package com.commercetools.test.web.servlet.config.annotation;
+package com.commercetools.test.autoconfigure.web.servlet;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;

@@ -17,9 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureAfter(MockMvcAutoConfiguration.class)
 public class AsyncMockMvcAutoConfiguration {
 
-    public AsyncMockMvcAutoConfiguration() {
-    }
-
     @Bean
     @Lazy // avoid bean initialization if MockMvc is not injected to current test suit
     public MockMvcAsync asyncMockMvc(MockMvc mockMvc) {

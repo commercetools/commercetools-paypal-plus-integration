@@ -6,6 +6,7 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
@@ -21,7 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -30,8 +30,10 @@ import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -41,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private MockMvcAsync mockMvcAsync;
 
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
@@ -62,17 +64,26 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
 
     @Test
     public void finalSlashIsProcessedToo() throws Exception {
-        this.mockMvc.perform(post("/asdhfasdfasf/commercetools/execute/payments/6753324-23452-sgsfgd/").content(""))
+        String paymentId = createCartAndPayment(sphereClient);
+
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s/", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("approvalUrl").value(not(empty())))
+                .andReturn();
+
     }
 
     @Test
-    @Ignore("Bug in Paypal Plus: https://github.com/paypal/PayPal-REST-API-issues/issues/124")
+    @Ignore("The test is unstable, see bug in Paypal Plus: https://github.com/paypal/PayPal-REST-API-issues/issues/124")
     public void whenPaypalPayerIdIsWrong_shouldReturn400() throws Exception {
         String paymentId = createCartAndPayment(sphereClient);
 
-        this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)));
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("approvalUrl").value(not(empty())))
+                .andReturn();
 
         Payment payment = executeBlocking(this.sphereClient.execute(PaymentByIdGet.of(paymentId)));
 
@@ -80,10 +91,13 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
         JSONObject jsonBody = new JSONObject();
         jsonBody.put("paypalPlusPayerId", "nonExistingPayerId");
         jsonBody.put("paypalPlusPaymentId", interfaceId);
-        this.mockMvc.perform(post(format("/%s/commercetools/execute/payments/", MAIN_TEST_TENANT_NAME))
-                .content(jsonBody.toString())
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvcAsync.performAsync(
+                post(format("/%s/commercetools/execute/payments/", MAIN_TEST_TENANT_NAME))
+                        .content(jsonBody.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("errorMessage").value(containsString(interfaceId)))
                 .andReturn();
 
         Optional<Payment> ctpPaymentOpt = executeBlocking(ctpFacade.getPaymentService().getById(paymentId));
@@ -98,11 +112,16 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
     public void whenPaypalPaymentIdIsNotExisting_shouldReturn404() throws Exception {
         JSONObject jsonBody = new JSONObject();
         jsonBody.put("paypalPlusPayerId", "nonExistingPayerId");
-        jsonBody.put("paypalPlusPaymentId", UUID.randomUUID().toString());
-        this.mockMvc.perform(post(format("/%s/commercetools/execute/payments/", MAIN_TEST_TENANT_NAME))
-                .content(jsonBody.toString())
-                .contentType(MediaType.APPLICATION_JSON))
+        final String randomUuid = UUID.randomUUID().toString();
+        jsonBody.put("paypalPlusPaymentId", randomUuid);
+
+        mockMvcAsync.performAsync(
+                post(format("/%s/commercetools/execute/payments/", MAIN_TEST_TENANT_NAME))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonBody.toString()))
+                .andDo(print())
                 .andExpect(status().isNotFound())
+                .andExpect(jsonPath("errorMessage").value(containsString(randomUuid)))
                 .andReturn();
     }
 

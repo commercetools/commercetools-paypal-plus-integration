@@ -7,15 +7,11 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.commercetools.testUtil.customTestConfigs.ServiceConfig;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.Transaction;
-import io.sphere.sdk.payments.TransactionDraft;
-import io.sphere.sdk.payments.TransactionDraftBuilder;
-import io.sphere.sdk.payments.TransactionState;
-import io.sphere.sdk.payments.TransactionType;
+import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.PaymentUpdateCommand;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
@@ -32,7 +28,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private MockMvcAsync mockMvcAsync;
 
     @Value(value = "classpath:mockData/notification/paymentSaleCompletedResponse.json")
     private Resource paymentSaleCompletedResponseResource;
@@ -83,15 +78,17 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
 
     @Test
     public void handlePaymentsIgnoresTrailingSlash() throws Exception {
-        this.mockMvc.perform(post("/blah-blah/paypalplus/notification/")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+        String interfaceId = getMockPaymentInterfaceId();
+
+        mockMvcAsync.performAsync(post(format("/%s/paypalplus/notification", MAIN_TEST_TENANT_NAME))
+                .content(getPaymentSaleCompletedResponseMock(interfaceId))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        this.mockMvc.perform(post("/blah-blah/paypalplus/notification")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+        mockMvcAsync.performAsync(post(format("/%s/paypalplus/notification/", MAIN_TEST_TENANT_NAME))
+                .content(getPaymentSaleCompletedResponseMock(interfaceId))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -100,7 +97,7 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
     public void onCompletedNotification_shouldUpdateTransactionState() throws Exception {
         String interfaceId = getMockPaymentInterfaceId();
 
-        this.mockMvc.perform(post(format("/%s/paypalplus/notification", MAIN_TEST_TENANT_NAME))
+        mockMvcAsync.performAsync(post(format("/%s/paypalplus/notification", MAIN_TEST_TENANT_NAME))
                 .content(getPaymentSaleCompletedResponseMock(interfaceId))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -123,7 +120,7 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
                 .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, interfaceId))
                 .get();
 
-        this.mockMvc.perform(post(format("/%s/paypalplus/notification", MAIN_TEST_TENANT_NAME))
+        mockMvcAsync.performAsync(post(format("/%s/paypalplus/notification", MAIN_TEST_TENANT_NAME))
                 .content(getFakeNotificationEventResponseMock(interfaceId))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -143,7 +140,7 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
     private String getMockPaymentInterfaceId() throws Exception {
         String paymentId = createCartAndPayment(sphereClient);
 
-        this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)));
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)));
 
         Payment payment = executeBlocking(this.sphereClient.execute(PaymentByIdGet.of(paymentId)));
 

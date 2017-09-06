@@ -15,8 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -29,22 +29,21 @@ public class DefaultNotificationProcessorTest {
     Gson gson;
 
     @Test
-    public void whenNotificationHasNoProcessor_defaultProcessorIsUsed () {
+    public void whenNotificationHasNoProcessor_defaultProcessorIsUsed() {
         CtpFacade ctpFacade = mock(CtpFacade.class);
         Payment mockPayment = mock(Payment.class);
         DefaultNotificationProcessor mockDefaultProcessor = mock(DefaultNotificationProcessor.class);
         when(mockDefaultProcessor.processEventNotification(any(), any()))
                 .thenReturn(CompletableFuture.completedFuture(mockPayment));
         PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
-        
+
         NotificationProcessorContainer container = new NotificationProcessorContainerImpl(paymentCompletedProcessor, mockDefaultProcessor);
 
         Event event = new Event();
         event.setEventType("testEventType");
 
         NotificationDispatcher dispatcher = new NotificationDispatcher(container, ctpFacade);
-        PaymentHandleResponse response = dispatcher.handleEvent(event, "testTenant")
-                .toCompletableFuture().join();
+        PaymentHandleResponse response = executeBlocking(dispatcher.handleEvent(event, "testTenant"));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK.value());
     }
 }

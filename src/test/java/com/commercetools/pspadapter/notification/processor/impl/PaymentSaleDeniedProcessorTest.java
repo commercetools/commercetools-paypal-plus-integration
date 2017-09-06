@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
@@ -65,9 +66,7 @@ public class PaymentSaleDeniedProcessorTest {
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 
-        Payment returnedPayment = processorBase.processEventNotification(ctpFacade, event)
-                .toCompletableFuture()
-                .join();
+        Payment returnedPayment = executeBlocking(processorBase.processEventNotification(ctpFacade, event));
 
         // assert
         assertThat(returnedPayment).isEqualTo(ctpMockPayment);

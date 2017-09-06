@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.payment.constants.paypalPlus.NotificationEventType.PAYMENT_SALE_COMPLETED;
+import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -78,7 +79,7 @@ public class PaymentSaleCompletedProcessorTest {
         // set up
         Payment ctpPayment = mock(Payment.class);
         NotificationProcessorBase processorBase = spy(new PaymentSaleCompletedProcessor(new GsonBuilder().create()));
-        
+
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());
         SphereClient sphereClient = mock(SphereClient.class);
@@ -96,9 +97,7 @@ public class PaymentSaleCompletedProcessorTest {
         event.setEventType(NotificationEventType.PAYMENT_SALE_COMPLETED.toString());
 
         // test
-        Payment returnedPayment = processorBase.processEventNotification(ctpFacade, event)
-                .toCompletableFuture()
-                .join();
+        Payment returnedPayment = executeBlocking(processorBase.processEventNotification(ctpFacade, event));
 
         // assert
         assertThat(returnedPayment).isEqualTo(ctpPayment);

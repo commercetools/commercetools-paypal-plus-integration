@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nonnull;
@@ -27,8 +26,7 @@ public class CommercetoolsHealthController extends BaseCommercetoolsController {
     }
 
     @RequestMapping(
-            method = RequestMethod.GET,
-            value = "/health",
+            value = {"/health", "/"},
             produces = APPLICATION_JSON_VALUE)
     public Map<String, Object> checkHealth() {
         Map<String, Object> tenantResponse = new HashMap<>();
@@ -36,5 +34,4 @@ public class CommercetoolsHealthController extends BaseCommercetoolsController {
         tenantResponse.put("statusCode", HttpStatus.OK.value());
         return tenantResponse;
     }
-
 }

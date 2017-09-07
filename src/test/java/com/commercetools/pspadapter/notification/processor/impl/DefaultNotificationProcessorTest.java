@@ -11,9 +11,10 @@ import io.sphere.sdk.payments.Payment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
@@ -25,19 +26,22 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultNotificationProcessorTest {
 
-    @Autowired
-    Gson gson;
-
     @Test
     public void whenNotificationHasNoProcessor_defaultProcessorIsUsed() {
+        Gson gson = new GsonBuilder().create();
         CtpFacade ctpFacade = mock(CtpFacade.class);
         Payment mockPayment = mock(Payment.class);
         DefaultNotificationProcessor mockDefaultProcessor = mock(DefaultNotificationProcessor.class);
         when(mockDefaultProcessor.processEventNotification(any(), any()))
                 .thenReturn(CompletableFuture.completedFuture(mockPayment));
-        PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
+        PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(gson);
+        PaymentSaleRefundedProcessor paymentRefundedProcessor =new PaymentSaleRefundedProcessor(gson);
+        PaymentSaleDeniedProcessor paymentDeniedProcessor = new PaymentSaleDeniedProcessor(gson);
+        PaymentSaleReversedProcessor paymentReversedProcessor = new PaymentSaleReversedProcessor(gson);
 
-        NotificationProcessorContainer container = new NotificationProcessorContainerImpl(paymentCompletedProcessor, mockDefaultProcessor);
+        List<PaymentSaleNotificationProcessorBase> processors = Arrays.asList(paymentCompletedProcessor, paymentRefundedProcessor, paymentDeniedProcessor, paymentReversedProcessor);
+
+        NotificationProcessorContainer container = new NotificationProcessorContainerImpl(processors, mockDefaultProcessor);
 
         Event event = new Event();
         event.setEventType("testEventType");

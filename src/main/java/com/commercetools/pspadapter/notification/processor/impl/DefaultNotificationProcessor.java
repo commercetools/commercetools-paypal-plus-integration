@@ -28,7 +28,7 @@ public class DefaultNotificationProcessor extends NotificationProcessorBase {
     }
 
     @Override
-    List<UpdateAction<Payment>> createChangeTransactionState(@Nonnull Payment ctpPayment) {
+    List<UpdateAction<Payment>> createUpdateCtpTransactionActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
         return Collections.emptyList();
     }
 

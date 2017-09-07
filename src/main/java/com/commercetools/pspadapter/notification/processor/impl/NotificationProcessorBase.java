@@ -31,7 +31,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 public abstract class NotificationProcessorBase implements NotificationProcessor {
 
     private static final String PARENT_PAYMENT_ATTRIBUTE = "parent_payment";
-    
+
     private final Gson gson;
 
     private final static Logger logger = LoggerFactory.getLogger(NotificationProcessorBase.class);
@@ -40,7 +40,7 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
         this.gson = gson;
     }
 
-    abstract List<? extends UpdateAction<Payment>>  createChangeTransactionState(@Nonnull Payment ctpPayment);
+    abstract List<? extends UpdateAction<Payment>> createUpdateCtpTransactionActions(@Nonnull Payment ctpPayment, @Nonnull Event event);
 
     @Override
     public CompletionStage<Payment> processEventNotification(@Nonnull CtpFacade ctpFacade,
@@ -56,10 +56,10 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
     }
 
     protected List<UpdateAction<Payment>> createPaymentUpdates(@Nonnull Payment ctpPayment,
-                                                                        @Nonnull Event event) {
+                                                               @Nonnull Event event) {
         ArrayList<UpdateAction<Payment>> updateActions = new ArrayList<>();
         updateActions.add(createAddInterfaceInteractionAction(event));
-        updateActions.addAll(createChangeTransactionState(ctpPayment));
+        updateActions.addAll(createUpdateCtpTransactionActions(ctpPayment, event));
         return updateActions;
     }
 

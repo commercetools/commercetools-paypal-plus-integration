@@ -38,7 +38,7 @@ public class PaymentServiceImpl extends BaseSphereService implements PaymentServ
     @Override
     public CompletionStage<Optional<Payment>> getByPaymentInterfaceNameAndInterfaceId(@Nullable String paymentInterfaceName, @Nullable String interfaceId) {
         if (isBlank(paymentInterfaceName) || isBlank(interfaceId)) {
-            return completedFuture(null);
+            return completedFuture(empty());
         }
         PaymentQuery paymentQuery = PaymentQuery.of()
                 .withPredicates(p -> p.paymentMethodInfo().paymentInterface().is(paymentInterfaceName))

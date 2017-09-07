@@ -6,6 +6,7 @@ import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
 import com.commercetools.service.ctp.PaymentService;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
 import io.sphere.sdk.client.SphereClient;
@@ -30,12 +31,14 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class PaymentSaleCompletedProcessorTest {
 
+    private final Gson gson = new GsonBuilder().create();
+
     @Test
     public void shouldRecognizeIfEventIsPaymentSaleCompleted() {
         Event event = new Event();
         event.setEventType(PAYMENT_SALE_COMPLETED.getPaypalEventTypeName());
         PaymentSaleCompletedProcessor processor
-                = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
+                = new PaymentSaleCompletedProcessor(gson);
         assertThat(processor.canProcess(event)).isTrue();
     }
 
@@ -51,9 +54,9 @@ public class PaymentSaleCompletedProcessorTest {
                 .thenReturn(Collections.singletonList(transaction));
 
         PaymentSaleCompletedProcessor processor
-                = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
+                = new PaymentSaleCompletedProcessor(gson);
 
-        assertThat(processor.createChangeTransactionState(ctpPayment)).isNotEmpty();
+        assertThat(processor.createUpdateCtpTransactionActions(ctpPayment, mock(Event.class))).isNotEmpty();
     }
 
     @Test
@@ -68,9 +71,9 @@ public class PaymentSaleCompletedProcessorTest {
                 .thenReturn(Collections.singletonList(transaction));
 
         PaymentSaleCompletedProcessor processor
-                = new PaymentSaleCompletedProcessor(new GsonBuilder().create());
+                = new PaymentSaleCompletedProcessor(gson);
 
-        assertThat(processor.createChangeTransactionState(ctpPayment)).isEmpty();
+        assertThat(processor.createUpdateCtpTransactionActions(ctpPayment, mock(Event.class))).isEmpty();
     }
 
     @Test
@@ -78,8 +81,7 @@ public class PaymentSaleCompletedProcessorTest {
     public void shouldCallUpdatePayment() {
         // set up
         Payment ctpPayment = mock(Payment.class);
-        NotificationProcessorBase processorBase = spy(new PaymentSaleCompletedProcessor(new GsonBuilder().create()));
-
+        NotificationProcessorBase processorBase = spy(new PaymentSaleCompletedProcessor(gson));
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());
         SphereClient sphereClient = mock(SphereClient.class);

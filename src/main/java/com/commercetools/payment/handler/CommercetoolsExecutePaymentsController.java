@@ -3,6 +3,7 @@ package com.commercetools.payment.handler;
 import com.commercetools.payment.handler.commandObject.PaypalPlusExecuteParams;
 import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
 import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
+import com.commercetools.web.bind.annotation.PostJsonRequestJsonMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPaymentsHandleController {
@@ -27,11 +27,7 @@ public class CommercetoolsExecutePaymentsController extends BaseCommercetoolsPay
         super(stringTrimmerEditor, paymentHandlerProvider);
     }
 
-    @RequestMapping(
-            method = RequestMethod.POST,
-            consumes = APPLICATION_JSON_VALUE,
-            produces = APPLICATION_JSON_VALUE,
-            value = "/{tenantName}/commercetools/execute/payments")
+    @PostJsonRequestJsonMapping(value = "/{tenantName}/commercetools/execute/payments")
     public CompletionStage<ResponseEntity> executePayments(@PathVariable String tenantName,
                                                            @Valid @RequestBody PaypalPlusExecuteParams params,
                                                            @Nonnull BindingResult result) {

@@ -13,24 +13,24 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Processes PAYMENT.SALE.DENIED event. Change charge state of the corresponding CTP payment to FAILURE
+ * Processes event notification of type PAYMENT.SALE.PENDING
  */
 @Component
-public class PaymentSaleDeniedProcessor extends PaymentSaleSimpleProcessorBase {
+public class PaymentSalePendingProcessor extends PaymentSaleSimpleProcessorBase {
 
     @Autowired
-    public PaymentSaleDeniedProcessor(@Nonnull Gson gson) {
+    public PaymentSalePendingProcessor(@Nonnull Gson gson) {
         super(gson);
     }
 
     @Override
     @Nonnull
     public NotificationEventType getNotificationEventType() {
-        return NotificationEventType.PAYMENT_SALE_DENIED;
+        return NotificationEventType.PAYMENT_SALE_PENDING;
     }
 
     @Override
     List<? extends UpdateAction<Payment>> createUpdateCtpTransactionActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
-        return createUpdateCtpTransactionState(ctpPayment, TransactionState.PENDING, TransactionState.FAILURE);
+        return createUpdateCtpTransactionState(ctpPayment, TransactionState.SUCCESS, TransactionState.PENDING);
     }
 }

@@ -20,9 +20,6 @@ public class NotificationEventDispatcherProviderImpl implements NotificationEven
 
     @Autowired
     public NotificationEventDispatcherProviderImpl(@Nonnull TenantConfigFactory configFactory,
-                                                   @Nonnull DefaultNotificationProcessor defaultNotificationProcessor,
-                                                   // when you have Map here instead of ImmutableMap, Spring injects a default bean map
-                                                   // which is not notificationProcessors that is defined in ApplicationConfig
                                                    @Nonnull NotificationProcessorContainer notificationProcessors) {
         this.configFactory = configFactory;
         this.processors = notificationProcessors;

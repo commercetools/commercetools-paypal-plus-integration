@@ -31,6 +31,6 @@ public class PaymentSaleCompletedProcessor extends PaymentSaleSimpleProcessorBas
 
     @Override
     List<? extends UpdateAction<Payment>> createUpdateCtpTransactionActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
-        return createUpdateCtpTransactionActions(ctpPayment, event, TransactionState.SUCCESS);
+        return createUpdateCtpTransactionState(ctpPayment, TransactionState.PENDING, TransactionState.SUCCESS);
     }
 }

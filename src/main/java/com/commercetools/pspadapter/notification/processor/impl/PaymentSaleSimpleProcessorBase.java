@@ -20,11 +20,11 @@ public abstract class PaymentSaleSimpleProcessorBase extends PaymentSaleNotifica
         super(gson);
     }
 
-    List<? extends UpdateAction<Payment>> createUpdateCtpTransactionActions(@Nonnull Payment ctpPayment,
-                                                                            @Nonnull Event event,
-                                                                            @Nonnull TransactionState transactionState) {
-        return findTransactionByTypeAndState(ctpPayment.getTransactions(), TransactionType.CHARGE, TransactionState.PENDING)
-                .map(txn -> singletonList(ChangeTransactionState.of(transactionState, txn.getId())))
+    List<? extends UpdateAction<Payment>> createUpdateCtpTransactionState(@Nonnull Payment ctpPayment,
+                                                                          @Nonnull TransactionState fromTransactionState,
+                                                                          @Nonnull TransactionState toTransactionState) {
+        return findTransactionByTypeAndState(ctpPayment.getTransactions(), TransactionType.CHARGE, fromTransactionState)
+                .map(txn -> singletonList(ChangeTransactionState.of(toTransactionState, txn.getId())))
                 .orElse(emptyList());
     }
 }

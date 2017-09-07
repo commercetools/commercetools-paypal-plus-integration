@@ -14,12 +14,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * Custom annotation for {@code POST} endpoints which accept (consume) and response (produce)
  * <i>application/json</i> mime-type.
  *
- * @see PostRequestJsonMapping
+ * @see PostJsonResponseMapping
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@PostRequestJsonMapping(consumes = APPLICATION_JSON_VALUE)
-public @interface PostJsonRequestJsonMapping {
+@PostJsonResponseMapping(consumes = APPLICATION_JSON_VALUE)
+public @interface PostJsonRequestJsonResponseMapping {
     @AliasFor(annotation = RequestMapping.class)
     String name() default "";
 

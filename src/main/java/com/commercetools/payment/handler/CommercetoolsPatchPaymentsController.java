@@ -1,7 +1,7 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
-import com.commercetools.web.bind.annotation.PostRequestJsonMapping;
+import com.commercetools.web.bind.annotation.PostJsonResponseMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class CommercetoolsPatchPaymentsController extends BaseCommercetoolsPayme
         super(stringTrimmerEditor, paymentHandlerProvider);
     }
 
-    @PostRequestJsonMapping(value = "/{tenantName}/commercetools/patch/payments/{ctpPaymentId}")
+    @PostJsonResponseMapping(value = "/{tenantName}/commercetools/patch/payments/{ctpPaymentId}")
     public CompletionStage<ResponseEntity> patchPayment(@PathVariable String tenantName,
                                                         @PathVariable String ctpPaymentId) {
         return getTenantHandlerResponse(tenantName,

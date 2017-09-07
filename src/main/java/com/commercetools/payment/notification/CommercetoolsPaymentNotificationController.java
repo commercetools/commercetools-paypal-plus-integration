@@ -6,7 +6,7 @@ import com.commercetools.pspadapter.notification.NotificationEventDispatcherProv
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
 import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
 import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandler;
-import com.commercetools.web.bind.annotation.PostJsonRequestJsonMapping;
+import com.commercetools.web.bind.annotation.PostJsonRequestJsonResponseMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +48,7 @@ public class CommercetoolsPaymentNotificationController extends BaseCommercetool
         logger = LoggerFactory.getLogger(PaymentHandler.class);
     }
 
-    @PostJsonRequestJsonMapping(value = "/{tenantName}/" + NOTIFICATION_PATH_URL)
+    @PostJsonRequestJsonResponseMapping(value = "/{tenantName}/" + NOTIFICATION_PATH_URL)
     public CompletionStage<ResponseEntity> handleNotification(@PathVariable String tenantName,
                                                               @RequestBody PaypalPlusNotificationEvent eventFromPaypal) {
         return eventDispatcherProvider.getNotificationDispatcher(tenantName)

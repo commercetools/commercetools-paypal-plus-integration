@@ -5,7 +5,6 @@ import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
-import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
@@ -91,7 +90,7 @@ public class PaymentHandler {
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
     }
 
-    public PaymentHandleResponse createPayment(@Nonnull String ctpPaymentId) {
+    public CompletionStage<PaymentHandleResponse> createPayment(@Nonnull String ctpPaymentId) {
         try {
             CompletionStage<PaymentHandleResponse> createPaymentCS = ctpFacade.getPaymentService().getById(ctpPaymentId)
                     .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
@@ -120,33 +119,32 @@ public class PaymentHandler {
                                                 .orElseGet(() -> of400BadRequest(
                                                         format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId))));
                             })
-                    // TODO: re-factor compose !!!!
-                    .thenCompose(stage -> stage);
+                    .thenCompose(stage -> stage); // flatten CompletionStage from createPaypalPlusPaymentAndUpdateCtpPayment()
             return runWithExceptionallyHandling(ctpPaymentId, CTP_PAYMENT_ID, createPaymentCS);
         } catch (Exception e) {
             logger.error("Error while processing payment ID {}", ctpPaymentId, e);
-            return of500InternalServerError("See the logs");
+            return completedFuture(of500InternalServerError("See the logs"));
         }
     }
 
-    public PaymentHandleResponse patchAddress(@Nonnull String ctpPaymentId) {
+    public CompletionStage<PaymentHandleResponse> patchAddress(@Nonnull String ctpPaymentId) {
         return ctpFacade.getCartService().getByPaymentId(ctpPaymentId, PAYMENT_INFO_EXPANSION)
-                .thenCombineAsync(ctpFacade.getPaymentService().getById(ctpPaymentId),
+                .thenCombine(ctpFacade.getPaymentService().getById(ctpPaymentId),
                         (cartOpt, ctpPaymentOpt) -> {
                             if (cartOpt.isPresent() && ctpPaymentOpt.isPresent()
                                     && ctpPaymentOpt.get().getInterfaceId() != null) {
                                 return patchAddress(cartOpt.get(), ctpPaymentOpt.get().getInterfaceId());
                             } else {
-                                return PaymentHandleResponse.of400BadRequest(
+                                return completedFuture(PaymentHandleResponse.of400BadRequest(
                                         format("Payment payment=[%s] does not exists or does not have a connected cart.",
-                                                ctpPaymentId));
+                                                ctpPaymentId)));
                             }
                         })
-                .toCompletableFuture().join();
+                .thenCompose(i -> i); // flatten CompletionStage from patchAddress()
     }
 
-    public PaymentHandleResponse patchAddress(@Nonnull Cart cartWithPaymentsExpansion,
-                                              @Nonnull String paypalPlusPaymentId) {
+    public CompletionStage<PaymentHandleResponse> patchAddress(@Nonnull Cart cartWithPaymentsExpansion,
+                                                               @Nonnull String paypalPlusPaymentId) {
         try {
             Optional<String> paymentIdOpt = getCtpPaymentId(cartWithPaymentsExpansion, paypalPlusPaymentId);
             return paymentIdOpt.map(paymentId -> {
@@ -155,8 +153,10 @@ public class PaymentHandler {
 
                 io.sphere.sdk.models.Address shippingAddress = cartWithPaymentsExpansion.getShippingAddress();
                 if (shippingAddress == null) {
-                    return PaymentHandleResponse.of400BadRequest(format("Shipping address must not be null for cartId=[%s]", cartWithPaymentsExpansion.getId()));
-                }Patch patchShippingAddress = new Patch(ADD_ACTION, SHIPPING_ADDRESS_PATH).setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
+                    return completedFuture(PaymentHandleResponse.of400BadRequest(format("Shipping address must not be null for cartId=[%s]", cartWithPaymentsExpansion.getId())));
+                }
+
+                Patch patchShippingAddress = new Patch(ADD_ACTION, SHIPPING_ADDRESS_PATH).setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
                 patches.add(patchShippingAddress);
 
                 // billing address is not mandatory
@@ -165,27 +165,29 @@ public class PaymentHandler {
                     Patch patchBillingAddress = new Patch(ADD_ACTION, PAYER_INFO_PATH)
                             .setValue(addressMapper.ctpAddressToPaypalPlusPayerInfo(billingAddress));
                     patches.add(patchBillingAddress);
-                }AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(patchShippingAddress, REQUEST);
+                }
+                AddInterfaceInteraction addInterfaceInteractionAction = createAddInterfaceInteractionAction(patchShippingAddress, REQUEST);
                 CompletionStage<PaymentHandleResponse> patchCS = createPatchCompletionStage(paymentId, paypalPlusPayment, patches, addInterfaceInteractionAction);
-                return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);})
-            .orElseGet(() -> PaymentHandleResponse.of404NotFound(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
-                    paypalPlusPaymentId, cartWithPaymentsExpansion.getId())));
+                return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, patchCS);
+            })
+                    .orElseGet(() -> completedFuture(PaymentHandleResponse.of404NotFound(format("Paypal Plus paymentId=[%s] cant be found on cartId=[%s]",
+                            paypalPlusPaymentId, cartWithPaymentsExpansion.getId()))));
         } catch (Throwable e) {
             logger.error("Error while processing payment ID {}", paypalPlusPaymentId, e);
-            return PaymentHandleResponse.of500InternalServerError(
-                    format("Error while processing paymentId==[%s]", paypalPlusPaymentId));
+            return completedFuture(PaymentHandleResponse.of500InternalServerError(
+                    format("Error while processing paymentId==[%s]", paypalPlusPaymentId)));
         }
     }
 
-    public PaymentHandleResponse executePayment(@Nonnull String paypalPlusPaymentId,
-                                                @Nonnull String paypalPlusPayerId) {
+    public CompletionStage<PaymentHandleResponse> executePayment(@Nonnull String paypalPlusPaymentId,
+                                                                 @Nonnull String paypalPlusPayerId) {
         CompletionStage<PaymentHandleResponse> executeCS = ctpFacade.getCartService()
-                .getByPaymentMethodAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS,
+                .getByPaymentMethodAndInterfaceId(PAYPAL_PLUS,
                         paypalPlusPaymentId, PAYMENT_INFO_EXPANSION)
                 .thenCompose(cartOpt -> {
                     if (!cartOpt.isPresent()) {
                         return CompletableFuture.completedFuture(PaymentHandleResponse.of404NotFound(
-                                format("Can't find cart with interfaceId=[%s]", paypalPlusPaymentId)));
+                                format("Can't find cart with paymentId=[%s] and interfaceId=[%s]", paypalPlusPaymentId, PAYPAL_PLUS)));
                     } else {
                         return updatePayerIdInCtpPayment(paypalPlusPaymentId, paypalPlusPayerId)
                                 .thenCompose(ctpPayment -> {
@@ -204,11 +206,13 @@ public class PaymentHandler {
 
     protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(@Nonnull String paypalPlusPaymentId,
                                                                                         @Nonnull String payerId) {
+        // TODO: lojzatran think about Optional, looks like it is proper place to use it here
         return ctpFacade.getPaymentService().getByPaymentInterfaceNameAndInterfaceId(PAYPAL_PLUS, paypalPlusPaymentId)
                 .thenCompose(paymentOpt -> paymentOpt.map(payment -> {
-                    List<UpdateAction<io.sphere.sdk.payments.Payment>> updateActions = Collections.singletonList(SetCustomField.ofObject(PAYER_ID, payerId));
-                    return ctpFacade.getPaymentService().updatePayment(payment, updateActions);
-                }).orElse(null));
+                            List<UpdateAction<io.sphere.sdk.payments.Payment>> updateActions = Collections.singletonList(SetCustomField.ofObject(PAYER_ID, payerId));
+                            return ctpFacade.getPaymentService().updatePayment(payment, updateActions);
+                        }).orElse(null)
+                );
     }
 
     protected List<UpdateAction<io.sphere.sdk.payments.Payment>> getApprovalUrlAndInterfaceIdAction(@Nonnull Payment paypalPayment) {
@@ -218,8 +222,8 @@ public class PaymentHandler {
     }
 
     protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull Payment paypalPayment,
-                                                                                    @Nonnull String ctpPaymentId,
-                                                                                    @Nullable TransactionState transactionState) {
+                                                                                      @Nonnull String ctpPaymentId,
+                                                                                      @Nullable TransactionState transactionState) {
         Amount totalAmount = paypalPayment.getTransactions().get(0).getAmount();
         BigDecimal total = new BigDecimal(totalAmount.getTotal());
         String updateTimeStr = paypalPayment.getUpdateTime() == null ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
@@ -233,8 +237,8 @@ public class PaymentHandler {
     }
 
     protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull String paypalPlusPaymentId,
-                                                                                    @Nonnull Payment paypalPayment,
-                                                                                    @Nonnull io.sphere.sdk.payments.Payment ctpPayment) {
+                                                                                      @Nonnull Payment paypalPayment,
+                                                                                      @Nonnull io.sphere.sdk.payments.Payment ctpPayment) {
         if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
             return createChargeTransaction(paypalPayment, ctpPayment.getId(), SUCCESS);
         } else if (PaypalPlusPaymentStates.CREATED.equals(paypalPayment.getState())
@@ -267,21 +271,21 @@ public class PaymentHandler {
         return ctpFacade.getPaymentService()
                 .updatePayment(ctpPayment.getId(), Collections.singletonList(interactionAction))
                 .thenCompose(updatedCtpPayment -> executeAndUpdatePayment(paypalPlusPaymentId, paymentExecution, updatedCtpPayment))
-                    .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.CREATED));
+                .thenApply(ignore -> PaymentHandleResponse.ofHttpStatus(HttpStatus.CREATED));
     }
 
     private CompletionStage<CompletionStage<io.sphere.sdk.payments.Payment>> executeAndUpdatePayment(@Nonnull String paypalPlusPaymentId,
                                                                                                      @Nonnull PaymentExecution paymentExecution,
                                                                                                      @Nonnull io.sphere.sdk.payments.Payment payment) {
-                    return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
-                            paymentExecution)
-                            .thenCompose(paypalPayment -> {
+        return paypalPlusFacade.getPaymentService().execute(new Payment().setId(paypalPlusPaymentId),
+                paymentExecution)
+                .thenCompose(paypalPayment -> {
 
-                                //  add paypal response to the ctp payment as interaction interface
-                                return updateCtpPayment(paypalPayment, payment)
-                                        //  create charge transaction in the ctp payment
-                                        .thenApply(updatedCtpPayment2 -> createChargeTransaction(paypalPlusPaymentId, paypalPayment, updatedCtpPayment2));
-                            });
+                    //  add paypal response to the ctp payment as interaction interface
+                    return updateCtpPayment(paypalPayment, payment)
+                            //  create charge transaction in the ctp payment
+                            .thenApply(updatedCtpPayment2 -> createChargeTransaction(paypalPlusPaymentId, paypalPayment, updatedCtpPayment2));
+                });
 
     }
 
@@ -308,11 +312,17 @@ public class PaymentHandler {
         return setCustomFieldActions;
     }
 
-    private PaymentHandleResponse runWithExceptionallyHandling(@Nullable String paymentId,
-                                                               @Nullable String paymentIdType,
-                                                               @Nonnull CompletionStage<PaymentHandleResponse> completionStage) {
-        CompletionStage<PaymentHandleResponse> exceptionally = completionStage
-                .exceptionally(throwable -> {
+    private CompletionStage<PaymentHandleResponse> runWithExceptionallyHandling(@Nullable String paymentId,
+                                                                                @Nullable String paymentIdType,
+                                                                                @Nonnull CompletionStage<PaymentHandleResponse> completionStage) {
+
+        return completionStage
+                // handle() is used instead of exceptionally() to allow return CompletionStage from fallback saveResponseToInterfaceInteraction()
+                .handle((response, throwable) -> {
+                    if (throwable == null) {
+                        return completedFuture(response);
+                    }
+
                     logger.error("Unexpected exception processing " + paymentIdType + "=[{}]:", paymentId, throwable);
                     if (throwable instanceof CompletionException) {
                         // the real exception is wrapped inside
@@ -321,15 +331,13 @@ public class PaymentHandler {
                     if (throwable instanceof PaypalPlusServiceException) {
                         PayPalRESTException restException = ((PaypalPlusServiceException) throwable).getCause();
                         if (restException != null) {
-                            return saveResponseToInterfaceInteraction(paymentId, paymentIdType, restException)
-                                    .toCompletableFuture().join();
+                            return saveResponseToInterfaceInteraction(paymentId, paymentIdType, restException);
                         }
                     }
-                    CompletionStage<PaymentHandleResponse> paymentHandleResponseStage = CompletableFuture.completedFuture(PaymentHandleResponse.of400BadRequest(
+                    return completedFuture(PaymentHandleResponse.of400BadRequest(
                             format("%s [%s] can't be processed, details: [%s]", paymentIdType, paymentId, throwable.getMessage())));
-                    return paymentHandleResponseStage.toCompletableFuture().join();
-                });
-        return exceptionally.toCompletableFuture().join();
+                })
+                .thenCompose(i -> i); // flatten CompletionStage from saveResponseToInterfaceInteraction
     }
 
     private CompletionStage<PaymentHandleResponse> saveResponseToInterfaceInteraction(@Nullable String paymentId,

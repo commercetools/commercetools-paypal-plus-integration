@@ -100,15 +100,15 @@ public class PaymentHandlerProviderImplTest {
     public void shouldPatchShippingAddress() {
         CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
-        paymentHandler.createPayment(ctpPaymentWithCart.getPayment().getId());
+        executeBlocking(paymentHandler.createPayment(ctpPaymentWithCart.getPayment().getId()));
 
         Cart cartWithExpansion = executeBlocking(this.ctpFacade.getCartService().getByPaymentId(ctpPaymentWithCart.getPayment().getId(),
                 PAYMENT_INFO_EXPANSION)).get();
         String paypalPlusPaymentId = cartWithExpansion.getPaymentInfo().getPayments().get(0).getObj().getInterfaceId();
-        PaymentHandleResponse paymentHandleResult = paymentHandler.patchAddress(cartWithExpansion, paypalPlusPaymentId);
+        PaymentHandleResponse paymentHandleResult = executeBlocking(paymentHandler.patchAddress(cartWithExpansion, paypalPlusPaymentId));
         assertThat(paymentHandleResult.getStatusCode()).isEqualTo(HttpStatus.OK.value());
 
-        Payment paypalPlusPayment = this.paypalPlusFacade.getPaymentService().getByPaymentId(paypalPlusPaymentId).toCompletableFuture().join();
+        Payment paypalPlusPayment = executeBlocking(this.paypalPlusFacade.getPaymentService().getByPaymentId(paypalPlusPaymentId));
         assertThat(paypalPlusPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
     }
 
@@ -118,15 +118,13 @@ public class PaymentHandlerProviderImplTest {
         CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
 
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
-        paymentHandler.createPayment(ctpPaymentWithCart.getPayment().getId());
-        io.sphere.sdk.payments.Payment ctpPayment = this.sphereClient.execute(PaymentByIdGet.of(ctpPaymentWithCart.getPayment().getId())).toCompletableFuture().join();
+        executeBlocking(paymentHandler.createPayment(ctpPaymentWithCart.getPayment().getId()));
+        io.sphere.sdk.payments.Payment ctpPayment = executeBlocking(sphereClient.execute(PaymentByIdGet.of(ctpPaymentWithCart.getPayment().getId())));
 
-        paymentHandler.updatePayerIdInCtpPayment(ctpPayment.getInterfaceId(), testPayerId).toCompletableFuture().join();
+        executeBlocking(paymentHandler.updatePayerIdInCtpPayment(ctpPayment.getInterfaceId(), testPayerId));
 
         PaymentByIdGet paymentQuery = PaymentByIdGet.of(ctpPayment.getId());
-        ctpPayment = sphereClient.execute(paymentQuery)
-                .toCompletableFuture()
-                .join();
+        ctpPayment = executeBlocking(sphereClient.execute(paymentQuery));
         assertThat(ctpPayment.getCustom().getFieldAsString(PAYER_ID)).isEqualTo(testPayerId);
     }
 
@@ -139,9 +137,8 @@ public class PaymentHandlerProviderImplTest {
 
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
 
-        io.sphere.sdk.payments.Payment chargeTransaction
-                = paymentHandler.createChargeTransaction(paypalPlusPayment, ctpPaymentWithCart.getPayment().getId(), TransactionState.SUCCESS)
-                .toCompletableFuture().join();
+        io.sphere.sdk.payments.Payment chargeTransaction = executeBlocking(paymentHandler
+                .createChargeTransaction(paypalPlusPayment, ctpPaymentWithCart.getPayment().getId(), TransactionState.SUCCESS));
 
         assertThat(chargeTransaction).isNotNull();
     }
@@ -152,15 +149,14 @@ public class PaymentHandlerProviderImplTest {
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
 
         String ctpPaymentId = ctpPaymentWithCart.getPayment().getId();
-        paymentHandler.createPayment(ctpPaymentId);
+        executeBlocking(paymentHandler.createPayment(ctpPaymentId));
 
-        io.sphere.sdk.payments.Payment ctpPayment = this.sphereClient
-                .execute(PaymentByIdGet.of(ctpPaymentId)).toCompletableFuture().join();
+        io.sphere.sdk.payments.Payment ctpPayment = executeBlocking(this.sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
 
-        PaymentHandleResponse response = paymentHandler.executePayment(ctpPayment.getInterfaceId(), "invalidTestPayerId");
+        PaymentHandleResponse response = executeBlocking(paymentHandler.executePayment(ctpPayment.getInterfaceId(), "invalidTestPayerId"));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
-        ctpPayment = sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)).toCompletableFuture().join();
+        ctpPayment = executeBlocking(sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
         assertThat(ctpPayment.getTransactions()).isEmpty();
     }
 
@@ -170,13 +166,12 @@ public class PaymentHandlerProviderImplTest {
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
 
         String ctpPaymentId = ctpPaymentWithCart.getPayment().getId();
-        paymentHandler.createPayment(ctpPaymentId);
+        executeBlocking(paymentHandler.createPayment(ctpPaymentId));
 
-        io.sphere.sdk.payments.Payment ctpPayment = this.sphereClient
-                .execute(PaymentByIdGet.of(ctpPaymentId)).toCompletableFuture().join();
+        io.sphere.sdk.payments.Payment ctpPayment = executeBlocking(sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
 
-        PaymentHandleResponse paymentHandleResponse = paymentHandler.patchAddress(ctpPaymentWithCart.getCart(),
-                ctpPayment.getInterfaceId());
+        PaymentHandleResponse paymentHandleResponse = executeBlocking(paymentHandler.patchAddress(ctpPaymentWithCart.getCart(),
+                ctpPayment.getInterfaceId()));
 
         assertThat(paymentHandleResponse.getStatusCode()).isEqualTo(500);
     }

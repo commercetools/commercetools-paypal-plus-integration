@@ -43,7 +43,7 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
     private final WebhookContainer webhookContainer;
 
     private final TenantConfigFactory configFactory;
-    
+
     private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
 
     @Autowired
@@ -71,7 +71,7 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
 
             return this.webhookContainer.getWebhookCompletionStageByTenantName(tenantName)
                     .thenCompose(validateWebhookIfExists(request, tenantConfig))
-                    .toCompletableFuture().join();
+                    .toCompletableFuture().join(); // looks like here we can't avoid blocking
         } catch (Throwable t) {
             logger.error("Error when validating the notification request from Paypal Plus", t);
             return false;

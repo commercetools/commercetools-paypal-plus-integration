@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -28,20 +29,17 @@ public class DefaultNotificationProcessorTest {
     @Test
     public void whenNotificationHasNoProcessor_defaultProcessorIsUsed() {
         Gson gson = new GsonBuilder().create();
-
         CtpFacade ctpFacade = mock(CtpFacade.class);
         Payment mockPayment = mock(Payment.class);
         DefaultNotificationProcessor mockDefaultProcessor = mock(DefaultNotificationProcessor.class);
         when(mockDefaultProcessor.processEventNotification(any(), any()))
                 .thenReturn(CompletableFuture.completedFuture(mockPayment));
         PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(gson);
-        PaymentSaleRefundedProcessor paymentRefundedProcessor = new PaymentSaleRefundedProcessor(gson);
+        PaymentSaleRefundedProcessor paymentRefundedProcessor =new PaymentSaleRefundedProcessor(gson);
         PaymentSaleDeniedProcessor paymentDeniedProcessor = new PaymentSaleDeniedProcessor(gson);
         PaymentSaleReversedProcessor paymentReversedProcessor = new PaymentSaleReversedProcessor(gson);
 
-        List<PaymentSaleNotificationProcessorBase> processors = Arrays.asList(
-                paymentCompletedProcessor, paymentRefundedProcessor, paymentDeniedProcessor, paymentReversedProcessor
-        );
+        List<PaymentSaleNotificationProcessorBase> processors = Arrays.asList(paymentCompletedProcessor, paymentRefundedProcessor, paymentDeniedProcessor, paymentReversedProcessor);
 
         NotificationProcessorContainer container = new NotificationProcessorContainerImpl(processors, mockDefaultProcessor);
 
@@ -49,8 +47,7 @@ public class DefaultNotificationProcessorTest {
         event.setEventType("testEventType");
 
         NotificationDispatcher dispatcher = new NotificationDispatcher(container, ctpFacade);
-        PaymentHandleResponse response = dispatcher.handleEvent(event, "testTenant")
-                .toCompletableFuture().join();
+        PaymentHandleResponse response = executeBlocking(dispatcher.handleEvent(event, "testTenant"));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK.value());
     }
 }

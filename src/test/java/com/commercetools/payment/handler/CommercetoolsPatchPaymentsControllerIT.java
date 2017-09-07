@@ -5,6 +5,7 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
@@ -20,7 +21,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Locale;
 
@@ -31,19 +31,17 @@ import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentC
 import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
-public class CommercetoolsPatchPaymentsControllerTest {
+public class CommercetoolsPatchPaymentsControllerIT {
 
     @Autowired
-    private MockMvc mockMvc;
+    private MockMvcAsync mockMvcAsync;
 
 
     @Autowired
@@ -65,21 +63,32 @@ public class CommercetoolsPatchPaymentsControllerTest {
 
     @Test
     public void finalSlashIsProcessedToo() throws Exception {
-        this.mockMvc.perform(get("/asdhfasdfasf/commercetools/patch/payments/6753324-23452-sgsfgd/"))
-                .andDo(print())
-                .andExpect(status().is4xxClientError());
+        final String ctpPaymentId = createCartAndPayment(sphereClient);
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s",
+                MAIN_TEST_TENANT_NAME, ctpPaymentId)));
+
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/patch/payments/%s",
+                MAIN_TEST_TENANT_NAME, ctpPaymentId)))
+                .andExpect(status().isOk());
+
+        String anotherCtpPaymentId = createCartAndPayment(sphereClient);
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s/",
+                MAIN_TEST_TENANT_NAME, anotherCtpPaymentId)));
+
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/patch/payments/%s/",
+                MAIN_TEST_TENANT_NAME, anotherCtpPaymentId)))
+                .andExpect(status().isOk());
     }
 
     @Test
     public void shouldPatchPaypalPaymentWithBillingAndShippingAddresses() throws Exception {
         final String ctpPaymentId = createCartAndPayment(sphereClient);
-        this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s",
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s",
                 MAIN_TEST_TENANT_NAME, ctpPaymentId)));
 
-        this.mockMvc.perform(post(format("/%s/commercetools/patch/payments/%s",
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/patch/payments/%s",
                 MAIN_TEST_TENANT_NAME, ctpPaymentId)))
-                .andExpect(status().isOk())
-                .andReturn();
+                .andExpect(status().isOk());
         Payment ctpPayment = executeBlocking(ctpFacade.getPaymentService().getById(ctpPaymentId)).get();
         assertThat(ctpPayment.getInterfaceInteractions().size()).isEqualTo(4);
 
@@ -96,10 +105,10 @@ public class CommercetoolsPatchPaymentsControllerTest {
         final String ctpPaymentId = createCartAndPayment(sphereClient);
         Cart cart = executeBlocking(ctpFacade.getCartService().getByPaymentId(ctpPaymentId)).get();
         executeBlocking(sphereClient.execute(CartUpdateCommand.of(cart, SetBillingAddress.of(null))));
-        this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s",
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s",
                 MAIN_TEST_TENANT_NAME, ctpPaymentId)));
 
-        this.mockMvc.perform(post(format("/%s/commercetools/patch/payments/%s",
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/patch/payments/%s",
                 MAIN_TEST_TENANT_NAME, ctpPaymentId)))
                 .andExpect(status().isOk());
 //        Payment ctpPayment = executeBlocking(ctpFacade.getPaymentService().getById(ctpPaymentId)).get();
@@ -115,9 +124,8 @@ public class CommercetoolsPatchPaymentsControllerTest {
 
     @Test
     public void whenPaymentHasNoCart_shouldThrow400Error() throws Exception {
-        Payment payment = createPaymentCS(Money.of(10, USD), Locale.ENGLISH, sphereClient)
-                .toCompletableFuture().join();
-        this.mockMvc.perform(post(format("/%s/commercetools/patch/payments/%s",
+        Payment payment = executeBlocking(createPaymentCS(Money.of(10, USD), Locale.ENGLISH, sphereClient));
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/patch/payments/%s",
                 MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andExpect(status().isBadRequest());
     }

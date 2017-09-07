@@ -12,14 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
 import static java.lang.String.format;
@@ -28,7 +25,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 /**
  * Process the valid notification event from Paypal Plus. Validation is done in
  * {@link NotificationValidationInterceptor}.
- *
+ * <p>
  * For devs: validation of Paypal notification cannot be done here because it needs HTTP request headers and body. However,
  * {@link CommercetoolsPaymentNotificationController#handleNotification(String, PaypalPlusNotificationEvent)} also requires
  * RequestBody to parse the Event object. In Spring, you cannot inject both RequestBody and HttpRequest in one method
@@ -53,8 +50,8 @@ public class CommercetoolsPaymentNotificationController extends BaseCommercetool
             method = RequestMethod.POST,
             consumes = APPLICATION_JSON_VALUE,
             value = "/{tenantName}/" + NOTIFICATION_PATH_URL)
-    public ResponseEntity handleNotification(@PathVariable String tenantName,
-                                                    @RequestBody PaypalPlusNotificationEvent eventFromPaypal) {
+    public CompletionStage<ResponseEntity> handleNotification(@PathVariable String tenantName,
+                                                              @RequestBody PaypalPlusNotificationEvent eventFromPaypal) {
         return eventDispatcherProvider.getNotificationDispatcher(tenantName)
                 .map(notificationDispatcher -> notificationDispatcher.handleEvent(eventFromPaypal, tenantName))
                 .orElseGet(() -> {
@@ -64,8 +61,7 @@ public class CommercetoolsPaymentNotificationController extends BaseCommercetool
                             tenantName, eventFromPaypal.toJSON()));
                     return CompletableFuture.completedFuture(PaymentHandleResponse.ofHttpStatus(HttpStatus.OK));
                 })
-                .thenApply(PaymentHandleResponse::toResponseEntity)
-                .toCompletableFuture().join();
+                .thenApply(PaymentHandleResponse::toResponseEntity);
     }
 
 }

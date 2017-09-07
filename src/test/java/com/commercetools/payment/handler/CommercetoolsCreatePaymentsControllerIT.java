@@ -9,6 +9,7 @@ import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.carts.Cart;
@@ -32,7 +33,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.net.URL;
@@ -54,12 +54,12 @@ import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.lang.String.format;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
@@ -69,7 +69,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private MockMvcAsync mockMvcAsync;
 
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
@@ -90,15 +90,19 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
 
     @Test
     public void finalSlashIsProcessedToo() throws Exception {
-        this.mockMvc.perform(get("/asdhfasdfasf/commercetools/create/payments/6753324-23452-sgsfgd/"))
+        final String paymentId = createCartAndPayment(sphereClient);
+
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s/", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andReturn();
     }
 
     @Test
     public void shouldReturnNewPaypalPaymentId() throws Exception {
         final String paymentId = createCartAndPayment(sphereClient);
-        MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
+        MvcResult mvcResult = mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
@@ -146,12 +150,12 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
 
     @Test
     public void whenPaymentIsMissing_shouldReturn4xxError() throws Exception {
-        this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, "nonUUIDString")))
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, "nonUUIDString")))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, UUID.randomUUID().toString())))
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, UUID.randomUUID().toString())))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -159,13 +163,11 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
     @Test
     public void whenCartIsMissing_shouldReturn404() throws Exception {
         Payment payment = executeBlocking(createPaymentCS(sphereClient, Money.of(10, EUR), Locale.ENGLISH));
-        MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andDo(print())
                 .andExpect(status().isNotFound())
+                .andExpect(jsonPath("errorMessage").value(containsString(payment.getId())))
                 .andReturn();
-
-        JsonNode responseBody = SphereJsonUtils.parse(mvcResult.getResponse().getContentAsString());
-        assertThat(responseBody.get("errorMessage").asText()).isNotBlank();
     }
 
     @Test
@@ -181,13 +183,15 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
                                 AddPayment.of(ctpPaymentWithCart.getPayment()))))));
 
         String paymentId = cart.getPaymentInfo().getPayments().get(0).getId();
-        MvcResult mvcResult = this.mockMvc.perform(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
+
+        mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("errorMessage").value(allOf(
+                        containsString(paymentId),
+                        containsString("has incorrect payment interface"),
+                        containsString("NOT-PAYPAL-INTERFACE"))))
                 .andReturn();
-
-        JsonNode responseBody = SphereJsonUtils.parse(mvcResult.getResponse().getContentAsString());
-        assertThat(responseBody.get("errorMessage").asText()).isNotBlank();
     }
 
     private void assertInterfaceInteractions(String paymentId) {

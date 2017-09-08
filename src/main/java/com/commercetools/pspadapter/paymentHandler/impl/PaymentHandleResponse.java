@@ -36,49 +36,57 @@ public class PaymentHandleResponse {
 
     private final String approvalUrl;
 
+    private final String responseBody;
+
     private PaymentHandleResponse(@Nonnull HttpStatus httpStatus, @Nullable String errorCode,
-                                  @Nullable String errorMessage, @Nullable String approvalUrl) {
+                                  @Nullable String errorMessage, @Nullable String approvalUrl,
+                                  @Nullable String responseBody) {
         this.httpStatus = httpStatus;
         this.statusCode = httpStatus.value();
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.approvalUrl = approvalUrl;
+        this.responseBody = responseBody;
     }
 
     public static PaymentHandleResponse ofHttpStatus(HttpStatus httpStatus) {
-        return new PaymentHandleResponse(httpStatus, null, null, null);
+        return new PaymentHandleResponse(httpStatus, null, null, null, null);
     }
 
     public static PaymentHandleResponse ofHttpStatusAndErrorMessage(HttpStatus httpStatus, String errorMessage) {
-        return new PaymentHandleResponse(httpStatus, null, errorMessage, null);
+        return new PaymentHandleResponse(httpStatus, null, errorMessage, null, null);
     }
 
     public static PaymentHandleResponse of201CreatedApprovalUrl(@Nonnull String approvalUrl) {
-        return new PaymentHandleResponse(CREATED, null, null, approvalUrl);
+        return new PaymentHandleResponse(CREATED, null, null, approvalUrl, null);
+    }
+
+    public static PaymentHandleResponse of200OkResponseBody(@Nonnull String responseBody) {
+        return new PaymentHandleResponse(OK, null, null, null, responseBody);
     }
 
     public static PaymentHandleResponse of400BadRequest(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(BAD_REQUEST, null, errorMessage, null);
+        return new PaymentHandleResponse(BAD_REQUEST, null, errorMessage, null, null);
     }
 
     public static PaymentHandleResponse of400BadRequest(@Nonnull String errorCode, @Nonnull String errorMessage) {
-        return new PaymentHandleResponse(BAD_REQUEST, errorCode, errorMessage, null);
+        return new PaymentHandleResponse(BAD_REQUEST, errorCode, errorMessage, null, null);
     }
 
     public static PaymentHandleResponse of404NotFound(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(NOT_FOUND, null, errorMessage, null);
+        return new PaymentHandleResponse(NOT_FOUND, null, errorMessage, null, null);
     }
 
     public static PaymentHandleResponse of404NotFound(@Nonnull String errorCode, @Nonnull String errorMessage) {
-        return new PaymentHandleResponse(NOT_FOUND, errorCode, errorMessage, null);
+        return new PaymentHandleResponse(NOT_FOUND, errorCode, errorMessage, null, null);
     }
 
     public static PaymentHandleResponse of500InternalServerError(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, null, errorMessage, null);
+        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, null, errorMessage, null, null);
     }
 
     public static PaymentHandleResponse of500InternalServerError(@Nonnull String errorCode, @Nonnull String errorMessage) {
-        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, errorCode, errorMessage, null);
+        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, errorCode, errorMessage, null, null);
     }
 
     @JsonIgnore
@@ -99,6 +107,11 @@ public class PaymentHandleResponse {
     @Nullable
     public String getApprovalUrl() {
         return approvalUrl;
+    }
+
+    @Nullable
+    public Object getResponseBody() {
+        return responseBody;
     }
 
     /**

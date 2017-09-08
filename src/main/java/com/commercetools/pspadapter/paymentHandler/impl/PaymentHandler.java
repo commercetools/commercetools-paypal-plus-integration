@@ -211,7 +211,7 @@ public class PaymentHandler {
                 .thenCompose(paymentOpt -> paymentOpt.map(payment -> {
                             List<UpdateAction<io.sphere.sdk.payments.Payment>> updateActions = Collections.singletonList(SetCustomField.ofObject(PAYER_ID, payerId));
                             return ctpFacade.getPaymentService().updatePayment(payment, updateActions);
-                        }).orElse(null)
+                        }).orElse(completedFuture(null))
                 );
     }
 

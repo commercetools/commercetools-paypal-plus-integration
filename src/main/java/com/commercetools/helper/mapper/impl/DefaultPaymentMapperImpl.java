@@ -26,12 +26,12 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 
 @Component
-public class PaymentMapperImpl implements PaymentMapper {
+public class DefaultPaymentMapperImpl implements PaymentMapper {
 
     private final PaypalPlusFormatter paypalPlusFormatter;
 
     @Autowired
-    public PaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter) {
+    public DefaultPaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter) {
         this.paypalPlusFormatter = paypalPlusFormatter;
     }
 

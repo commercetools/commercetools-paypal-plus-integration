@@ -3,7 +3,7 @@ package com.commercetools.config;
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.helper.mapper.PaymentMapper;
-import com.commercetools.helper.mapper.impl.PaymentMapperImpl;
+import com.commercetools.helper.mapper.impl.DefaultPaymentMapperImpl;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -24,7 +24,7 @@ public class ApplicationConfiguration {
     @Bean
     @Autowired
     public PaymentMapper paymentMapper(PaypalPlusFormatter paypalPlusFormatter) {
-        return new PaymentMapperImpl(paypalPlusFormatter);
+        return new DefaultPaymentMapperImpl(paypalPlusFormatter);
     }
 
     /**

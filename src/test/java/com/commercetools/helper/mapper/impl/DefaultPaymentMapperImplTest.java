@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-public class PaymentMapperImplTest {
+public class DefaultPaymentMapperImplTest {
 
     @Autowired
-    private PaymentMapperImpl paymentMapper;
+    private DefaultPaymentMapperImpl paymentMapper;
 
     @Test
     public void ctpPaymentToPaypalPlus_withDiscount() throws Exception {
@@ -116,7 +116,7 @@ public class PaymentMapperImplTest {
     /**
      * Some items with the same SKU may be duplicated, because they have complex discounted price, thus one line item
      * is split to several. See
-     * {@link PaymentMapperImpl#mapLineItemToPaypalPlusItem(LineItem, List)}
+     * {@link DefaultPaymentMapperImpl#mapLineItemToPaypalPlusItem(LineItem, List)}
      */
     private Item getItemBySkuQuantityPrice(ItemList itemList, String sku, String quantity, String price) {
         return itemList.getItems().stream()

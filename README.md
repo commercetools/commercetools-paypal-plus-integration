@@ -51,12 +51,12 @@ In this process, there are 3 parties involved:
         If request was successful both response body and CTP payment object will have `approvalUrl` defined.
     1. Frontend uses returned `approvalUrl` to render available payment methods as described in the Paypal Plus integration documentation.
 
-2. Add user's addresses to Paypal Plus
+1. Add user's addresses to Paypal Plus
     1. Before redirect the user to Paypal, backend POSTs CTP payment ID to Paypal-integration:
         ```
         POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/patch/payments/${ctpPaymentId}
         ```
-    2. NOTICE: frontend developers should refer to the newest version of Paypal Plus Integration documentation to know how to make a request
+    1. NOTICE: frontend developers should refer to the newest version of Paypal Plus Integration documentation to know how to make a request
     before redirect in Javascript. As of August 2017, on submit should call `ppp.doContinue()`. Additionally,
     `ppp` object must be created with the following option:
      ```javascript
@@ -71,7 +71,7 @@ In this process, there are 3 parties involved:
          });
      ```
 
-3. Execute payment after user successfully finished PayPal Plus checkout and was redirected back to the shop through `successUrl`.
+1. Execute payment after user successfully finished PayPal Plus checkout and was redirected back to the shop through `successUrl`.
     PayPal Plus will set 3 request parameters to `successUrl`:
     - `token`
     - `paymentId` - identifies this particular payment. **Required for execute payment.**
@@ -81,12 +81,25 @@ In this process, there are 3 parties involved:
     ```
     http://example.com/checkout/payment/success?paymentId=${paymentId}&token=${token}&PayerID=${payerId} 
     ```
+    1. It is strongly recommend to compare the payment from Paypal to payment from CTP to see if there were any changes during the payment process. Example of how this can happen is described [here](https://github.com/commercetools/commercetools-paypal-plus-integration/issues/62). The possible changes could be:
+        1. User's shipping address has changed
+        1. Cart total amount has changed
+        
+        Backend GET with `paypalPaymentId`:
+        ```
+        GET http://paypal-plus-integration-server.com/${tenantName}/commercetools/look-up/payments/${paypalPaymentId}
+        ```
+        The Paypal Plus payment object will be returned in `responseBody` as JSON like this:
+        ```json
+        {"responseBody":"{\"id\":\"PAY-xxx\",\"intent\":\"sale\",\"cart\":\"1234abcd\", .... }"}
+        ``` 
+    
     1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them in the request body to Paypal-integration for payment execution. Example:
     ```
     POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
     {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
     ```
-    2. In case of **invoice payment**, the bank details for the invoice will be saved as custom fields in the Payment object. Example:
+    1. In case of **invoice payment**, the bank details for the invoice will be saved as custom fields in the Payment object. Example:
     ```json
     {
        "custom": {
@@ -132,5 +145,6 @@ Additionally, response can contain additional response body. All fields of the r
   "approvalUrl": "https://test.de",              # applicable only in case of create payment
   "error": "",                                   # only in case of error and represents a unique error code
   "errorDescription": "Parameter 'x' is missing" # only in case of error
+  "responseBody": "response body"  # only if response is necessary
 }
 ```

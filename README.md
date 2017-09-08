@@ -81,11 +81,11 @@ In this process, there are 3 parties involved:
     ```
     http://example.com/checkout/payment/success?paymentId=${paymentId}&token=${token}&PayerID=${payerId} 
     ```
-    1. It is strongly recommend to compare the payment from Paypal to payment from CTP to see if there were any changes during the payment process. Example of how this can happen is described [here](https://github.com/commercetools/commercetools-paypal-plus-integration/issues/62). The possible changes could be:
+    1. It is strongly recommended to compare the payment from Paypal to payment from CTP to see if there were any changes during the payment process. Example of how this can happen is described [here](https://github.com/commercetools/commercetools-paypal-plus-integration/issues/62). The possible changes could be:
         1. User's shipping address has changed
         1. Cart total amount has changed
         
-        Backend GET with `paypalPaymentId`:
+        Backend GET Paypal payment by `paypalPaymentId`:
         ```
         GET http://paypal-plus-integration-server.com/${tenantName}/commercetools/look-up/payments/${paypalPaymentId}
         ```
@@ -131,6 +131,9 @@ All endpoints accept and return data as JSON.
 
 1. Return HTTP codes on `execute/payments` endpoint URL:
 - **201**: successfully executed payment in PayPal, created transaction in CTP
+
+1. Return HTTP codes on `look-up/payments` endpoint URL:
+- **200**: Paypal payment found and returned as JSON response body
 
 1. Common error codes
 - **404**: resource not found by the supplied UUID/ID

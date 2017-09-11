@@ -17,6 +17,7 @@ import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -34,11 +35,26 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class PaymentSalePendingProcessorTest {
 
+    @Mock
+    Payment ctpMockPayment;
+
+    @Mock
+    Transaction transaction;
+
+    @Mock
+    SphereClient sphereClient;
+
+    @Mock
+    CartService cartService;
+
+    @Mock
+    OrderService orderService;
+
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
         // set up
-        Payment ctpMockPayment = mock(Payment.class);
-        Transaction transaction = mock(Transaction.class);
+        PaymentService paymentService = spy(new PaymentServiceImpl(sphereClient));
+        CtpFacade ctpFacade = spy(new CtpFacade(cartService, orderService, paymentService));
         when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(transaction));
         when(transaction.getType()).thenReturn(TransactionType.CHARGE);
         when(transaction.getState()).thenReturn(TransactionState.SUCCESS);
@@ -47,13 +63,7 @@ public class PaymentSalePendingProcessorTest {
 
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpMockPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());
-        SphereClient sphereClient = mock(SphereClient.class);
 
-        PaymentService paymentService = spy(new PaymentServiceImpl(sphereClient));
-
-        CtpFacade ctpFacade = spy(
-                new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService)
-        );
 
         Event event = new Event();
         event.setEventType(NotificationEventType.PAYMENT_SALE_PENDING.toString());

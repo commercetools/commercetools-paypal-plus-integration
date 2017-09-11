@@ -88,7 +88,7 @@ In this process, there are 3 parties involved:
         
         Backend GET Paypal payment by `paypalPaymentId`:
         ```
-        GET http://paypal-plus-integration-server.com/${tenantName}/commercetools/look-up/payments/${paypalPaymentId}
+        GET http://paypal-plus-integration-server.com/${tenantName}/paypalplus/payments/${paypalPaymentId}
         ```
         The Paypal Plus payment object will be returned in `payment` as JSON like this:
         ```json

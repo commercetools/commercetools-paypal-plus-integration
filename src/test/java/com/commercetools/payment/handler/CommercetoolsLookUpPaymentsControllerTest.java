@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Optional;
 
+import static com.commercetools.payment.constants.Psp.PSP_NAME;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static java.lang.String.format;
@@ -61,7 +62,7 @@ public class CommercetoolsLookUpPaymentsControllerTest extends PaymentIntegratio
 
     @Test
     public void onPaypalPaymentNotFound_shouldReturn404() throws Exception {
-        mockMvcAsync.performAsync(get(format("/%s/commercetools/look-up/payments/%s/", MAIN_TEST_TENANT_NAME, "nonExistingId")))
+        mockMvcAsync.performAsync(get(format("/%s/%s/payments/%s/", MAIN_TEST_TENANT_NAME, PSP_NAME, "nonExistingId")))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8));
@@ -77,7 +78,7 @@ public class CommercetoolsLookUpPaymentsControllerTest extends PaymentIntegratio
         Optional<Payment> paymentOpt = executeBlocking(ctpFacade.getPaymentService().getById(ctpPaymentId));
 
         String paypalPaymentId = paymentOpt.get().getInterfaceId();
-        MvcResult result = mockMvcAsync.performAsync(get(format("/%s/commercetools/look-up/payments/%s/", MAIN_TEST_TENANT_NAME, paypalPaymentId)))
+        MvcResult result = mockMvcAsync.performAsync(get(format("/%s/%s/payments/%s/", MAIN_TEST_TENANT_NAME, PSP_NAME, paypalPaymentId)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
@@ -85,7 +86,7 @@ public class CommercetoolsLookUpPaymentsControllerTest extends PaymentIntegratio
 
         String responseAsString = result.getResponse().getContentAsString();
         JsonNode responseAsJson = SphereJsonUtils.parse(responseAsString);
-        ObjectNode responseBodyAsJson = (ObjectNode) SphereJsonUtils.parse(responseAsJson.path("responseBody").asText());
+        ObjectNode responseBodyAsJson = (ObjectNode) SphereJsonUtils.parse(responseAsJson.path("payment").asText());
 
         assertThat((responseBodyAsJson).size()).isNotEqualTo(0);
         assertThat(responseBodyAsJson.get("id").asText()).isEqualTo(paypalPaymentId);

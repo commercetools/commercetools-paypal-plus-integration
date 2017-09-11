@@ -28,8 +28,8 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
+import static com.commercetools.payment.constants.ctp.CtpPaymentMethods.DEFAULT;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
-import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -120,7 +120,7 @@ public class CtpResourcesUtil extends ResourcesUtil {
 
     public static PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, Locale locale) {
         return PaymentDraftBuilder.of(totalPrice)
-                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(PAYPAL).build())
+                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(DEFAULT).build())
                 .custom(CustomFieldsDraftBuilder.ofTypeKey("payment-paypal")
                         .addObject(SUCCESS_URL_FIELD, "http://example.com/success/23456789")
                         .addObject(CANCEL_URL_FIELD, "http://example.com/cancel/23456789")

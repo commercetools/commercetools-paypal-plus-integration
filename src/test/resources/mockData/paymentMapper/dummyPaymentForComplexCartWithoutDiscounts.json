@@ -6,7 +6,7 @@
   },
   "paymentMethodInfo": {
     "paymentInterface": "PAYPAL_PLUS",
-    "method": "paypal"
+    "method": "default"
   },
   "custom": {
     "type": {

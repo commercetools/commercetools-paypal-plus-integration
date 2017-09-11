@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
 import static com.commercetools.helper.mapper.PaymentMapper.getApprovalUrl;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
-import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
+import static com.commercetools.payment.constants.ctp.CtpPaymentMethods.DEFAULT;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentDraftBuilder;
@@ -173,7 +173,7 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
     @Test
     public void whenPaymentInterfaceIsIncorrect_shouldReturn400() throws Exception {
         PaymentDraftDsl dsl = createPaymentDraftBuilder(Money.of(10, EUR), Locale.ENGLISH)
-                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface("NOT-PAYPAL-INTERFACE").method(PAYPAL).build())
+                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface("NOT-PAYPAL-INTERFACE").method(DEFAULT).build())
                 .build();
 
         Cart cart = executeBlocking(createCartCS(sphereClient)

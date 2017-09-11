@@ -62,6 +62,6 @@ public class CartServiceImpl extends BaseSphereService implements CartService {
                 .plusPredicates(p -> p.interfaceId().is(interfaceId));
         return sphereClient.execute(paymentQuery)
                 .thenApply(PagedResult::head)
-                .thenCompose(optPayment -> getByPaymentId(optPayment.map(Payment::getId).orElse(null), pathContainer));
+                .thenCompose(paymentOpt -> getByPaymentId(paymentOpt.map(Payment::getId).orElse(null), pathContainer));
     }
 }

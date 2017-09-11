@@ -99,13 +99,13 @@ public class PaymentHandler {
             CompletionStage<PaymentHandleResponse> createPaymentCS = ctpFacade.getPaymentService().getById(ctpPaymentId)
                     .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
                             // TODO: re-factor this wasps nest!!!
-                            (optPayment, optCart) -> {
-                                if (!(optPayment.isPresent() && optCart.isPresent())) {
+                            (paymentOpt, cartOpt) -> {
+                                if (!(paymentOpt.isPresent() && cartOpt.isPresent())) {
                                     return completedFuture(of404NotFound(
                                             format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
                                 }
 
-                                io.sphere.sdk.payments.Payment ctpPayment = optPayment.get();
+                                io.sphere.sdk.payments.Payment ctpPayment = paymentOpt.get();
 
                                 // TODO: andrii.kovalenko: this should be a common solution across all the controllers
                                 // https://github.com/commercetools/commercetools-paypal-plus-integration/issues/38
@@ -116,7 +116,7 @@ public class PaymentHandler {
                                                     ctpPayment.getPaymentMethodInfo().getPaymentInterface())));
                                 }
 
-                                return createPaypalPlusPaymentAndUpdateCtpPayment(optPayment.get(), optCart.get())
+                                return createPaypalPlusPaymentAndUpdateCtpPayment(paymentOpt.get(), cartOpt.get())
                                         .thenApply(PaymentMapper::getApprovalUrl)
                                         .thenApply(approvalUrlOpt -> approvalUrlOpt
                                                 .map(PaymentHandleResponse::of201CreatedApprovalUrl)

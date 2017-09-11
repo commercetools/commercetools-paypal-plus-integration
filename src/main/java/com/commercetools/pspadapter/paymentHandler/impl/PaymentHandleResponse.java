@@ -28,8 +28,6 @@ public class PaymentHandleResponse {
 
     private final HttpStatus httpStatus;
 
-    private final int statusCode;
-
     private final String errorCode;
 
     private final String errorMessage;
@@ -42,7 +40,6 @@ public class PaymentHandleResponse {
                                   @Nullable String errorMessage, @Nullable String approvalUrl,
                                   @Nullable String responseBody) {
         this.httpStatus = httpStatus;
-        this.statusCode = httpStatus.value();
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.approvalUrl = approvalUrl;
@@ -89,9 +86,14 @@ public class PaymentHandleResponse {
         return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, errorCode, errorMessage, null, null);
     }
 
+    /**
+     * Used mostly for tests.
+     *
+     * @return integer value of {@link #httpStatus}
+     */
     @JsonIgnore
     public int getStatusCode() {
-        return statusCode;
+        return httpStatus.value();
     }
 
     @Nullable

@@ -9,7 +9,7 @@
       "total": "0.48",
       "currency": "USD"
     },
-    "id": "80021663DE681814L",
+    "id": "replaceResourceId",
     "parent_payment": "PAY-xxxxxx",
     "update_time": "2014-10-23T17:23:04Z",
     "clearing_time": "2014-10-30T07:00:00Z",

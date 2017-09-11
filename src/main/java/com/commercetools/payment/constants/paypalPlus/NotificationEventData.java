@@ -5,6 +5,8 @@ package com.commercetools.payment.constants.paypalPlus;
  */
 public final class NotificationEventData {
 
+    public static final String ID = "id";
+
     public static final String AMOUNT = "amount";
 
     public static final String TOTAL = "total";

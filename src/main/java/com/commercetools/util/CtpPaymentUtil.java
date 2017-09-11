@@ -1,23 +1,20 @@
 package com.commercetools.util;
 
 import io.sphere.sdk.payments.Transaction;
-import io.sphere.sdk.payments.TransactionState;
-import io.sphere.sdk.payments.TransactionType;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class CtpPaymentUtil {
 
-    public static Optional<Transaction> findTransactionByTypeAndState(@Nonnull Collection<Transaction> transactions,
-                                                                      @Nonnull TransactionType transactionType,
-                                                                      @Nonnull TransactionState transactionState) {
+    public static Optional<Transaction> findTransactionByInteractionId(@Nonnull Collection<Transaction> transactions,
+                                                                       @Nonnull String interactionId) {
         return transactions
                 .stream()
-                .filter(transaction -> transaction.getType().equals(transactionType))
-                .filter(transaction -> transaction.getState().equals(transactionState))
-                .findAny();
+                .filter(transaction -> Objects.equals(transaction.getInteractionId(), interactionId))
+                .findFirst();
     }
 
     private CtpPaymentUtil() {

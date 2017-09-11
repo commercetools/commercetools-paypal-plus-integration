@@ -6,6 +6,7 @@ import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
 import com.commercetools.service.ctp.PaymentService;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
@@ -19,9 +20,11 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static com.commercetools.payment.constants.paypalPlus.NotificationEventData.ID;
 import static com.commercetools.payment.constants.paypalPlus.NotificationEventType.PAYMENT_SALE_COMPLETED;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,44 +46,47 @@ public class PaymentSaleCompletedProcessorTest {
     }
 
     @Test
-    public void whenTxnIsPending_shouldReturnChangeStateAction() {
-        Transaction transaction = mock(Transaction.class);
-        when(transaction.getType()).thenReturn(TransactionType.CHARGE);
-        when(transaction.getState()).thenReturn(TransactionState.PENDING);
-        when(transaction.getId()).thenReturn("testId");
+    public void whenTxnIsChargePending_shouldReturnChangeStateAction() {
+        String testInteractionId = "testInteractionId";
 
-        Payment ctpPayment = mock(Payment.class);
-        when(ctpPayment.getTransactions())
-                .thenReturn(Collections.singletonList(transaction));
+        Payment ctpPayment = mockCtpPayment(testInteractionId, TransactionState.PENDING);
+
+        Map<String, String> resourceMap = ImmutableMap.of(ID, testInteractionId);
+
+        Event mockEvent = mock(Event.class);
+        when(mockEvent.getResource()).thenReturn(resourceMap);
 
         PaymentSaleCompletedProcessor processor
                 = new PaymentSaleCompletedProcessor(gson);
 
-        assertThat(processor.createUpdateCtpTransactionActions(ctpPayment, mock(Event.class))).isNotEmpty();
+        assertThat(processor.createUpdatePaymentActions(ctpPayment, mockEvent)).isNotEmpty();
     }
 
     @Test
-    public void whenTxnIsCharge_shouldReturnNullChangeStateAction() {
-        Transaction transaction = mock(Transaction.class);
-        when(transaction.getType()).thenReturn(TransactionType.CHARGE);
-        when(transaction.getState()).thenReturn(TransactionState.SUCCESS);
-        when(transaction.getId()).thenReturn("testId");
+    public void whenTxnIsChargeSuccess_shouldReturnNullChangeStateAction() {
+        String testInteractionId = "testInteractionId";
 
-        Payment ctpPayment = mock(Payment.class);
-        when(ctpPayment.getTransactions())
-                .thenReturn(Collections.singletonList(transaction));
+        Payment ctpPayment = mockCtpPayment(testInteractionId, TransactionState.SUCCESS);
+
+        Map<String, String> resourceMap = ImmutableMap.of(ID, testInteractionId);
+
+        Event mockEvent = mock(Event.class);
+        when(mockEvent.getResource()).thenReturn(resourceMap);
 
         PaymentSaleCompletedProcessor processor
                 = new PaymentSaleCompletedProcessor(gson);
 
-        assertThat(processor.createUpdateCtpTransactionActions(ctpPayment, mock(Event.class))).isEmpty();
+        assertThat(processor.createUpdatePaymentActions(ctpPayment, mockEvent)).isEmpty();
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void shouldCallUpdatePayment() {
         // set up
-        Payment ctpPayment = mock(Payment.class);
+        String testInteractionId = "testInteractionId";
+
+        Payment ctpPayment = mockCtpPayment(testInteractionId, TransactionState.PENDING);
+
         NotificationProcessorBase processorBase = spy(new PaymentSaleCompletedProcessor(gson));
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());
@@ -95,8 +101,11 @@ public class PaymentSaleCompletedProcessorTest {
                 new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService)
         );
 
+        Map<String, String> resourceMap = ImmutableMap.of(ID, testInteractionId);
+
         Event event = new Event();
         event.setEventType(NotificationEventType.PAYMENT_SALE_COMPLETED.toString());
+        event.setResource(resourceMap);
 
         // test
         Payment returnedPayment = executeBlocking(processorBase.processEventNotification(ctpFacade, event));
@@ -105,5 +114,18 @@ public class PaymentSaleCompletedProcessorTest {
         assertThat(returnedPayment).isEqualTo(ctpPayment);
         verify(paymentService, times(1))
                 .updatePayment(any(Payment.class), anyList());
+    }
+
+    private Payment mockCtpPayment(String testInteractionId, TransactionState transactionState) {
+        Transaction transaction = mock(Transaction.class);
+        when(transaction.getType()).thenReturn(TransactionType.CHARGE);
+        when(transaction.getState()).thenReturn(transactionState);
+        when(transaction.getId()).thenReturn("testId");
+        when(transaction.getInteractionId()).thenReturn(testInteractionId);
+
+        Payment ctpPayment = mock(Payment.class);
+        when(ctpPayment.getTransactions())
+                .thenReturn(Collections.singletonList(transaction));
+        return ctpPayment;
     }
 }

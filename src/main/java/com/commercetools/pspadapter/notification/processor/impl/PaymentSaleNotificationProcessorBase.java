@@ -3,24 +3,36 @@ package com.commercetools.pspadapter.notification.processor.impl;
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.google.gson.Gson;
 import com.paypal.api.payments.Event;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.payments.Payment;
+import io.sphere.sdk.payments.Transaction;
 import io.sphere.sdk.payments.TransactionDraft;
 import io.sphere.sdk.payments.TransactionDraftBuilder;
 import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
+import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.javamoney.moneta.Money;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static com.commercetools.payment.constants.paypalPlus.NotificationEventData.*;
+import static com.commercetools.util.CtpPaymentUtil.findTransactionByInteractionId;
 import static com.commercetools.util.TimeUtil.toZonedDateTime;
 
 /**
  * Base class for all Payment Sale notification processors
  */
 public abstract class PaymentSaleNotificationProcessorBase extends NotificationProcessorBase {
+
+    private final static Logger logger = LoggerFactory.getLogger(PaymentSaleNotificationProcessorBase.class);
 
     PaymentSaleNotificationProcessorBase(Gson gson) {
         super(gson);
@@ -35,6 +47,31 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
                 .equalsIgnoreCase(event.getEventType());
     }
 
+    protected List<? extends UpdateAction<Payment>> createUpdatePaymentActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
+        String resourceId = getResourceId(event);
+        return findTransactionByInteractionId(ctpPayment.getTransactions(), resourceId)
+                .map(txn -> {
+                    if (txn.getType().equals(getExpectedTransactionType())) {
+                        logger.error("Found txn paymentId=[{}] with corresponding resourceId={},"
+                                        + " but transactionType=[{}] is not expectedTransactionType=[{}]."
+                                        + " Will create new transaction for the eventId=[{}]",
+                                ctpPayment.getId(), resourceId, getExpectedTransactionType(), event.getId());
+                        return Collections.singletonList(createAddTransactionAction(event, getExpectedTransactionType()));
+                    } else if (isTxnAlreadyUpdated(txn)) {
+                        // can't do Collections.emptyList() here because map() and generics
+                        // together generates unexpected return results
+                        return new ArrayList<UpdateAction<Payment>>(0);
+                    } else {
+                        return Collections.singletonList((UpdateAction<Payment>) ChangeTransactionState.of(getExpectedTransactionState(), txn.getId()));
+                    }
+                })
+                .orElseGet(() -> Collections.singletonList(createAddTransactionAction(event, getExpectedTransactionType())));
+    }
+
+    abstract protected TransactionType getExpectedTransactionType();
+
+    abstract protected TransactionState getExpectedTransactionState();
+
     protected AddTransaction createAddTransactionAction(@Nonnull Event event,
                                                         @Nonnull TransactionType transactionType) {
         Map resource = (Map) event.getResource();
@@ -46,8 +83,17 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
         TransactionDraft transactionDraft = TransactionDraftBuilder
                 .of(transactionType, Money.of(total, currencyCode))
                 .timestamp(toZonedDateTime(createTime))
-                .state(TransactionState.SUCCESS)
+                .state(getExpectedTransactionState())
                 .build();
         return AddTransaction.of(transactionDraft);
+    }
+
+    protected String getResourceId(@Nonnull Event event) {
+        Map resource = (Map) event.getResource();
+        return (String) resource.get(ID);
+    }
+
+    private boolean isTxnAlreadyUpdated(Transaction txn) {
+        return txn.getType().equals(getExpectedTransactionType()) && txn.getState().equals(getExpectedTransactionState());
     }
 }

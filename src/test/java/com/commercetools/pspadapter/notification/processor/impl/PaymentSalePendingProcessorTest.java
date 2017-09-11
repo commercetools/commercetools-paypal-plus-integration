@@ -5,6 +5,7 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
 import io.sphere.sdk.client.SphereClient;
@@ -24,9 +25,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static com.commercetools.payment.constants.paypalPlus.NotificationEventData.*;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -36,6 +39,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class PaymentSalePendingProcessorTest {
 
+    private static final String TEST_INTERACTION_ID = "testInteractionId";
     @Mock
     private Payment ctpMockPayment;
 
@@ -61,8 +65,17 @@ public class PaymentSalePendingProcessorTest {
 
     @Before
     public void setUp() {
+        Map<String, Object> resourceMap = ImmutableMap.of(
+                ID, TEST_INTERACTION_ID,
+                AMOUNT, ImmutableMap.of(TOTAL, "1", CURRENCY, "USD"),
+                CREATE_TIME, "2014-10-31T15:41:51Z"
+        );
         this.event = new Event();
         this.event.setEventType(NotificationEventType.PAYMENT_SALE_PENDING.toString());
+        this.event.setResource(resourceMap);
+
+        when(transaction.getInteractionId()).thenReturn(TEST_INTERACTION_ID);
+
         this.paymentService = spy(new PaymentServiceImpl(sphereClient));
         this.ctpFacade = spy(new CtpFacade(cartService, orderService, paymentService));
         when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(transaction));
@@ -84,24 +97,20 @@ public class PaymentSalePendingProcessorTest {
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 
-        Payment returnedPayment = executeBlocking(processorBase.processEventNotification(ctpFacade, event));
-
-        // assert
-        assertThat(returnedPayment).isEqualTo(ctpMockPayment);
-        verify(paymentService, times(1))
-                .updatePayment(any(Payment.class), anyList());
+        executeBlocking(processorBase.processEventNotification(ctpFacade, event));
     }
 
     @Test
-    public void whenTransactionIsNotFound_shouldOnlyAddInterfaceInteraction() {
+    public void whenTransactionIsNotFound_shouldAddNewTransaction() {
         // set up
+        when(transaction.getInteractionId()).thenReturn("someRandomInteractionId");
         when(transaction.getType()).thenReturn(TransactionType.REFUND);
         when(transaction.getState()).thenReturn(TransactionState.SUCCESS);
 
         // test
         doAnswer(invocation -> {
             List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
-            assertThat(updateActions.size()).isEqualTo(1);
+            assertThat(updateActions.size()).isEqualTo(2);
             UpdateAction<Payment> actual = updateActions.get(0);
             assertThat(actual).isInstanceOf(AddInterfaceInteraction.class);
             return CompletableFuture.completedFuture(ctpMockPayment);

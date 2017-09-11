@@ -28,13 +28,11 @@ public class AddressMapperImpl implements AddressMapper {
 
     @Override
     public PayerInfo ctpAddressToPaypalPlusPayerInfo(@Nonnull Address ctpAddress) {
-        PayerInfo payerInfo = new PayerInfo();
-        payerInfo.setFirstName(ctpAddress.getFirstName());
-        payerInfo.setLastName(ctpAddress.getLastName());
-        com.paypal.api.payments.Address billingAddress
-                = ctpAddressToPaypalPlusBillingAddress(ctpAddress);
-        payerInfo.setBillingAddress(billingAddress);
-        return payerInfo;
+        return new PayerInfo()
+                .setFirstName(ctpAddress.getFirstName())
+                .setLastName(ctpAddress.getLastName())
+                .setEmail(ctpAddress.getEmail())
+                .setBillingAddress(ctpAddressToPaypalPlusBillingAddress(ctpAddress));
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.constants.ctp.CtpPaymentMethods;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
@@ -68,7 +69,6 @@ public class PaymentHandler {
     private final CtpFacade ctpFacade;
     private final PaypalPlusFacade paypalPlusFacade;
     private final PaymentMapperHelper paymentMapperHelper;
-    private final AddressMapper addressMapper;
     private final Gson gson;
 
     private final Logger logger;
@@ -79,13 +79,11 @@ public class PaymentHandler {
 
     public PaymentHandler(@Nonnull CtpFacade ctpFacade,
                           @Nonnull PaymentMapperHelper paymentMapperHelper,
-                          @Nonnull AddressMapper addressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName,
                           @Nonnull Gson gson) {
         this.ctpFacade = ctpFacade;
         this.paymentMapperHelper = paymentMapperHelper;
-        this.addressMapper = addressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
         this.gson = gson;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
@@ -144,6 +142,17 @@ public class PaymentHandler {
                 .thenCompose(i -> i); // flatten CompletionStage from patchAddress()
     }
 
+    /**
+     * Patch address in default (non-installment) payment. This step should be is committed by front-end after success
+     * redirect before {@link #executePayment(String, String)}</b>
+     * <p>
+     * <b>Note:</b> this step is used only for {@link CtpPaymentMethods#DEFAULT} payment methods, that's why we use
+     * {@code paymentMapperHelper.getDefaultPaymentMapper()} for address mapper defining.
+     *
+     * @param cartWithPaymentsExpansion cart from which patch the payment address
+     * @param paypalPlusPaymentId       id of respective Paypal Plus payment to patch
+     * @return Completion stage with success or error response.
+     */
     public CompletionStage<PaymentHandleResponse> patchAddress(@Nonnull Cart cartWithPaymentsExpansion,
                                                                @Nonnull String paypalPlusPaymentId) {
         try {
@@ -156,6 +165,9 @@ public class PaymentHandler {
                 if (shippingAddress == null) {
                     return completedFuture(PaymentHandleResponse.of400BadRequest(format("Shipping address must not be null for cartId=[%s]", cartWithPaymentsExpansion.getId())));
                 }
+
+                // since patch is processed only for default payments - get default payment mapper
+                final AddressMapper addressMapper = paymentMapperHelper.getDefaultPaymentMapper().getAddressMapper();
 
                 Patch patchShippingAddress = new Patch(ADD_ACTION, SHIPPING_ADDRESS_PATH).setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
                 patches.add(patchShippingAddress);

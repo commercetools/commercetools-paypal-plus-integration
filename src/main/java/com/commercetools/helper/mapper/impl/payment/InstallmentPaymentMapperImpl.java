@@ -1,11 +1,11 @@
 package com.commercetools.helper.mapper.impl.payment;
 
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsMapping;
 import com.paypal.api.payments.PayerInfo;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsMapping.INSTALLMENT;
+import static java.util.Optional.ofNullable;
 
 /**
  * Payment mapper for {@link CtpToPaypalPlusPaymentMethodsMapping#INSTALLMENT} payment types.
@@ -24,22 +25,25 @@ import static com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsM
 @Component
 public class InstallmentPaymentMapperImpl extends BasePaymentMapperImpl implements PaymentMapper {
 
+    public static final String CREDIT = "Credit";
+
     @Autowired
-    public InstallmentPaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter) {
-        super(paypalPlusFormatter, INSTALLMENT);
+    public InstallmentPaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter,
+                                        @Nonnull AddressMapper addressMapper) {
+        super(paypalPlusFormatter, INSTALLMENT, addressMapper);
     }
 
     @Override
     @Nullable
     protected String getExternalSelectedFundingInstrumentType(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        throw new NotImplementedException("Implement first");
+        return CREDIT;
     }
 
     @Override
     @Nullable
     protected PayerInfo getPayerInfo(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        // TODO: finalize address
-        //return new PayerInfo();
-        throw new NotImplementedException("Implement first");
+        return ofNullable(paymentWithCartLike.getCart().getBillingAddress())
+                .map(addressMapper::ctpAddressToPaypalPlusPayerInfo)
+                .orElse(null);
     }
 }

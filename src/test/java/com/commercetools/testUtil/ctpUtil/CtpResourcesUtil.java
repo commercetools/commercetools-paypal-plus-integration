@@ -72,8 +72,22 @@ public class CtpResourcesUtil extends ResourcesUtil {
         return getCartFromResource(resolveMockDataResource("paymentMapper/dummyComplexCartWithDiscounts.json"));
     }
 
+    /**
+     * @return Cart with discounts different shipping and billing addresses.
+     */
+    public static Cart getDummyComplexCartWithDiscountsShippingBillingAddress() {
+        return getCartFromResource(resolveMockDataResource("paymentMapper/dummyComplexCartWithDiscountsShippingBillingAddress.json"));
+    }
+
     public static Cart getDummyComplexCartWithoutDiscounts() {
         return getCartFromResource(resolveMockDataResource("paymentMapper/dummyComplexCartWithoutDiscounts.json"));
+    }
+
+    /**
+     * @return Cart without discounts and with different shipping and billing addresses.
+     */
+    public static Cart getDummyComplexCartWithoutDiscountsShippingBillingAddress() {
+        return getCartFromResource(resolveMockDataResource("paymentMapper/dummyComplexCartWithoutDiscountsShippingBillingAddress.json"));
     }
 
     public static CartDraft getDummyComplexCartDraftWithDiscounts() {
@@ -138,8 +152,8 @@ public class CtpResourcesUtil extends ResourcesUtil {
     }
 
     public static CompletionStage<Payment> createPaymentCS(@Nonnull MonetaryAmount totalPrice,
-                                                     Locale locale,
-                                                     SphereClient sphereClient) {
+                                                           Locale locale,
+                                                           SphereClient sphereClient) {
         PaymentDraftDsl dsl = createPaymentDraftBuilder(totalPrice, locale)
                 .build();
         return sphereClient.execute(PaymentCreateCommand.of(dsl));

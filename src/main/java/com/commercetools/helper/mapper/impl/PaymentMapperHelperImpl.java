@@ -45,6 +45,11 @@ public class PaymentMapperHelperImpl implements PaymentMapperHelper {
     @Override
     public PaymentMapper getPaymentMapperOrDefault(@Nullable String ctpPaymentMethod) {
         return getPaymentMapper(ctpPaymentMethod)
-                .orElse(defaultPaymentMapper);
+                .orElseGet(this::getDefaultPaymentMapper);
+    }
+
+    @Override
+    public PaymentMapper getDefaultPaymentMapper() {
+        return defaultPaymentMapper;
     }
 }

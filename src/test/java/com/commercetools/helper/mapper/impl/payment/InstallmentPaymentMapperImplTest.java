@@ -9,23 +9,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import static com.commercetools.helper.mapper.impl.payment.InstallmentPaymentMapperImpl.CREDIT;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getPaymentWithCart_complexAndDiscount;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getPaymentWithCart_complexWithoutDiscount;
+import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.*;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
+public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {
 
     @Autowired
-    private DefaultPaymentMapperImpl paymentMapper;
+    private InstallmentPaymentMapperImpl paymentMapper;
 
     @Test
     public void ctpPaymentToPaypalPlus_withDiscount() throws Exception {
-        CtpPaymentWithCart paymentWithCart = getPaymentWithCart_complexAndDiscount();
+        CtpPaymentWithCart paymentWithCart = new CtpPaymentWithCart(getDummyPaymentForComplexCartWithDiscounts(),
+                getDummyComplexCartWithDiscountsShippingBillingAddress());
         Payment ppPayment = paymentMapper.ctpPaymentToPaypalPlus(paymentWithCart);
 
         assertThat(ppPayment).isNotNull();
@@ -34,12 +35,25 @@ public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
 
         assertThat(ppPayment.getPayer()).isNotNull();
         assertThat(ppPayment.getPayer().getPaymentMethod()).isEqualTo(PAYPAL);
+
         assertThat(ppPayment.getPayer().getExternalSelectedFundingInstrumentType())
-                .withFailMessage(format("ExternalSelectedFundingInstrumentType must be empty for default Paypal payment, but [%s] found", ppPayment.getPayer().getExternalSelectedFundingInstrumentType()))
-                .isNullOrEmpty();
-        assertThat(ppPayment.getPayer().getPayerInfo())
-                .withFailMessage(format("PayerInfo must be empty for default Paypal payment, but [%s] found", ppPayment.getPayer().getPayerInfo()))
-                .isNull();
+                .withFailMessage(format("ExternalSelectedFundingInstrumentType must be [%s] for installment payment, but [%s] found", CREDIT, ppPayment.getPayer().getExternalSelectedFundingInstrumentType()))
+                .isEqualTo(CREDIT);
+
+        PayerInfo payerInfo = ppPayment.getPayer().getPayerInfo();
+        assertThat(payerInfo)
+                .withFailMessage("PayerInfo must be non-nul for installment Paypal payment, but [null] found")
+                .isNotNull();
+
+        // the address data should be from billing address
+        assertThat(payerInfo.getFirstName()).isEqualTo("Maxi");
+        assertThat(payerInfo.getLastName()).isEqualTo("Mustermanny");
+        assertThat(payerInfo.getEmail()).isEqualTo("maxi.mustermanny@hotmail.com");
+        Address billingAddress = payerInfo.getBillingAddress();
+        assertThat(billingAddress.getLine1()).isEqualTo("Heystrasse 666");
+        assertThat(billingAddress.getCity()).isEqualTo("Cologne");
+        assertThat(billingAddress.getPostalCode()).isEqualTo("11223344");
+        assertThat(billingAddress.getCountryCode()).isEqualTo("DE");
 
         assertThat(ppPayment.getState()).isNull();
 
@@ -73,7 +87,9 @@ public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
 
     @Test
     public void ctpPaymentToPaypalPlus_withoutDiscount() throws Exception {
-        CtpPaymentWithCart paymentWithCart = getPaymentWithCart_complexWithoutDiscount();
+        CtpPaymentWithCart paymentWithCart = new CtpPaymentWithCart(getDummyPaymentForComplexCartWithoutDiscounts(),
+                getDummyComplexCartWithoutDiscountsShippingBillingAddress());
+
         Payment ppPayment = paymentMapper.ctpPaymentToPaypalPlus(paymentWithCart);
 
         assertThat(ppPayment).isNotNull();
@@ -82,12 +98,26 @@ public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
 
         assertThat(ppPayment.getPayer()).isNotNull();
         assertThat(ppPayment.getPayer().getPaymentMethod()).isEqualTo(PAYPAL);
+
+
         assertThat(ppPayment.getPayer().getExternalSelectedFundingInstrumentType())
-                .withFailMessage(format("ExternalSelectedFundingInstrumentType must be empty for default Paypal payment, but [%s] found", ppPayment.getPayer().getExternalSelectedFundingInstrumentType()))
-                .isNullOrEmpty();
-        assertThat(ppPayment.getPayer().getPayerInfo())
-                .withFailMessage(format("PayerInfo must be empty for default Paypal payment, but [%s] found", ppPayment.getPayer().getPayerInfo()))
-                .isNull();
+                .withFailMessage(format("ExternalSelectedFundingInstrumentType must be [%s] for installment payment, but [%s] found", CREDIT, ppPayment.getPayer().getExternalSelectedFundingInstrumentType()))
+                .isEqualTo(CREDIT);
+
+        PayerInfo payerInfo = ppPayment.getPayer().getPayerInfo();
+        assertThat(payerInfo)
+                .withFailMessage("PayerInfo must be non-nul for installment Paypal payment, but [null] found")
+                .isNotNull();
+
+        // the address data should be from billing address
+        assertThat(payerInfo.getFirstName()).isEqualTo("Inga");
+        assertThat(payerInfo.getLastName()).isEqualTo("Petrenko");
+        assertThat(payerInfo.getEmail()).isEqualTo("inga.petrenko@ukr.net");
+        Address billingAddress = payerInfo.getBillingAddress();
+        assertThat(billingAddress.getLine1()).isEqualTo("Gungnabstypestr 256");
+        assertThat(billingAddress.getCity()).isEqualTo("Okhtyrka");
+        assertThat(billingAddress.getPostalCode()).isEqualTo("987654");
+        assertThat(billingAddress.getCountryCode()).isEqualTo("DE");
 
         assertThat(ppPayment.getState()).isNull();
 

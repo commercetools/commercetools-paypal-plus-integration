@@ -40,6 +40,12 @@ public interface PaymentMapper {
     CtpToPaypalPlusPaymentMethodsMapping getCtpToPpPaymentMethodsMapping();
 
     /**
+     * @return {@link AddressMapper} implementation associated with this payment mapper.
+     */
+    @Nonnull
+    AddressMapper getAddressMapper();
+
+    /**
      * TODO: not tested ;(
      * TODO: likely should be somewhere in the utils...
      *

@@ -1,6 +1,7 @@
 package com.commercetools.helper.mapper.impl.payment;
 
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsMapping;
@@ -29,13 +30,16 @@ import static java.util.stream.Stream.concat;
  */
 public abstract class BasePaymentMapperImpl implements PaymentMapper {
 
-    private final PaypalPlusFormatter paypalPlusFormatter;
-    private final CtpToPaypalPlusPaymentMethodsMapping ctpToPpPaymentMethodsMapping;
+    protected final PaypalPlusFormatter paypalPlusFormatter;
+    protected final CtpToPaypalPlusPaymentMethodsMapping ctpToPpPaymentMethodsMapping;
+    protected final AddressMapper addressMapper;
 
     public BasePaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter,
-                                 @Nonnull CtpToPaypalPlusPaymentMethodsMapping ctpToPpPaymentMethodsMapping) {
+                                 @Nonnull CtpToPaypalPlusPaymentMethodsMapping ctpToPpPaymentMethodsMapping,
+                                 @Nonnull AddressMapper addressMapper) {
         this.paypalPlusFormatter = paypalPlusFormatter;
         this.ctpToPpPaymentMethodsMapping = ctpToPpPaymentMethodsMapping;
+        this.addressMapper = addressMapper;
     }
 
     @Override
@@ -54,6 +58,12 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
     @Nonnull
     public CtpToPaypalPlusPaymentMethodsMapping getCtpToPpPaymentMethodsMapping() {
         return ctpToPpPaymentMethodsMapping;
+    }
+
+    @Nonnull
+    @Override
+    public AddressMapper getAddressMapper() {
+        return addressMapper;
     }
 
     @Nonnull

@@ -1,6 +1,7 @@
 package com.commercetools.helper.mapper.impl.payment;
 
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,8 @@ import static com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsM
 public class DefaultPaymentMapperImpl extends BasePaymentMapperImpl implements PaymentMapper {
 
     @Autowired
-    public DefaultPaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter) {
-        super(paypalPlusFormatter, DEFAULT);
+    public DefaultPaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter,
+                                    @Nonnull AddressMapper addressMapper) {
+        super(paypalPlusFormatter, DEFAULT, addressMapper);
     }
 }

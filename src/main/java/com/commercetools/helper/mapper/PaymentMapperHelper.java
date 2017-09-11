@@ -24,4 +24,10 @@ public interface PaymentMapperHelper {
      */
     @Nonnull
     PaymentMapper getPaymentMapperOrDefault(@Nullable String ctpPaymentMethod);
+
+    /**
+     * @return Payment mapper which is used for default payments.
+     */
+    @Nonnull
+    PaymentMapper getDefaultPaymentMapper();
 }

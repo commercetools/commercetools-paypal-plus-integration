@@ -233,15 +233,15 @@
   "country": "DE",
   "shippingAddress": {
     "title": "Mr.",
-    "firstName": "Max",
-    "lastName": "Mustermann",
-    "streetName": "Kurfürstendamm 100",
+    "firstName": "Nick",
+    "lastName": "Dick",
+    "streetName": "Pick 009",
     "additionalStreetInfo": "",
-    "postalCode": "10709",
-    "city": "Berlin",
+    "postalCode": "XX5599",
+    "city": "Kick",
     "country": "DE",
-    "phone": "+491234567890",
-    "email": "max.mustermann@gmail.com"
+    "phone": "+4900998877889900",
+    "email": "nick.dick@pick.kick"
   },
   "billingAddress": {
     "title": "Ms.",

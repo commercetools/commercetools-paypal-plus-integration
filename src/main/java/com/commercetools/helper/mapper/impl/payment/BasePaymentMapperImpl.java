@@ -124,7 +124,8 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
     @Nonnull
     protected ItemList getTransactionItemList(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         return new ItemList()
-                .setItems(getLineItems(paymentWithCartLike));
+                .setItems(getLineItems(paymentWithCartLike))
+                .setShippingAddress(getItemListShippingAddress(paymentWithCartLike));
     }
 
     /**
@@ -240,5 +241,10 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
                 String.valueOf(quantity),
                 paypalPlusFormatter.monetaryAmountToString(price),
                 price.getCurrency().getCurrencyCode());
+    }
+
+    @Nullable
+    protected ShippingAddress getItemListShippingAddress(@Nonnull CtpPaymentWithCart ctpPaymentWithCart) {
+        return null;
     }
 }

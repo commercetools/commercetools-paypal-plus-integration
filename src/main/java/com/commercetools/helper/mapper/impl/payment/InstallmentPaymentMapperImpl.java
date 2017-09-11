@@ -6,6 +6,7 @@ import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsMapping;
 import com.paypal.api.payments.PayerInfo;
+import com.paypal.api.payments.ShippingAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +45,14 @@ public class InstallmentPaymentMapperImpl extends BasePaymentMapperImpl implemen
     protected PayerInfo getPayerInfo(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         return ofNullable(paymentWithCartLike.getCart().getBillingAddress())
                 .map(addressMapper::ctpAddressToPaypalPlusPayerInfo)
+                .orElse(null);
+    }
+
+    @Nullable
+    @Override
+    protected ShippingAddress getItemListShippingAddress(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
+        return ofNullable(paymentWithCartLike.getCart().getShippingAddress())
+                .map(addressMapper::ctpAddressToPaypalPlusShippingAddress)
                 .orElse(null);
     }
 }

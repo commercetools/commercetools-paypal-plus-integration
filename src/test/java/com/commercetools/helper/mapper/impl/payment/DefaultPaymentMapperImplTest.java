@@ -60,8 +60,11 @@ public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
 
         ItemList itemList = transaction.getItemList();
         assertThat(itemList).isNotNull();
-        assertThat(itemList.getItems().size()).isEqualTo(5);
+        assertThat(itemList.getShippingAddress())
+                .withFailMessage(format("Shipping address for default Paypal payment must be empty, but [%s] found", itemList.getShippingAddress()))
+                .isNull();
 
+        assertThat(itemList.getItems().size()).isEqualTo(5);
         assertItem(getItemBySkuQuantityPrice(itemList, "123454323454667", "1", "115.24"), "Halskette", "1", "115.24", "USD");
         assertItem(getItemBySkuQuantityPrice(itemList, "123454323454667", "3", "115.24"), "Halskette", "3", "115.24", "USD");
         assertItem(getItemBySku(itemList, "2345234523"), "Kasten", "1", "0.00", "USD");
@@ -107,6 +110,11 @@ public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
 
         ItemList itemList = transaction.getItemList();
         assertThat(itemList).isNotNull();
+
+        assertThat(itemList.getShippingAddress())
+                .withFailMessage(format("Shipping address for default Paypal payment must be empty, but [%s] found", itemList.getShippingAddress()))
+                .isNull();
+
         assertThat(itemList.getItems().size()).isEqualTo(3);
         assertItem(getItemBySku(itemList, "123456"), "Necklace Swarovski", "1", "129.00", "EUR");
         assertItem(getItemBySku(itemList, "776655"), "Every piece", "1", "0.00", "EUR");

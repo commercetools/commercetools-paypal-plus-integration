@@ -6,7 +6,6 @@ import com.commercetools.pspadapter.notification.validation.NotificationValidati
 import com.commercetools.pspadapter.notification.webhook.WebhookContainer;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

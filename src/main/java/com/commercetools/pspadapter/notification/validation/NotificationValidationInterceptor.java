@@ -1,11 +1,9 @@
 package com.commercetools.pspadapter.notification.validation;
 
-import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.notification.webhook.WebhookContainer;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
-import com.google.common.annotations.VisibleForTesting;
 import com.paypal.api.payments.Webhook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

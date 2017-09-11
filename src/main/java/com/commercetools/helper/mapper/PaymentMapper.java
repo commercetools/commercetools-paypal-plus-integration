@@ -1,8 +1,10 @@
 package com.commercetools.helper.mapper;
 
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsMapping;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
+import io.sphere.sdk.payments.PaymentMethodInfo;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,6 +25,19 @@ public interface PaymentMapper {
      */
     @Nonnull
     Payment ctpPaymentToPaypalPlus(@Nonnull CtpPaymentWithCart ctpPaymentWithCart);
+
+    /**
+     * Get enum which maps from commercetools payment method names
+     * (Payment#{@link io.sphere.sdk.payments.Payment#getPaymentMethodInfo() getPaymentMethodInfo}#{@link PaymentMethodInfo#getMethod() getMethod()})
+     * to respective Paypal Plus payment method names.
+     * <p>
+     * If the mapping explicitly is not defined - some default mapping is expected.
+     *
+     * @return {@link CtpToPaypalPlusPaymentMethodsMapping} instance to map CTP payment name to Paypal Plus one.
+     * If mapping is not defined explicitly - default mapping is expected.
+     */
+    @Nonnull
+    CtpToPaypalPlusPaymentMethodsMapping getCtpToPpPaymentMethodsMapping();
 
     /**
      * TODO: not tested ;(

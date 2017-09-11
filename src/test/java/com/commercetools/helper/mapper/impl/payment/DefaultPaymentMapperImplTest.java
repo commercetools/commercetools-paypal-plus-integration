@@ -1,4 +1,4 @@
-package com.commercetools.helper.mapper.impl;
+package com.commercetools.helper.mapper.impl.payment;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
@@ -25,6 +25,12 @@ public class DefaultPaymentMapperImplTest {
 
     @Autowired
     private DefaultPaymentMapperImpl paymentMapper;
+
+    @Test
+    public void getCtpToPpPaymentMethodsMapping() {
+        //
+    }
+
 
     @Test
     public void ctpPaymentToPaypalPlus_withDiscount() throws Exception {

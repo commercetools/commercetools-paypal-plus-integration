@@ -4,6 +4,7 @@ import com.commercetools.exception.PaypalPlusException;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
+import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates;
 import com.commercetools.pspadapter.facade.CtpFacade;
@@ -66,7 +67,7 @@ public class PaymentHandler {
 
     private final CtpFacade ctpFacade;
     private final PaypalPlusFacade paypalPlusFacade;
-    private final PaymentMapper paymentMapper;
+    private final PaymentMapperHelper paymentMapperHelper;
     private final AddressMapper addressMapper;
     private final Gson gson;
 
@@ -77,13 +78,13 @@ public class PaymentHandler {
     private final String CTP_PAYMENT_ID = "CTP payment ID";
 
     public PaymentHandler(@Nonnull CtpFacade ctpFacade,
-                          @Nonnull PaymentMapper paymentMapper,
+                          @Nonnull PaymentMapperHelper paymentMapperHelper,
                           @Nonnull AddressMapper addressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName,
                           @Nonnull Gson gson) {
         this.ctpFacade = ctpFacade;
-        this.paymentMapper = paymentMapper;
+        this.paymentMapperHelper = paymentMapperHelper;
         this.addressMapper = addressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
         this.gson = gson;
@@ -391,8 +392,11 @@ public class PaymentHandler {
      */
     private CompletionStage<Payment> createPaypalPlusPaymentAndUpdateCtpPayment(@Nonnull io.sphere.sdk.payments.Payment ctpPayment,
                                                                                 @Nonnull Cart ctpCart) {
-        Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(
-                new CtpPaymentWithCart(ctpPayment, ctpCart));
+        CtpPaymentWithCart paymentWithCart = new CtpPaymentWithCart(ctpPayment, ctpCart);
+
+        PaymentMapper paymentMapper = paymentMapperHelper.getPaymentMapperOrDefault(paymentWithCart.getPaymentMethod());
+
+        Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(paymentWithCart);
         AddInterfaceInteraction action = createAddInterfaceInteractionAction(paypalPlusPayment, REQUEST);
         // 1. save create paypal request to ctp payment's interface interaction
         return ctpFacade.getPaymentService().updatePayment(ctpPayment, Collections.singletonList(action))

@@ -29,18 +29,18 @@ public class PaymentMapperHelperImplTest {
         assertThat(paymentMapperHelper.getPaymentMapper("")).isEmpty();
         assertThat(paymentMapperHelper.getPaymentMapper("   ")).isEmpty();
         assertThat(paymentMapperHelper.getPaymentMapper("blah-blah")).isEmpty();
-        assertThat(paymentMapperHelper.getPaymentMapper(DEFAULT)).isSameAs(defaultPaymentMapper);
-        assertThat(paymentMapperHelper.getPaymentMapper(INSTALLMENT)).isNotNull();
+        assertThat(paymentMapperHelper.getPaymentMapper(DEFAULT).orElse(null)).isSameAs(defaultPaymentMapper);
+        assertThat(paymentMapperHelper.getPaymentMapper(INSTALLMENT)).isNotEmpty();
     }
 
     @Test
     public void getPaymentMapperOrDefault() throws Exception {
-        assertThat(paymentMapperHelper.getPaymentMapper(null)).isSameAs(defaultPaymentMapper);
-        assertThat(paymentMapperHelper.getPaymentMapper("")).isSameAs(defaultPaymentMapper);
-        assertThat(paymentMapperHelper.getPaymentMapper("   ")).isSameAs(defaultPaymentMapper);
-        assertThat(paymentMapperHelper.getPaymentMapper("blah-blah")).isSameAs(defaultPaymentMapper);
-        assertThat(paymentMapperHelper.getPaymentMapper(DEFAULT)).isSameAs(defaultPaymentMapper);
-        assertThat(paymentMapperHelper.getPaymentMapper(INSTALLMENT)).isNotNull();
+        assertThat(paymentMapperHelper.getPaymentMapperOrDefault(null)).isSameAs(defaultPaymentMapper);
+        assertThat(paymentMapperHelper.getPaymentMapperOrDefault("")).isSameAs(defaultPaymentMapper);
+        assertThat(paymentMapperHelper.getPaymentMapperOrDefault("   ")).isSameAs(defaultPaymentMapper);
+        assertThat(paymentMapperHelper.getPaymentMapperOrDefault("blah-blah")).isSameAs(defaultPaymentMapper);
+        assertThat(paymentMapperHelper.getPaymentMapperOrDefault(DEFAULT)).isSameAs(defaultPaymentMapper);
+        assertThat(paymentMapperHelper.getPaymentMapperOrDefault(INSTALLMENT)).isNotSameAs(defaultPaymentMapper);
     }
 
     @Test

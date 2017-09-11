@@ -51,29 +51,33 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
         String resourceId = getResourceId(event);
         return findTransactionByInteractionId(ctpPayment.getTransactions(), resourceId)
                 .map(txn -> {
-                    if (txn.getType().equals(getExpectedTransactionType())) {
+                    if (!txn.getType().equals(getExpectedTransactionType())) {
                         logger.error("Found txn paymentId=[{}] with corresponding resourceId={},"
                                         + " but transactionType=[{}] is not expectedTransactionType=[{}]."
                                         + " Will create new transaction for the eventId=[{}]",
                                 ctpPayment.getId(), resourceId, getExpectedTransactionType(), event.getId());
-                        return Collections.singletonList(createAddTransactionAction(event, getExpectedTransactionType()));
+                        return createAddTransactionActionList(event, getExpectedTransactionType());
                     } else if (isTxnAlreadyUpdated(txn)) {
                         // can't do Collections.emptyList() here because map() and generics
                         // together generates unexpected return results
                         return new ArrayList<UpdateAction<Payment>>(0);
                     } else {
-                        return Collections.singletonList((UpdateAction<Payment>) ChangeTransactionState.of(getExpectedTransactionState(), txn.getId()));
+                        return createChangeTransactionStateActionList(txn);
                     }
                 })
-                .orElseGet(() -> Collections.singletonList(createAddTransactionAction(event, getExpectedTransactionType())));
+                .orElseGet(() -> createAddTransactionActionList(event, getExpectedTransactionType()));
     }
 
     abstract protected TransactionType getExpectedTransactionType();
 
     abstract protected TransactionState getExpectedTransactionState();
 
-    protected AddTransaction createAddTransactionAction(@Nonnull Event event,
-                                                        @Nonnull TransactionType transactionType) {
+    protected List<? extends UpdateAction<Payment>> createChangeTransactionStateActionList(Transaction txn) {
+        return Collections.singletonList(ChangeTransactionState.of(getExpectedTransactionState(), txn.getId()));
+    }
+
+    protected List<? extends UpdateAction<Payment>> createAddTransactionActionList(@Nonnull Event event,
+                                                                   @Nonnull TransactionType transactionType) {
         Map resource = (Map) event.getResource();
         Map amount = (Map) resource.get(AMOUNT);
         BigDecimal total = new BigDecimal((String) amount.get(TOTAL));
@@ -85,7 +89,7 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
                 .timestamp(toZonedDateTime(createTime))
                 .state(getExpectedTransactionState())
                 .build();
-        return AddTransaction.of(transactionDraft);
+        return Collections.singletonList(AddTransaction.of(transactionDraft));
     }
 
     protected String getResourceId(@Nonnull Event event) {

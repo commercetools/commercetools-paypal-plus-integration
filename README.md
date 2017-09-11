@@ -81,7 +81,8 @@ In this process, there are 3 parties involved:
     ```
     http://example.com/checkout/payment/success?paymentId=${paymentId}&token=${token}&PayerID=${payerId} 
     ```
-    1. It is strongly recommended to compare the payment from Paypal to payment from CTP to see if there were any changes during the payment process. Example of how this can happen is described [here](https://github.com/commercetools/commercetools-paypal-plus-integration/issues/62). The possible changes could be:
+    1. It is strongly recommended to compare the payment from Paypal to payment from CTP to see if there were any changes during the payment process.
+     Example of how this can happen is described [here](https://github.com/commercetools/commercetools-paypal-plus-integration/issues/62). The possible changes could be:
         1. User's shipping address has changed
         1. Cart total amount has changed
         
@@ -89,9 +90,9 @@ In this process, there are 3 parties involved:
         ```
         GET http://paypal-plus-integration-server.com/${tenantName}/commercetools/look-up/payments/${paypalPaymentId}
         ```
-        The Paypal Plus payment object will be returned in `responseBody` as JSON like this:
+        The Paypal Plus payment object will be returned in `payment` as JSON like this:
         ```json
-        {"responseBody":"{\"id\":\"PAY-xxx\",\"intent\":\"sale\",\"cart\":\"1234abcd\", .... }"}
+        {"payment":"{\"id\":\"PAY-xxx\",\"intent\":\"sale\",\"cart\":\"1234abcd\", .... }"}
         ``` 
     
     1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them in the request body to Paypal-integration for payment execution. Example:
@@ -148,6 +149,6 @@ Additionally, response can contain additional response body. All fields of the r
   "approvalUrl": "https://test.de",              # applicable only in case of create payment
   "error": "",                                   # only in case of error and represents a unique error code
   "errorDescription": "Parameter 'x' is missing" # only in case of error
-  "responseBody": "response body"  # only if response is necessary
+  "payment": "Paypal Plus Payment Object"        # only in case of getting the payment object 
 }
 ```

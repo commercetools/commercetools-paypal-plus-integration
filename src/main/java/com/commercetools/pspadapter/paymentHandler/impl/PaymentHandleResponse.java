@@ -34,28 +34,39 @@ public class PaymentHandleResponse {
 
     private final String approvalUrl;
 
-    private final String responseBody;
+    private final String payment;
 
     private PaymentHandleResponse(@Nonnull HttpStatus httpStatus, @Nullable String errorCode,
                                   @Nullable String errorMessage, @Nullable String approvalUrl,
-                                  @Nullable String responseBody) {
+                                  @Nullable String payment) {
         this.httpStatus = httpStatus;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.approvalUrl = approvalUrl;
-        this.responseBody = responseBody;
+        this.payment = payment;
+    }
+
+    private PaymentHandleResponse(@Nonnull HttpStatus httpStatus,
+                                 @Nullable String errorCode,
+                                 @Nullable String errorMessage,
+                                 @Nullable String approvalUrl) {
+        this(httpStatus, errorCode, errorMessage, approvalUrl, null);
+    }
+
+    private PaymentHandleResponse(HttpStatus httpStatus, String errorCode, String errorMessage) {
+        this(httpStatus, errorCode, errorMessage, null, null);
     }
 
     public static PaymentHandleResponse ofHttpStatus(HttpStatus httpStatus) {
-        return new PaymentHandleResponse(httpStatus, null, null, null, null);
+        return new PaymentHandleResponse(httpStatus, null, null, null);
     }
 
     public static PaymentHandleResponse ofHttpStatusAndErrorMessage(HttpStatus httpStatus, String errorMessage) {
-        return new PaymentHandleResponse(httpStatus, null, errorMessage, null, null);
+        return new PaymentHandleResponse(httpStatus, null, errorMessage);
     }
 
     public static PaymentHandleResponse of201CreatedApprovalUrl(@Nonnull String approvalUrl) {
-        return new PaymentHandleResponse(CREATED, null, null, approvalUrl, null);
+        return new PaymentHandleResponse(CREATED, null, null, approvalUrl);
     }
 
     public static PaymentHandleResponse of200OkResponseBody(@Nonnull String responseBody) {
@@ -63,27 +74,27 @@ public class PaymentHandleResponse {
     }
 
     public static PaymentHandleResponse of400BadRequest(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(BAD_REQUEST, null, errorMessage, null, null);
+        return new PaymentHandleResponse(BAD_REQUEST, null, errorMessage);
     }
 
     public static PaymentHandleResponse of400BadRequest(@Nonnull String errorCode, @Nonnull String errorMessage) {
-        return new PaymentHandleResponse(BAD_REQUEST, errorCode, errorMessage, null, null);
+        return new PaymentHandleResponse(BAD_REQUEST, errorCode, errorMessage);
     }
 
     public static PaymentHandleResponse of404NotFound(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(NOT_FOUND, null, errorMessage, null, null);
+        return new PaymentHandleResponse(NOT_FOUND, null, errorMessage);
     }
 
     public static PaymentHandleResponse of404NotFound(@Nonnull String errorCode, @Nonnull String errorMessage) {
-        return new PaymentHandleResponse(NOT_FOUND, errorCode, errorMessage, null, null);
+        return new PaymentHandleResponse(NOT_FOUND, errorCode, errorMessage);
     }
 
     public static PaymentHandleResponse of500InternalServerError(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, null, errorMessage, null, null);
+        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, null, errorMessage);
     }
 
     public static PaymentHandleResponse of500InternalServerError(@Nonnull String errorCode, @Nonnull String errorMessage) {
-        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, errorCode, errorMessage, null, null);
+        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, errorCode, errorMessage);
     }
 
     /**
@@ -112,8 +123,8 @@ public class PaymentHandleResponse {
     }
 
     @Nullable
-    public Object getResponseBody() {
-        return responseBody;
+    public Object getPayment() {
+        return payment;
     }
 
     /**

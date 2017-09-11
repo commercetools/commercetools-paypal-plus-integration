@@ -37,19 +37,19 @@ import static org.mockito.Mockito.*;
 public class PaymentSalePendingProcessorTest {
 
     @Mock
-    Payment ctpMockPayment;
+    private Payment ctpMockPayment;
 
     @Mock
-    Transaction transaction;
+    private Transaction transaction;
 
     @Mock
-    SphereClient sphereClient;
+    private SphereClient sphereClient;
 
     @Mock
-    CartService cartService;
+    private CartService cartService;
 
     @Mock
-    OrderService orderService;
+    private OrderService orderService;
 
     private Event event;
 

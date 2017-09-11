@@ -93,6 +93,9 @@ public class PaymentSaleDeniedProcessorTest {
         List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
         assertThat(payment).isEqualTo(ctpMockPayment);
         assertThat(updateActions.size()).isEqualTo(2);
+        // One of the action is AddInterfaceInteraction, which is common for all notification processors.
+        // I already covered this case in {PaymentSalePendingProcessorTest},
+        // so it's not necessary to repeat it here.
         ChangeTransactionState changeTransactionState = (ChangeTransactionState) updateActions.get(1);
         assertThat(changeTransactionState.getState()).isEqualTo(TransactionState.FAILURE);
     }

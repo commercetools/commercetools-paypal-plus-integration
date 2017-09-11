@@ -87,6 +87,9 @@ public class PaymentSaleRefundedProcessorTest {
         List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
         assertThat(payment).isEqualTo(ctpMockPayment);
         assertThat(updateActions.size()).isEqualTo(2);
+        // One of the action is AddInterfaceInteraction, which is common for all notification processors.
+        // I already covered this case in {PaymentSalePendingProcessorTest},
+        // so it's not necessary to repeat it here.
         AddTransaction addTransaction = (AddTransaction) updateActions.get(1);
         assertThat(addTransaction.getTransaction().getType()).isEqualTo(TransactionType.REFUND);
         assertThat(addTransaction.getTransaction().getAmount()).isEqualTo(Money.of(new BigDecimal(refundedAmount), refundedCurrency));

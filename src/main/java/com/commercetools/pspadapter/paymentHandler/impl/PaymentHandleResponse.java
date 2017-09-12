@@ -1,8 +1,10 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
+import com.commercetools.config.ApplicationConfiguration;
 import com.commercetools.payment.handler.CommercetoolsCreatePaymentsController;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.paypal.api.payments.Payment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -26,9 +28,10 @@ import static org.springframework.http.HttpStatus.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentHandleResponse {
 
-    private final HttpStatus httpStatus;
-
-    private final int statusCode;
+    /**
+     * Not included to JSON response (so far).
+     */
+    private transient final HttpStatus httpStatus;
 
     private final String errorCode;
 
@@ -36,13 +39,30 @@ public class PaymentHandleResponse {
 
     private final String approvalUrl;
 
+    /**
+     * @see #getPayment()
+     */
+    private final Payment payment;
+
     private PaymentHandleResponse(@Nonnull HttpStatus httpStatus, @Nullable String errorCode,
-                                  @Nullable String errorMessage, @Nullable String approvalUrl) {
+                                  @Nullable String errorMessage, @Nullable String approvalUrl,
+                                  @Nullable Payment payment) {
         this.httpStatus = httpStatus;
-        this.statusCode = httpStatus.value();
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
         this.approvalUrl = approvalUrl;
+        this.payment = payment;
+    }
+
+    private PaymentHandleResponse(@Nonnull HttpStatus httpStatus,
+                                  @Nullable String errorCode,
+                                  @Nullable String errorMessage,
+                                  @Nullable String approvalUrl) {
+        this(httpStatus, errorCode, errorMessage, approvalUrl, null);
+    }
+
+    private PaymentHandleResponse(HttpStatus httpStatus, String errorCode, String errorMessage) {
+        this(httpStatus, errorCode, errorMessage, null, null);
     }
 
     public static PaymentHandleResponse ofHttpStatus(HttpStatus httpStatus) {
@@ -50,40 +70,49 @@ public class PaymentHandleResponse {
     }
 
     public static PaymentHandleResponse ofHttpStatusAndErrorMessage(HttpStatus httpStatus, String errorMessage) {
-        return new PaymentHandleResponse(httpStatus, null, errorMessage, null);
+        return new PaymentHandleResponse(httpStatus, null, errorMessage);
     }
 
     public static PaymentHandleResponse of201CreatedApprovalUrl(@Nonnull String approvalUrl) {
         return new PaymentHandleResponse(CREATED, null, null, approvalUrl);
     }
 
+    public static PaymentHandleResponse of200OkResponseBody(@Nonnull Payment responseBody) {
+        return new PaymentHandleResponse(OK, null, null, null, responseBody);
+    }
+
     public static PaymentHandleResponse of400BadRequest(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(BAD_REQUEST, null, errorMessage, null);
+        return new PaymentHandleResponse(BAD_REQUEST, null, errorMessage);
     }
 
     public static PaymentHandleResponse of400BadRequest(@Nonnull String errorCode, @Nonnull String errorMessage) {
-        return new PaymentHandleResponse(BAD_REQUEST, errorCode, errorMessage, null);
+        return new PaymentHandleResponse(BAD_REQUEST, errorCode, errorMessage);
     }
 
     public static PaymentHandleResponse of404NotFound(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(NOT_FOUND, null, errorMessage, null);
+        return new PaymentHandleResponse(NOT_FOUND, null, errorMessage);
     }
 
     public static PaymentHandleResponse of404NotFound(@Nonnull String errorCode, @Nonnull String errorMessage) {
-        return new PaymentHandleResponse(NOT_FOUND, errorCode, errorMessage, null);
+        return new PaymentHandleResponse(NOT_FOUND, errorCode, errorMessage);
     }
 
     public static PaymentHandleResponse of500InternalServerError(@Nonnull String errorMessage) {
-        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, null, errorMessage, null);
+        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, null, errorMessage);
     }
 
     public static PaymentHandleResponse of500InternalServerError(@Nonnull String errorCode, @Nonnull String errorMessage) {
-        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, errorCode, errorMessage, null);
+        return new PaymentHandleResponse(INTERNAL_SERVER_ERROR, errorCode, errorMessage);
     }
 
+    /**
+     * Used mostly for tests.
+     *
+     * @return integer value of {@link #httpStatus}
+     */
     @JsonIgnore
     public int getStatusCode() {
-        return statusCode;
+        return httpStatus.value();
     }
 
     @Nullable
@@ -102,8 +131,20 @@ public class PaymentHandleResponse {
     }
 
     /**
+     * <b>Note: {@link Payment} object has some deprecated getters (like {@link Payment#getClientCredential()}) which
+     * cause a NPE if try to map them to JSON using default Spring Jackson mapper (which maps by getters). That's why
+     * it is important to be sure the application uses extended JSON mapper, like
+     * {@link ApplicationConfiguration#gson()}. For this reason we re-define default
+     * {@link org.springframework.http.converter.json.GsonHttpMessageConverter} in the application context.</b>
+     */
+    @Nullable
+    public Payment getPayment() {
+        return payment;
+    }
+
+    /**
      * @return standard Spring {@link ResponseEntity} with <b><code>this</code></b> body and <i>statusCode</i> same as
-     * {@link #statusCode}
+     * {@link #httpStatus}
      */
     @Nonnull
     public ResponseEntity<PaymentHandleResponse> toResponseEntity() {

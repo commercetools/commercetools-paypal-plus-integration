@@ -69,7 +69,7 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
         mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s/", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("approvalUrl").value(not(empty())))
+                .andExpect(jsonPath("$.approvalUrl").value(not(empty())))
                 .andReturn();
 
     }
@@ -82,7 +82,7 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
         mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("approvalUrl").value(not(empty())))
+                .andExpect(jsonPath("$.approvalUrl").value(not(empty())))
                 .andReturn();
 
         Payment payment = executeBlocking(this.sphereClient.execute(PaymentByIdGet.of(paymentId)));
@@ -97,7 +97,7 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("errorMessage").value(containsString(interfaceId)))
+                .andExpect(jsonPath("$.errorMessage").value(containsString(interfaceId)))
                 .andReturn();
 
         Optional<Payment> ctpPaymentOpt = executeBlocking(ctpFacade.getPaymentService().getById(paymentId));
@@ -121,7 +121,7 @@ public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegration
                         .content(jsonBody.toString()))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("errorMessage").value(containsString(randomUuid)))
+                .andExpect(jsonPath("$.errorMessage").value(containsString(randomUuid)))
                 .andReturn();
     }
 

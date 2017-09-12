@@ -2,13 +2,18 @@ package com.commercetools.config;
 
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
+import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+import javax.annotation.Nonnull;
 
 @Configuration
 public class ApplicationConfiguration {
@@ -42,5 +47,22 @@ public class ApplicationConfiguration {
                 .setFieldNamingPolicy(FieldNamingPolicy.IDENTITY)
                 .disableHtmlEscaping()
                 .create();
+    }
+
+    /**
+     * Use {@link #gson()} as a default JSON HTTP request/response mapper.
+     * <p>
+     * <b>Note:</b> this mapping is important at least for {@link PaymentHandleResponse#getPayment()} method. See
+     * respective documentation for details.
+     *
+     * @param gson default application JSON mapper.
+     * @return default HTTP request/response mapper, based on {@link #gson()} bean.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public GsonHttpMessageConverter gsonHttpMessageConverter(@Nonnull Gson gson) {
+        GsonHttpMessageConverter converter = new GsonHttpMessageConverter();
+        converter.setGson(gson);
+        return converter;
     }
 }

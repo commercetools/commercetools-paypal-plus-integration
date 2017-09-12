@@ -2,6 +2,7 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.payment.PaymentIntegrationTest;
+import com.commercetools.payment.constants.ctp.CtpPaymentMethods;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
@@ -44,6 +45,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * This test is similar to  {@link CommercetoolsCreatePaymentsControllerIT},
+ * but tests {@link CtpPaymentMethods#INSTALLMENT} payment creation.
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
@@ -80,6 +85,10 @@ public class CommercetoolsCreatePaymentInstallmentIT extends PaymentIntegrationT
                         .build());
     }
 
+    /**
+     * Similar to {@link CommercetoolsCreatePaymentsControllerIT#shouldReturnNewPaypalPaymentId()},
+     * but for {@link CtpPaymentMethods#INSTALLMENT} payments.
+     */
     @Test
     @Ignore("The test is unstable, see bug in Paypal Plus: https://github.com/paypal/PayPal-REST-API-issues/issues/124")
     public void installmentPaymentCreated() throws Exception {

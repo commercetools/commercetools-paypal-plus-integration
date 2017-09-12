@@ -29,6 +29,7 @@ public class CommercetoolsHealthController extends BaseCommercetoolsController {
             value = {"/health", "/"},
             produces = APPLICATION_JSON_VALUE)
     public Map<String, Object> checkHealth() {
+        // TODO: akovalenko: re-factor to use common PaymentHandleResponse approach
         Map<String, Object> tenantResponse = new HashMap<>();
         tenantResponse.put("tenants", this.tenantProperties.getTenants().keySet());
         tenantResponse.put("statusCode", HttpStatus.OK.value());

@@ -26,7 +26,7 @@ import static java.util.Optional.ofNullable;
 @Component
 public class InstallmentPaymentMapperImpl extends BasePaymentMapperImpl implements PaymentMapper {
 
-    public static final String CREDIT = "Credit";
+    public static final String CREDIT = "CREDIT";
 
     @Autowired
     public InstallmentPaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter,

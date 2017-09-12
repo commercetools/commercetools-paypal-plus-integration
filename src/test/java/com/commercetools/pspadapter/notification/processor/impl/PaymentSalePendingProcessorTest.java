@@ -15,6 +15,7 @@ import io.sphere.sdk.payments.Transaction;
 import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.AddInterfaceInteraction;
+import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class PaymentSalePendingProcessorTest {
     private Payment ctpMockPayment;
 
     @Mock
-    private Transaction transaction;
+    private Transaction existingCtpTransaction;
 
     @Mock
     private SphereClient sphereClient;
@@ -74,11 +75,11 @@ public class PaymentSalePendingProcessorTest {
         this.event.setEventType(NotificationEventType.PAYMENT_SALE_PENDING.toString());
         this.event.setResource(resourceMap);
 
-        when(transaction.getInteractionId()).thenReturn(TEST_INTERACTION_ID);
+        when(existingCtpTransaction.getInteractionId()).thenReturn(TEST_INTERACTION_ID);
 
         this.paymentService = spy(new PaymentServiceImpl(sphereClient));
         this.ctpFacade = spy(new CtpFacade(cartService, orderService, paymentService));
-        when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(transaction));
+        when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(existingCtpTransaction));
 
         this.processorBase = spy(new PaymentSalePendingProcessor(new GsonBuilder().create()));
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpMockPayment)))
@@ -88,8 +89,8 @@ public class PaymentSalePendingProcessorTest {
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
         // set up
-        when(transaction.getType()).thenReturn(TransactionType.CHARGE);
-        when(transaction.getState()).thenReturn(TransactionState.SUCCESS);
+        when(existingCtpTransaction.getType()).thenReturn(TransactionType.CHARGE);
+        when(existingCtpTransaction.getState()).thenReturn(TransactionState.SUCCESS);
 
         // test
         doAnswer(invocation -> {
@@ -103,16 +104,19 @@ public class PaymentSalePendingProcessorTest {
     @Test
     public void whenTransactionIsNotFound_shouldAddNewTransaction() {
         // set up
-        when(transaction.getInteractionId()).thenReturn("someRandomInteractionId");
-        when(transaction.getType()).thenReturn(TransactionType.REFUND);
-        when(transaction.getState()).thenReturn(TransactionState.SUCCESS);
+        when(existingCtpTransaction.getType()).thenReturn(TransactionType.REFUND);
+        when(existingCtpTransaction.getState()).thenReturn(TransactionState.SUCCESS);
 
         // test
         doAnswer(invocation -> {
             List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
             assertThat(updateActions.size()).isEqualTo(2);
-            UpdateAction<Payment> actual = updateActions.get(0);
-            assertThat(actual).isInstanceOf(AddInterfaceInteraction.class);
+            UpdateAction<Payment> addInterfaceInteractionAction = updateActions.get(0);
+            assertThat(addInterfaceInteractionAction).isInstanceOf(AddInterfaceInteraction.class);
+            AddTransaction addTransactionAction = (AddTransaction) updateActions.get(1);
+            assertThat(addTransactionAction.getTransaction().getType()).isEqualTo(TransactionType.CHARGE);
+            assertThat(addTransactionAction.getTransaction().getState()).isEqualTo(TransactionState.PENDING);
+            assertThat(addTransactionAction.getTransaction().getInteractionId()).isEqualTo(TEST_INTERACTION_ID);
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 

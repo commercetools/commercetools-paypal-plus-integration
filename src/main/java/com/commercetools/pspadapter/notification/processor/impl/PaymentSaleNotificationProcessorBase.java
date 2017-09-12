@@ -56,7 +56,7 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
     private List<UpdateAction<Payment>> processNotificationForTransaction(@Nonnull Payment ctpPayment, @Nonnull Event event,
                                                                           @Nonnull String resourceId, @Nonnull Transaction txn) {
         if (!txn.getType().equals(getExpectedTransactionType())) {
-            logger.error("Found txn paymentId=[{}] with corresponding resourceId={},"
+            logger.info("Found txn paymentId=[{}] with corresponding resourceId={},"
                             + " but transactionType=[{}] is not expectedTransactionType=[{}]."
                             + " Will create new transaction for the eventId=[{}]",
                     ctpPayment.getId(), resourceId, getExpectedTransactionType(), event.getId());

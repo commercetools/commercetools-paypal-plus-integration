@@ -40,7 +40,7 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
         this.gson = gson;
     }
 
-    abstract List<? extends UpdateAction<Payment>> createUpdatePaymentActions(@Nonnull Payment ctpPayment, @Nonnull Event event);
+    abstract List<UpdateAction<Payment>> createUpdatePaymentActions(@Nonnull Payment ctpPayment, @Nonnull Event event);
 
     @Override
     public CompletionStage<Payment> processEventNotification(@Nonnull CtpFacade ctpFacade,

@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,37 +46,40 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
                 .equalsIgnoreCase(event.getEventType());
     }
 
-    protected List<? extends UpdateAction<Payment>> createUpdatePaymentActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
+    protected List<UpdateAction<Payment>> createUpdatePaymentActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
         String resourceId = getResourceId(event);
         return findTransactionByInteractionId(ctpPayment.getTransactions(), resourceId)
-                .map(txn -> {
-                    if (!txn.getType().equals(getExpectedTransactionType())) {
-                        logger.error("Found txn paymentId=[{}] with corresponding resourceId={},"
-                                        + " but transactionType=[{}] is not expectedTransactionType=[{}]."
-                                        + " Will create new transaction for the eventId=[{}]",
-                                ctpPayment.getId(), resourceId, getExpectedTransactionType(), event.getId());
-                        return createAddTransactionActionList(event, getExpectedTransactionType());
-                    } else if (isTxnAlreadyUpdated(txn)) {
-                        // can't do Collections.emptyList() here because map() and generics
-                        // together generates unexpected return results
-                        return new ArrayList<UpdateAction<Payment>>(0);
-                    } else {
-                        return createChangeTransactionStateActionList(txn);
-                    }
-                })
+                .map(txn -> processNotificationForTransaction(ctpPayment, event, resourceId, txn))
                 .orElseGet(() -> createAddTransactionActionList(event, getExpectedTransactionType()));
+    }
+
+    private List<UpdateAction<Payment>> processNotificationForTransaction(@Nonnull Payment ctpPayment, @Nonnull Event event,
+                                                                          @Nonnull String resourceId, @Nonnull Transaction txn) {
+        if (!txn.getType().equals(getExpectedTransactionType())) {
+            logger.error("Found txn paymentId=[{}] with corresponding resourceId={},"
+                            + " but transactionType=[{}] is not expectedTransactionType=[{}]."
+                            + " Will create new transaction for the eventId=[{}]",
+                    ctpPayment.getId(), resourceId, getExpectedTransactionType(), event.getId());
+            return createAddTransactionActionList(event, getExpectedTransactionType());
+        } else if (isTxnAlreadyUpdated(txn)) {
+            // can't do Collections.emptyList() here because map() and generics
+            // together generates unexpected return results
+            return Collections.emptyList();
+        } else {
+            return createChangeTransactionStateActionList(txn);
+        }
     }
 
     abstract protected TransactionType getExpectedTransactionType();
 
     abstract protected TransactionState getExpectedTransactionState();
 
-    protected List<? extends UpdateAction<Payment>> createChangeTransactionStateActionList(Transaction txn) {
+    protected List<UpdateAction<Payment>> createChangeTransactionStateActionList(Transaction txn) {
         return Collections.singletonList(ChangeTransactionState.of(getExpectedTransactionState(), txn.getId()));
     }
 
-    protected List<? extends UpdateAction<Payment>> createAddTransactionActionList(@Nonnull Event event,
-                                                                   @Nonnull TransactionType transactionType) {
+    protected List<UpdateAction<Payment>> createAddTransactionActionList(@Nonnull Event event,
+                                                                         @Nonnull TransactionType transactionType) {
         Map resource = (Map) event.getResource();
         Map amount = (Map) resource.get(AMOUNT);
         BigDecimal total = new BigDecimal((String) amount.get(TOTAL));

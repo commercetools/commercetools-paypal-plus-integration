@@ -82,18 +82,26 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
 
     protected List<UpdateAction<Payment>> createAddTransactionActionList(@Nonnull Event event,
                                                                          @Nonnull TransactionType transactionType) {
-        Map resource = (Map) event.getResource();
-        Map amount = (Map) resource.get(AMOUNT);
-        BigDecimal total = new BigDecimal((String) amount.get(TOTAL));
-        String currencyCode = (String) amount.get(CURRENCY);
-        String createTime = (String) resource.get(CREATE_TIME);
+        try {
+            Map resource = (Map) event.getResource();
+            String resourceId = (String) resource.get(ID);
+            Map amount = (Map) resource.get(AMOUNT);
+            BigDecimal total = new BigDecimal((String) amount.get(TOTAL));
+            String currencyCode = (String) amount.get(CURRENCY);
+            String createTime = (String) resource.get(CREATE_TIME);
 
-        TransactionDraft transactionDraft = TransactionDraftBuilder
-                .of(transactionType, Money.of(total, currencyCode))
-                .timestamp(toZonedDateTime(createTime))
-                .state(getExpectedTransactionState())
-                .build();
-        return Collections.singletonList(AddTransaction.of(transactionDraft));
+            TransactionDraft transactionDraft = TransactionDraftBuilder
+                    .of(transactionType, Money.of(total, currencyCode))
+                    .timestamp(toZonedDateTime(createTime))
+                    .interactionId(resourceId)
+                    .state(getExpectedTransactionState())
+                    .build();
+            return Collections.singletonList(AddTransaction.of(transactionDraft));
+        } catch (Throwable e) {
+            logger.error("Unexpected error while creating addTransactionActions " +
+                    "for transactionType=[%s] and for Paypal Plus event=[%s]", transactionType, event, e);
+            return Collections.emptyList();
+        }
     }
 
     protected String getResourceId(@Nonnull Event event) {

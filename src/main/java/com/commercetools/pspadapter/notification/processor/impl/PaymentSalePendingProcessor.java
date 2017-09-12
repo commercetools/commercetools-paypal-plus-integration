@@ -26,11 +26,13 @@ public class PaymentSalePendingProcessor extends PaymentSaleNotificationProcesso
         return NotificationEventType.PAYMENT_SALE_PENDING;
     }
 
+    @Nonnull
     @Override
     protected TransactionType getExpectedTransactionType() {
         return TransactionType.CHARGE;
     }
 
+    @Nonnull
     @Override
     protected TransactionState getExpectedTransactionState() {
         return TransactionState.PENDING;

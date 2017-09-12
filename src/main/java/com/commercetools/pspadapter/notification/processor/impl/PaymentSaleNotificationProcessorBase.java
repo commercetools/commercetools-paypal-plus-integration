@@ -70,8 +70,10 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
         }
     }
 
+    @Nonnull
     abstract protected TransactionType getExpectedTransactionType();
 
+    @Nonnull
     abstract protected TransactionState getExpectedTransactionState();
 
     protected List<UpdateAction<Payment>> createChangeTransactionStateActionList(Transaction txn) {

@@ -77,6 +77,7 @@ public abstract class NotificationProcessorBase implements NotificationProcessor
         }
     }
 
+    @Nonnull
     protected AddInterfaceInteraction createAddInterfaceInteractionAction(@Nonnull PayPalModel model) {
         String json = gson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(InterfaceInteractionType.NOTIFICATION.getInterfaceKey(),

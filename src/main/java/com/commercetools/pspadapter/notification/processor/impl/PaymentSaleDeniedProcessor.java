@@ -26,11 +26,13 @@ public class PaymentSaleDeniedProcessor extends PaymentSaleNotificationProcessor
         return NotificationEventType.PAYMENT_SALE_DENIED;
     }
 
+    @Nonnull
     @Override
     protected TransactionType getExpectedTransactionType() {
         return TransactionType.CHARGE;
     }
 
+    @Nonnull
     @Override
     protected TransactionState getExpectedTransactionState() {
         return TransactionState.FAILURE;

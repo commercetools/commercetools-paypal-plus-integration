@@ -26,11 +26,13 @@ public class PaymentSaleRefundedProcessor extends PaymentSaleNotificationProcess
         return NotificationEventType.PAYMENT_SALE_REFUNDED;
     }
 
+    @Nonnull
     @Override
     protected TransactionType getExpectedTransactionType() {
         return TransactionType.REFUND;
     }
 
+    @Nonnull
     @Override
     protected TransactionState getExpectedTransactionState() {
         return TransactionState.SUCCESS;

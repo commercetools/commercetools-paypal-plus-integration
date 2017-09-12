@@ -26,11 +26,13 @@ public class PaymentSaleCompletedProcessor extends PaymentSaleNotificationProces
         return NotificationEventType.PAYMENT_SALE_COMPLETED;
     }
 
+    @Nonnull
     @Override
     protected TransactionType getExpectedTransactionType() {
         return TransactionType.CHARGE;
     }
 
+    @Nonnull
     @Override
     protected TransactionState getExpectedTransactionState() {
         return TransactionState.SUCCESS;

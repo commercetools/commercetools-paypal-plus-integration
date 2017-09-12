@@ -26,11 +26,13 @@ public class PaymentSaleReversedProcessor extends PaymentSaleNotificationProcess
         return NotificationEventType.PAYMENT_SALE_REVERSED;
     }
 
+    @Nonnull
     @Override
     protected TransactionType getExpectedTransactionType() {
         return TransactionType.CHARGEBACK;
     }
 
+    @Nonnull
     @Override
     protected TransactionState getExpectedTransactionState() {
         return TransactionState.SUCCESS;

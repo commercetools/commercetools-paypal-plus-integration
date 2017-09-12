@@ -1,5 +1,18 @@
 # commercetools _Paypal Plus_ Integration Service
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [commercetools _Paypal Plus_ Integration Service](#commercetools-_paypal-plus_-integration-service)
+  - [Front-end integration guide](#front-end-integration-guide)
+  - [Local debug](#local-debug)
+  - [Tests](#tests)
+    - [Integration tests](#integration-tests)
+  - [How to use](#how-to-use)
+  - [HTTP Responses](#http-responses)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Front-end integration guide
 
 See [commercetools _Paypal Plus_ Service Integration Guide](/docs/IntegrationGuide.md) documentation.

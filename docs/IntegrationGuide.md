@@ -1,5 +1,18 @@
 # commercetools _Paypal Plus_ Service Integration Guide
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [commercetools _Paypal Plus_ Service Integration Guide](#commercetools-_paypal-plus_-service-integration-guide)
+  - [Setup docker container](#setup-docker-container)
+  - [Preparing Paypal Plus accounts](#preparing-paypal-plus-accounts)
+  - [Preparing commercetools Platform accounts](#preparing-commercetools-platform-accounts)
+  - [Front-end workflow](#front-end-workflow)
+  - [Create default payments](#create-default-payments)
+    - [Create installment (rate) payments](#create-installment-rate-payments)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 This documentation describes how to setup, start and use `commercetools-paypal-plus-integtration-java` service.
 
 ## Setup docker container

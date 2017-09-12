@@ -105,6 +105,7 @@ public class PaymentHandleResponse {
      * @return standard Spring {@link ResponseEntity} with <b><code>this</code></b> body and <i>statusCode</i> same as
      * {@link #statusCode}
      */
+    @Nonnull
     public ResponseEntity<PaymentHandleResponse> toResponseEntity() {
         return new ResponseEntity<>(this, httpStatus);
     }

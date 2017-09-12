@@ -143,7 +143,7 @@ public class PaymentHandler {
     }
 
     /**
-     * Patch address in default (non-installment) payment. This step should be is committed by front-end after success
+     * Patch address in default (non-installment) payment. This step should be committed by front-end after success
      * redirect before {@link #executePayment(String, String)}</b>
      * <p>
      * <b>Note:</b> this step is used only for {@link CtpPaymentMethods#DEFAULT} payment methods, that's why we use

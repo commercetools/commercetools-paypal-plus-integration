@@ -49,7 +49,9 @@ Installment payment type requires different workflow because of especial securit
           * `term`
           * `monthly_payment.value`
           
-  5. See more in _Integration Requirements for Installments Germany_ internal document.
+  5. If use accepts the conditions of the payment and clicks approval button - execute payment like in normal workflow.
+          
+  6. See more in _Integration Requirements for Installments Germany_ internal document.
   
   
 

@@ -116,7 +116,10 @@ public class PaymentSalePendingProcessorTest {
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 
-        executeBlocking(processorBase.processEventNotification(ctpFacade, event));
+        Payment returnedPayment = executeBlocking(processorBase.processEventNotification(ctpFacade, event));
+
+        // assert
+        assertThat(returnedPayment).isSameAs(ctpMockPayment);
     }
 
     private void verifyUpdatePaymentCall(Payment ctpMockPayment, InvocationOnMock invocation) {

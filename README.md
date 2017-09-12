@@ -1,5 +1,9 @@
 # commercetools _Paypal Plus_ Integration Service
 
+## Front-end integration guide
+
+See [commercetools _Paypal Plus_ Service Integration Guide](/docs/IntegrationGuide.md) documentation.
+
 ## Local debug
 
 ```bash

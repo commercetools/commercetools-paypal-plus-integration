@@ -9,7 +9,7 @@ public final class CtpPaymentMethods {
     public static final String DEFAULT = "default";
 
     /**
-     * Installment (de: Rate) payment method, which is processed differently from other methods.
+     * Installment (de: Ratenzahlung) payment method, which is processed differently from other methods.
      */
     public static final String INSTALLMENT = "installment";
 

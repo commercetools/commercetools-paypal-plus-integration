@@ -1,8 +1,10 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
+import com.commercetools.config.ApplicationConfiguration;
 import com.commercetools.payment.handler.CommercetoolsCreatePaymentsController;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.paypal.api.payments.Payment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -26,7 +28,10 @@ import static org.springframework.http.HttpStatus.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentHandleResponse {
 
-    private final HttpStatus httpStatus;
+    /**
+     * Not included to JSON response (so far).
+     */
+    private transient final HttpStatus httpStatus;
 
     private final String errorCode;
 
@@ -34,11 +39,14 @@ public class PaymentHandleResponse {
 
     private final String approvalUrl;
 
-    private final String payment;
+    /**
+     * @see #getPayment()
+     */
+    private final Payment payment;
 
     private PaymentHandleResponse(@Nonnull HttpStatus httpStatus, @Nullable String errorCode,
                                   @Nullable String errorMessage, @Nullable String approvalUrl,
-                                  @Nullable String payment) {
+                                  @Nullable Payment payment) {
         this.httpStatus = httpStatus;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
@@ -47,9 +55,9 @@ public class PaymentHandleResponse {
     }
 
     private PaymentHandleResponse(@Nonnull HttpStatus httpStatus,
-                                 @Nullable String errorCode,
-                                 @Nullable String errorMessage,
-                                 @Nullable String approvalUrl) {
+                                  @Nullable String errorCode,
+                                  @Nullable String errorMessage,
+                                  @Nullable String approvalUrl) {
         this(httpStatus, errorCode, errorMessage, approvalUrl, null);
     }
 
@@ -69,7 +77,7 @@ public class PaymentHandleResponse {
         return new PaymentHandleResponse(CREATED, null, null, approvalUrl);
     }
 
-    public static PaymentHandleResponse of200OkResponseBody(@Nonnull String responseBody) {
+    public static PaymentHandleResponse of200OkResponseBody(@Nonnull Payment responseBody) {
         return new PaymentHandleResponse(OK, null, null, null, responseBody);
     }
 
@@ -122,14 +130,21 @@ public class PaymentHandleResponse {
         return approvalUrl;
     }
 
+    /**
+     * <b>Note: {@link Payment} object has some deprecated getters (like {@link Payment#getClientCredential()}) which
+     * cause a NPE if try to map them to JSON using default Spring Jackson mapper (which maps by getters). That's why
+     * it is important to be sure the application uses extended JSON mapper, like
+     * {@link ApplicationConfiguration#gson()}. For this reason we re-define default
+     * {@link org.springframework.http.converter.json.GsonHttpMessageConverter} in the application context.</b>
+     */
     @Nullable
-    public Object getPayment() {
+    public Payment getPayment() {
         return payment;
     }
 
     /**
      * @return standard Spring {@link ResponseEntity} with <b><code>this</code></b> body and <i>statusCode</i> same as
-     * {@link #statusCode}
+     * {@link #httpStatus}
      */
     public ResponseEntity<PaymentHandleResponse> toResponseEntity() {
         return new ResponseEntity<>(this, httpStatus);

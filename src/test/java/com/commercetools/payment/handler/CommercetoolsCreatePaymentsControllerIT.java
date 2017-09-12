@@ -166,7 +166,7 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
         mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("errorMessage").value(containsString(payment.getId())))
+                .andExpect(jsonPath("$.errorMessage").value(containsString(payment.getId())))
                 .andReturn();
     }
 
@@ -187,7 +187,7 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
         mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("errorMessage").value(allOf(
+                .andExpect(jsonPath("$.errorMessage").value(allOf(
                         containsString(paymentId),
                         containsString("has incorrect payment interface"),
                         containsString("NOT-PAYPAL-INTERFACE"))))

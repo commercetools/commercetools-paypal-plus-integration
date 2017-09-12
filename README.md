@@ -145,10 +145,9 @@ All endpoints accept and return data as JSON.
 Additionally, response can contain additional response body. All fields of the response body are optional. Example:
 ```json
 {
-  "message": "Successful processing",
   "approvalUrl": "https://test.de",              # applicable only in case of create payment
-  "error": "",                                   # only in case of error and represents a unique error code
-  "errorDescription": "Parameter 'x' is missing" # only in case of error
-  "payment": "Paypal Plus Payment Object"        # only in case of getting the payment object 
+  "errorCode": "",                               # only in case of error and represents a unique error code
+  "errorMessage": "Parameter 'x' is missing"     # only in case of error
+  "payment": {"id":"XXX", "intent":"sale", ...}  # only in case of getting the payment object 
 }
 ```

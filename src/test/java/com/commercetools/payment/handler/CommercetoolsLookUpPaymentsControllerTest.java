@@ -7,10 +7,7 @@ import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.test.web.servlet.MockMvcAsync;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.payments.Payment;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Optional;
 
@@ -27,13 +23,12 @@ import static com.commercetools.payment.constants.Psp.PSP_NAME;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
@@ -78,17 +73,11 @@ public class CommercetoolsLookUpPaymentsControllerTest extends PaymentIntegratio
         Optional<Payment> paymentOpt = executeBlocking(ctpFacade.getPaymentService().getById(ctpPaymentId));
 
         String paypalPaymentId = paymentOpt.get().getInterfaceId();
-        MvcResult result = mockMvcAsync.performAsync(get(format("/%s/%s/payments/%s/", MAIN_TEST_TENANT_NAME, PSP_NAME, paypalPaymentId)))
+        mockMvcAsync.performAsync(get(format("/%s/%s/payments/%s/", MAIN_TEST_TENANT_NAME, PSP_NAME, paypalPaymentId)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.payment.id").value(equalTo(paypalPaymentId)))
                 .andReturn();
-
-        String responseAsString = result.getResponse().getContentAsString();
-        JsonNode responseAsJson = SphereJsonUtils.parse(responseAsString);
-        ObjectNode responseBodyAsJson = (ObjectNode) SphereJsonUtils.parse(responseAsJson.path("payment").asText());
-
-        assertThat((responseBodyAsJson).size()).isNotEqualTo(0);
-        assertThat(responseBodyAsJson.get("id").asText()).isEqualTo(paypalPaymentId);
     }
 }

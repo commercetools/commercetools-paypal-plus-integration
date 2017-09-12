@@ -32,8 +32,8 @@ public class CommercetoolsHealthControllerIT {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON_UTF8))
-                .andExpect(jsonPath("statusCode").value(equalTo(200)))
-                .andExpect(jsonPath("tenants").value(Matchers.containsInAnyOrder(MAIN_TEST_TENANT_NAME, SECOND_TEST_TENANT_NAME)));
+                .andExpect(jsonPath("$.statusCode").value(equalTo(200)))
+                .andExpect(jsonPath("$.tenants").value(Matchers.containsInAnyOrder(MAIN_TEST_TENANT_NAME, SECOND_TEST_TENANT_NAME)));
     }
 
 }

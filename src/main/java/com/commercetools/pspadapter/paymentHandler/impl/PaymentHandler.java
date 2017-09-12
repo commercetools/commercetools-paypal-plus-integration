@@ -211,7 +211,7 @@ public class PaymentHandler {
     public CompletionStage<PaymentHandleResponse> lookUpPayment(String paypalPaymentId) {
         return runWithExceptionallyHandling(paypalPaymentId, PAYPAL_PLUS_PAYMENT_ID,
                 paypalPlusFacade.getPaymentService().getByPaymentId(paypalPaymentId)
-                        .thenApply(responseBody -> PaymentHandleResponse.of200OkResponseBody(this.gson.toJson(responseBody)))
+                        .thenApply(PaymentHandleResponse::of200OkResponseBody)
         );
     }
 

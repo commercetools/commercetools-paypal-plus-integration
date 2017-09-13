@@ -42,7 +42,7 @@ Installment payment type requires different workflow because of especial securit
   3. After redirect to success page - look up the payment (get payment by ID) and if there are inconsistencies 
   (different amount, address, line items etc) - reinitialize the whole payment process.
   
-  4. If use accepts the conditions of the payment and clicks approval button - execute payment like in normal workflow.
+  4. If user accepts the conditions of the payment and clicks approval button - execute payment like in normal workflow.
           
   5. See more in _Integration Requirements for Installments Germany_ internal document.
   

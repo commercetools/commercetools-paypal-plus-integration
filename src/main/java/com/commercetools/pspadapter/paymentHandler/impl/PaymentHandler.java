@@ -53,6 +53,8 @@ import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteract
 import static com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType.RESPONSE;
 import static com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse.*;
 import static com.commercetools.pspadapter.tenant.TenantLoggerUtil.createLoggerName;
+import static com.commercetools.util.PaypalPlusPaymentUtil.getFirstSaleTransactionFromPayment;
+import static com.commercetools.util.PaypalPlusPaymentUtil.getFirstTransactionFromPayment;
 import static com.commercetools.util.TimeUtil.toZonedDateTime;
 import static io.sphere.sdk.payments.TransactionState.PENDING;
 import static io.sphere.sdk.payments.TransactionState.SUCCESS;
@@ -244,20 +246,26 @@ public class PaymentHandler {
     protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull Payment paypalPayment,
                                                                                       @Nonnull String ctpPaymentId,
                                                                                       @Nullable TransactionState transactionState) {
-        Amount totalAmount = paypalPayment.getTransactions().get(0).getAmount();
+        Amount totalAmount = getFirstTransactionFromPayment(paypalPayment).map(Transaction::getAmount)
+                .orElseThrow(() -> new IllegalStateException(
+                        format("Can't create transaction form paypalPaymentId=[%s]: transaction amount is not found",
+                                paypalPayment.getId())));
+
         BigDecimal total = new BigDecimal(totalAmount.getTotal());
         String updateTimeStr = paypalPayment.getUpdateTime() == null ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
         TransactionDraft transactionDraft = TransactionDraftBuilder
                 .of(TransactionType.CHARGE, Money.of(total, totalAmount.getCurrency()))
                 .timestamp(toZonedDateTime(updateTimeStr))
                 .state(transactionState)
+                .interactionId(getFirstSaleTransactionFromPayment(paypalPayment)
+                        .map(Sale::getId)
+                        .orElse(null))
                 .build();
         return ctpFacade.getPaymentService()
                 .updatePayment(ctpPaymentId, Collections.singletonList(AddTransaction.of(transactionDraft)));
     }
 
-    protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull String paypalPlusPaymentId,
-                                                                                      @Nonnull Payment paypalPayment,
+    protected CompletionStage<io.sphere.sdk.payments.Payment> createChargeTransaction(@Nonnull Payment paypalPayment,
                                                                                       @Nonnull io.sphere.sdk.payments.Payment ctpPayment) {
         if (PaypalPlusPaymentStates.APPROVED.equals(paypalPayment.getState())) {
             return createChargeTransaction(paypalPayment, ctpPayment.getId(), SUCCESS);
@@ -266,7 +274,7 @@ public class PaymentHandler {
             return createChargeTransaction(paypalPayment, ctpPayment.getId(), PENDING);
         } else {
             throw new PaypalPlusException(format("Error when approving payment paypalPlusPaymentId=[%s], current state=[%s]",
-                    paypalPlusPaymentId, paypalPayment.getState()));
+                    paypalPayment.getId(), paypalPayment.getState()));
         }
     }
 
@@ -304,7 +312,7 @@ public class PaymentHandler {
                     //  add paypal response to the ctp payment as interaction interface
                     return updateCtpPayment(paypalPayment, payment)
                             //  create charge transaction in the ctp payment
-                            .thenApply(updatedCtpPayment2 -> createChargeTransaction(paypalPlusPaymentId, paypalPayment, updatedCtpPayment2));
+                            .thenApply(updatedCtpPayment2 -> createChargeTransaction(paypalPayment, updatedCtpPayment2));
                 });
 
     }

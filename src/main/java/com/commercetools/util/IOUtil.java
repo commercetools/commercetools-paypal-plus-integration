@@ -11,10 +11,7 @@ import java.util.stream.Collectors;
 /**
  * Util for working with input/output operations
  */
-public class IOUtil {
-
-    private IOUtil() {
-    }
+public final class IOUtil {
 
     public static String getBody(@Nonnull HttpServletRequest request) throws IOException {
         ServletInputStream inputStream = request.getInputStream();
@@ -25,5 +22,8 @@ public class IOUtil {
         } else {
             return "";
         }
+    }
+
+    private IOUtil() {
     }
 }

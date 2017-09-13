@@ -12,7 +12,7 @@ import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
-import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.*;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
 import io.sphere.sdk.carts.CartDraftBuilder;
@@ -22,10 +22,10 @@ import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
-import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
+import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,6 +45,9 @@ import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
+import static io.sphere.sdk.payments.TransactionState.SUCCESS;
+import static io.sphere.sdk.payments.TransactionType.CHARGE;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -142,10 +145,27 @@ public class PaymentHandlerProviderImplTest {
 
         PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
 
-        io.sphere.sdk.payments.Payment chargeTransaction = executeBlocking(paymentHandler
-                .createChargeTransaction(paypalPlusPayment, ctpPaymentWithCart.getPayment().getId(), TransactionState.SUCCESS));
+        // mock sale transaction in the execute response
+        Amount amount = new Amount("EUR", "10.20");
+        Transaction transaction = new Transaction();
+        transaction.setAmount(amount);
+        RelatedResources relatedResources = new RelatedResources();
+        relatedResources.setSale(new Sale("MOCK-SALE-ID", amount, "completed",
+                paypalPlusPayment.getId(), paypalPlusPayment.getCreateTime()));
+        transaction.setRelatedResources(singletonList(relatedResources));
+        paypalPlusPayment.setTransactions(singletonList(transaction));
 
-        assertThat(chargeTransaction).isNotNull();
+        io.sphere.sdk.payments.Payment updatedPayment = executeBlocking(paymentHandler
+                .createChargeTransaction(paypalPlusPayment, ctpPaymentWithCart.getPayment().getId(), SUCCESS));
+
+        assertThat(updatedPayment).isNotNull();
+        assertThat(updatedPayment.getId()).isEqualTo(ctpPaymentWithCart.getPayment().getId());
+        assertThat(updatedPayment.getTransactions()).hasSize(1);
+        io.sphere.sdk.payments.Transaction chargeTxn = updatedPayment.getTransactions().get(0);
+        assertThat(chargeTxn.getInteractionId()).isEqualTo("MOCK-SALE-ID");
+        assertThat(chargeTxn.getType()).isEqualTo(CHARGE);
+        assertThat(chargeTxn.getAmount()).isEqualTo(Money.of(10.20, EUR));
+        assertThat(chargeTxn.getState()).isEqualTo(SUCCESS);
     }
 
     @Test

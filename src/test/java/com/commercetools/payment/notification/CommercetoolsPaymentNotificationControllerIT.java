@@ -50,6 +50,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = ServiceConfig.class)
 public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegrationTest {
 
+    private static final String INTERACTION_ID = "testInteractionId";
+
     @Autowired
     private MockMvcAsync mockMvcAsync;
 
@@ -78,16 +80,16 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
 
     @Test
     public void handlePaymentsIgnoresTrailingSlash() throws Exception {
-        String interfaceId = getMockPaymentInterfaceId();
+        String interfaceId = getMockPaymentInterfaceId(INTERACTION_ID);
 
         mockMvcAsync.performAsync(post(format("/%s/paypalplus/notification", MAIN_TEST_TENANT_NAME))
-                .content(getPaymentSaleCompletedResponseMock(interfaceId))
+                .content(getPaymentSaleCompletedResponseMock(interfaceId, INTERACTION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
 
         mockMvcAsync.performAsync(post(format("/%s/paypalplus/notification/", MAIN_TEST_TENANT_NAME))
-                .content(getPaymentSaleCompletedResponseMock(interfaceId))
+                .content(getPaymentSaleCompletedResponseMock(interfaceId, INTERACTION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -95,10 +97,10 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
 
     @Test
     public void onCompletedNotification_shouldUpdateTransactionState() throws Exception {
-        String interfaceId = getMockPaymentInterfaceId();
+        String interfaceId = getMockPaymentInterfaceId(INTERACTION_ID);
 
         mockMvcAsync.performAsync(post(format("/%s/paypalplus/notification", MAIN_TEST_TENANT_NAME))
-                .content(getPaymentSaleCompletedResponseMock(interfaceId))
+                .content(getPaymentSaleCompletedResponseMock(interfaceId, INTERACTION_ID))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -114,7 +116,7 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
 
     @Test
     public void onUnknownNotification_shouldSaveToInterfaceInteraction() throws Exception {
-        String interfaceId = getMockPaymentInterfaceId();
+        String interfaceId = getMockPaymentInterfaceId(INTERACTION_ID);
 
         Payment paymentBefore = executeBlocking(ctpFacade.getPaymentService()
                 .getByPaymentInterfaceNameAndInterfaceId(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS, interfaceId))
@@ -137,7 +139,7 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
         assertThat(paymentAfter.getInterfaceInteractions().size()).isEqualTo(paymentBefore.getInterfaceInteractions().size() + 1);
     }
 
-    private String getMockPaymentInterfaceId() throws Exception {
+    private String getMockPaymentInterfaceId(String transactionInteractionId) throws Exception {
         String paymentId = createCartAndPayment(sphereClient);
 
         mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, paymentId)));
@@ -145,7 +147,9 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
         Payment payment = executeBlocking(this.sphereClient.execute(PaymentByIdGet.of(paymentId)));
 
         TransactionDraft draft = TransactionDraftBuilder.of(TransactionType.CHARGE, Money.of(10, USD))
-                .state(TransactionState.PENDING).build();
+                .state(TransactionState.PENDING)
+                .interactionId(transactionInteractionId)
+                .build();
         Payment updatedPayment = executeBlocking(sphereClient.execute(PaymentUpdateCommand.of(payment, AddTransaction.of(draft))));
 
         return updatedPayment.getInterfaceId();
@@ -158,10 +162,11 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
                 .replaceAll("PAY-xxxxxx", paypalPaymentId);
     }
 
-    public String getPaymentSaleCompletedResponseMock(String paypalPaymentId) throws IOException {
+    public String getPaymentSaleCompletedResponseMock(String paypalPaymentId, String resourceId) throws IOException {
         return new BufferedReader(new InputStreamReader(paymentSaleCompletedResponseResource.getInputStream()))
                 .lines()
                 .collect(Collectors.joining())
-                .replaceAll("PAY-xxxxxx", paypalPaymentId);
+                .replaceAll("PAY-xxxxxx", paypalPaymentId)
+                .replaceAll("replaceResourceId", resourceId);
     }
 }

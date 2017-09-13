@@ -10,20 +10,20 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 
 /**
- * Processes event notification of type PAYMENT.SALE.COMPLETED
+ * Processes event notification of type PAYMENT.SALE.PENDING
  */
 @Component
-public class PaymentSaleCompletedProcessor extends PaymentSaleNotificationProcessorBase {
+public class PaymentSalePendingProcessor extends PaymentSaleNotificationProcessorBase {
 
     @Autowired
-    public PaymentSaleCompletedProcessor(@Nonnull Gson gson) {
+    public PaymentSalePendingProcessor(@Nonnull Gson gson) {
         super(gson);
     }
 
     @Override
     @Nonnull
     public NotificationEventType getNotificationEventType() {
-        return NotificationEventType.PAYMENT_SALE_COMPLETED;
+        return NotificationEventType.PAYMENT_SALE_PENDING;
     }
 
     @Nonnull
@@ -35,6 +35,6 @@ public class PaymentSaleCompletedProcessor extends PaymentSaleNotificationProces
     @Nonnull
     @Override
     protected TransactionState getExpectedTransactionState() {
-        return TransactionState.SUCCESS;
+        return TransactionState.PENDING;
     }
 }

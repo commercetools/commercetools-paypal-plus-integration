@@ -6,6 +6,7 @@ import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
 import com.commercetools.service.ctp.PaymentService;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
 import io.sphere.sdk.client.SphereClient;
@@ -21,10 +22,13 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static com.commercetools.payment.constants.paypalPlus.NotificationEventData.ID;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -38,11 +42,9 @@ public class PaymentSaleDeniedProcessorTest {
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
         // set up
-        Payment ctpMockPayment = mock(Payment.class);
-        Transaction transaction = mock(Transaction.class);
-        when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(transaction));
-        when(transaction.getState()).thenReturn(TransactionState.PENDING);
-        when(transaction.getType()).thenReturn(TransactionType.CHARGE);
+        String testInteractionId = "testInteractionId";
+
+        Payment ctpMockPayment = createMockPayment(testInteractionId);
 
         NotificationProcessorBase processorBase = spy(new PaymentSaleDeniedProcessor(new GsonBuilder().create()));
 
@@ -56,8 +58,11 @@ public class PaymentSaleDeniedProcessorTest {
                 new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService)
         );
 
+        Map<String, String> resourceMap = ImmutableMap.of(ID, testInteractionId);
+
         Event event = new Event();
         event.setEventType(NotificationEventType.PAYMENT_SALE_DENIED.toString());
+        event.setResource(resourceMap);
 
         // test
         doAnswer(invocation -> {
@@ -73,11 +78,24 @@ public class PaymentSaleDeniedProcessorTest {
                 .updatePayment(any(Payment.class), anyList());
     }
 
+    private Payment createMockPayment(String interactionId) {
+        Payment ctpMockPayment = mock(Payment.class);
+        Transaction transaction = mock(Transaction.class);
+        when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(transaction));
+        when(transaction.getState()).thenReturn(TransactionState.PENDING);
+        when(transaction.getType()).thenReturn(TransactionType.CHARGE);
+        when(transaction.getInteractionId()).thenReturn(interactionId);
+        return ctpMockPayment;
+    }
+
     private void verifyUpdatePaymentCall(Payment ctpMockPayment, InvocationOnMock invocation) {
         Payment payment = invocation.getArgumentAt(0, Payment.class);
         List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
         assertThat(payment).isEqualTo(ctpMockPayment);
         assertThat(updateActions.size()).isEqualTo(2);
+        // One of the action is AddInterfaceInteraction, which is common for all notification processors.
+        // I already covered this case in {PaymentSalePendingProcessorTest},
+        // so it's not necessary to repeat it here.
         ChangeTransactionState changeTransactionState = (ChangeTransactionState) updateActions.get(1);
         assertThat(changeTransactionState.getState()).isEqualTo(TransactionState.FAILURE);
     }

@@ -28,6 +28,7 @@ public class NotificationProcessorContainerImpl implements NotificationProcessor
     }
 
     @Override
+    @Nonnull
     public NotificationProcessor getNotificationProcessorOrDefault(@Nonnull String paypalEventTypeName) {
         return notificationProcessorsMap.getOrDefault(paypalEventTypeName, this.defaultNotificationProcessor);
     }

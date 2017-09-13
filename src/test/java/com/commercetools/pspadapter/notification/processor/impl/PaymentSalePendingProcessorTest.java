@@ -105,6 +105,7 @@ public class PaymentSalePendingProcessorTest {
     public void whenTransactionIsNotFound_shouldAddNewTransaction() {
         // set up
         when(existingCtpTransaction.getType()).thenReturn(TransactionType.REFUND);
+        when(existingCtpTransaction.getInteractionId()).thenReturn(TEST_INTERACTION_ID + "_random_text");
         when(existingCtpTransaction.getState()).thenReturn(TransactionState.SUCCESS);
 
         // test

@@ -49,12 +49,11 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
     protected List<UpdateAction<Payment>> createUpdatePaymentActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
         String resourceId = getResourceId(event);
         return findTransactionByInteractionId(ctpPayment.getTransactions(), resourceId)
-                .map(txn -> processNotificationForTransaction(ctpPayment, event, resourceId, txn))
+                .map(this::processNotificationForTransaction)
                 .orElseGet(() -> createAddTransactionActionList(event, getExpectedTransactionType()));
     }
 
-    private List<UpdateAction<Payment>> processNotificationForTransaction(@Nonnull Payment ctpPayment, @Nonnull Event event,
-                                                                          @Nonnull String resourceId, @Nonnull Transaction txn) {
+    private List<UpdateAction<Payment>> processNotificationForTransaction(@Nonnull Transaction txn) {
         if (isTxnAlreadyUpdated(txn)) {
             // can't do Collections.emptyList() here because map() and generics
             // together generates unexpected return results

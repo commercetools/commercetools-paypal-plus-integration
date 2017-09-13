@@ -1,6 +1,7 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
@@ -18,7 +19,6 @@ import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
@@ -38,8 +38,7 @@ public class PaymentSaleCompletedProcessorTest {
 
     private final Gson gson = new GsonBuilder().create();
 
-    @Mock
-    private PaypalPlusFormatter paypalPlusFormatter;
+    private PaypalPlusFormatter paypalPlusFormatter = new PaypalPlusFormatterImpl();
 
     @Test
     public void shouldRecognizeIfEventIsPaymentSaleCompleted() {

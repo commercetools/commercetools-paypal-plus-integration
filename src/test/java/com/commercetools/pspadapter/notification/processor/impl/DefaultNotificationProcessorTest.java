@@ -1,6 +1,7 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.notification.NotificationDispatcher;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessorContainer;
@@ -34,8 +35,7 @@ public class DefaultNotificationProcessorTest {
     @Mock
     private Payment payment;
 
-    @Mock
-    private PaypalPlusFormatter paypalPlusFormatter;
+    private PaypalPlusFormatter paypalPlusFormatter = new PaypalPlusFormatterImpl();
 
     @Test
     public void whenNotificationHasNoProcessor_defaultProcessorIsUsed() {

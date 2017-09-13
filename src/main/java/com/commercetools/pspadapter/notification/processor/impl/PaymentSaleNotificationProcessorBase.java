@@ -55,13 +55,7 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
 
     private List<UpdateAction<Payment>> processNotificationForTransaction(@Nonnull Payment ctpPayment, @Nonnull Event event,
                                                                           @Nonnull String resourceId, @Nonnull Transaction txn) {
-        if (!txn.getType().equals(getExpectedTransactionType())) {
-            logger.info("Found txn paymentId=[{}] with corresponding resourceId={},"
-                            + " but transactionType=[{}] is not expectedTransactionType=[{}]."
-                            + " Will create new transaction for the eventId=[{}]",
-                    ctpPayment.getId(), resourceId, getExpectedTransactionType(), event.getId());
-            return createAddTransactionActionList(event, getExpectedTransactionType());
-        } else if (isTxnAlreadyUpdated(txn)) {
+        if (isTxnAlreadyUpdated(txn)) {
             // can't do Collections.emptyList() here because map() and generics
             // together generates unexpected return results
             return Collections.emptyList();

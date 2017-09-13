@@ -1,10 +1,16 @@
 buildscript {
+
+    // we need to share Spring boot version across buildscript and the rest of the application. Unfortunately, this
+    // is only the one known way:
+    // https://discuss.gradle.org/t/how-to-access-project-ext-variables-from-within-buildscript-section/5706/3
+    ext.springBoot = '1.5.7.RELEASE'
+
     repositories {
         jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.7.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBoot")
     }
 }
 
@@ -31,7 +37,7 @@ jar {
 }
 
 final depVersions = [
-        springBoot         : '1.5.7.RELEASE', // also don't forget an update in buildscript.dependencies
+        springBoot         : ext.springBoot,
         commercetoolsSdkJvm: '1.23.0',
         paypalPlusSdk      : '1.13.1',
         assertJ            : '3.8.0',

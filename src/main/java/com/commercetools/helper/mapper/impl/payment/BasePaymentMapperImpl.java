@@ -1,18 +1,19 @@
-package com.commercetools.helper.mapper.impl;
+package com.commercetools.helper.mapper.impl.payment;
 
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsMapping;
 import com.paypal.api.payments.*;
 import io.sphere.sdk.cartdiscounts.DiscountedLineItemPriceForQuantity;
 import io.sphere.sdk.carts.CustomLineItem;
 import io.sphere.sdk.carts.LineItem;
 import io.sphere.sdk.models.LocalizedString;
 import org.javamoney.moneta.Money;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 import java.util.List;
 import java.util.Locale;
@@ -20,19 +21,25 @@ import java.util.stream.Stream;
 
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
 import static com.commercetools.util.MoneyUtil.getActualShippingCost;
-import static com.commercetools.util.MoneyUtil.getActualTax;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 
-@Component
-public class PaymentMapperImpl implements PaymentMapper {
+/**
+ * Basic common ctp->pp payment properties mapping.
+ */
+public abstract class BasePaymentMapperImpl implements PaymentMapper {
 
-    private final PaypalPlusFormatter paypalPlusFormatter;
+    protected final PaypalPlusFormatter paypalPlusFormatter;
+    protected final CtpToPaypalPlusPaymentMethodsMapping ctpToPpPaymentMethodsMapping;
+    protected final AddressMapper addressMapper;
 
-    @Autowired
-    public PaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter) {
+    public BasePaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter,
+                                 @Nonnull CtpToPaypalPlusPaymentMethodsMapping ctpToPpPaymentMethodsMapping,
+                                 @Nonnull AddressMapper addressMapper) {
         this.paypalPlusFormatter = paypalPlusFormatter;
+        this.ctpToPpPaymentMethodsMapping = ctpToPpPaymentMethodsMapping;
+        this.addressMapper = addressMapper;
     }
 
     @Override
@@ -49,9 +56,32 @@ public class PaymentMapperImpl implements PaymentMapper {
     }
 
     @Nonnull
+    public CtpToPaypalPlusPaymentMethodsMapping getCtpToPpPaymentMethodsMapping() {
+        return ctpToPpPaymentMethodsMapping;
+    }
+
+    @Nonnull
+    @Override
+    public AddressMapper getAddressMapper() {
+        return addressMapper;
+    }
+
+    @Nonnull
     protected Payer getPayer(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         return new Payer()
-                .setPaymentMethod(paymentWithCartLike.getPaymentMethod());
+                .setPaymentMethod(getCtpToPpPaymentMethodsMapping().getPpMethodName())
+                .setExternalSelectedFundingInstrumentType(getExternalSelectedFundingInstrumentType(paymentWithCartLike))
+                .setPayerInfo(getPayerInfo(paymentWithCartLike));
+    }
+
+    @Nullable
+    protected String getExternalSelectedFundingInstrumentType(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
+        return null;
+    }
+
+    @Nullable
+    protected PayerInfo getPayerInfo(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
+        return null;
     }
 
     @Nonnull
@@ -94,7 +124,8 @@ public class PaymentMapperImpl implements PaymentMapper {
     @Nonnull
     protected ItemList getTransactionItemList(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         return new ItemList()
-                .setItems(getLineItems(paymentWithCartLike));
+                .setItems(getLineItems(paymentWithCartLike))
+                .setShippingAddress(getItemListShippingAddress(paymentWithCartLike));
     }
 
     /**
@@ -210,5 +241,10 @@ public class PaymentMapperImpl implements PaymentMapper {
                 String.valueOf(quantity),
                 paypalPlusFormatter.monetaryAmountToString(price),
                 price.getCurrency().getCurrencyCode());
+    }
+
+    @Nullable
+    protected ShippingAddress getItemListShippingAddress(@Nonnull CtpPaymentWithCart ctpPaymentWithCart) {
+        return null;
     }
 }

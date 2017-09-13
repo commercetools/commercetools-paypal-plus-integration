@@ -28,8 +28,8 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
+import static com.commercetools.payment.constants.ctp.CtpPaymentMethods.DEFAULT;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
-import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -72,8 +72,22 @@ public class CtpResourcesUtil extends ResourcesUtil {
         return getCartFromResource(resolveMockDataResource("paymentMapper/dummyComplexCartWithDiscounts.json"));
     }
 
+    /**
+     * @return Cart with discounts different shipping and billing addresses.
+     */
+    public static Cart getDummyComplexCartWithDiscountsShippingBillingAddress() {
+        return getCartFromResource(resolveMockDataResource("paymentMapper/dummyComplexCartWithDiscountsShippingBillingAddress.json"));
+    }
+
     public static Cart getDummyComplexCartWithoutDiscounts() {
         return getCartFromResource(resolveMockDataResource("paymentMapper/dummyComplexCartWithoutDiscounts.json"));
+    }
+
+    /**
+     * @return Cart without discounts and with different shipping and billing addresses.
+     */
+    public static Cart getDummyComplexCartWithoutDiscountsShippingBillingAddress() {
+        return getCartFromResource(resolveMockDataResource("paymentMapper/dummyComplexCartWithoutDiscountsShippingBillingAddress.json"));
     }
 
     public static CartDraft getDummyComplexCartDraftWithDiscounts() {
@@ -106,7 +120,7 @@ public class CtpResourcesUtil extends ResourcesUtil {
 
     public static PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, Locale locale) {
         return PaymentDraftBuilder.of(totalPrice)
-                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(PAYPAL).build())
+                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(DEFAULT).build())
                 .custom(CustomFieldsDraftBuilder.ofTypeKey("payment-paypal")
                         .addObject(SUCCESS_URL_FIELD, "http://example.com/success/23456789")
                         .addObject(CANCEL_URL_FIELD, "http://example.com/cancel/23456789")
@@ -138,8 +152,8 @@ public class CtpResourcesUtil extends ResourcesUtil {
     }
 
     public static CompletionStage<Payment> createPaymentCS(@Nonnull MonetaryAmount totalPrice,
-                                                     Locale locale,
-                                                     SphereClient sphereClient) {
+                                                           Locale locale,
+                                                           SphereClient sphereClient) {
         PaymentDraftDsl dsl = createPaymentDraftBuilder(totalPrice, locale)
                 .build();
         return sphereClient.execute(PaymentCreateCommand.of(dsl));

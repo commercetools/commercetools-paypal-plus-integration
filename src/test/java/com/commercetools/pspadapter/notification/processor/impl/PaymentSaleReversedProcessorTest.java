@@ -27,12 +27,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.payment.constants.paypalPlus.NotificationEventData.*;
+import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
@@ -74,9 +73,7 @@ public class PaymentSaleReversedProcessorTest {
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 
-        Payment returnedPayment = processorBase.processEventNotification(ctpFacade, event)
-                .toCompletableFuture()
-                .join();
+        Payment returnedPayment = executeBlocking(processorBase.processEventNotification(ctpFacade, event));
 
         // assert
         assertThat(returnedPayment).isEqualTo(ctpMockPayment);

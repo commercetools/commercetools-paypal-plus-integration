@@ -4,17 +4,15 @@ import com.commercetools.exception.PaypalPlusException;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
+import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.constants.ctp.CtpPaymentMethods;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-import com.paypal.api.payments.Amount;
-import com.paypal.api.payments.Patch;
-import com.paypal.api.payments.Payment;
-import com.paypal.api.payments.PaymentExecution;
-import com.paypal.api.payments.PaymentInstruction;
+import com.paypal.api.payments.*;
 import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
 import io.sphere.sdk.carts.Cart;
@@ -70,8 +68,7 @@ public class PaymentHandler {
 
     private final CtpFacade ctpFacade;
     private final PaypalPlusFacade paypalPlusFacade;
-    private final PaymentMapper paymentMapper;
-    private final AddressMapper addressMapper;
+    private final PaymentMapperHelper paymentMapperHelper;
     private final Gson paypalGson;
 
     private final Logger logger;
@@ -81,14 +78,12 @@ public class PaymentHandler {
     private final String CTP_PAYMENT_ID = "CTP payment ID";
 
     public PaymentHandler(@Nonnull CtpFacade ctpFacade,
-                          @Nonnull PaymentMapper paymentMapper,
-                          @Nonnull AddressMapper addressMapper,
+                          @Nonnull PaymentMapperHelper paymentMapperHelper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName,
                           @Nonnull Gson paypalGson) {
         this.ctpFacade = ctpFacade;
-        this.paymentMapper = paymentMapper;
-        this.addressMapper = addressMapper;
+        this.paymentMapperHelper = paymentMapperHelper;
         this.paypalPlusFacade = paypalPlusFacade;
         this.paypalGson = paypalGson;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
@@ -147,6 +142,17 @@ public class PaymentHandler {
                 .thenCompose(i -> i); // flatten CompletionStage from patchAddress()
     }
 
+    /**
+     * Patch address in default (non-installment) payment. This step should be committed by front-end after success
+     * redirect before {@link #executePayment(String, String)}</b>
+     * <p>
+     * <b>Note:</b> this step is used only for {@link CtpPaymentMethods#DEFAULT} payment methods, that's why we use
+     * {@code paymentMapperHelper.getDefaultPaymentMapper()} for address mapper defining.
+     *
+     * @param cartWithPaymentsExpansion cart from which patch the payment address
+     * @param paypalPlusPaymentId       id of respective Paypal Plus payment to patch
+     * @return Completion stage with success or error response.
+     */
     public CompletionStage<PaymentHandleResponse> patchAddress(@Nonnull Cart cartWithPaymentsExpansion,
                                                                @Nonnull String paypalPlusPaymentId) {
         try {
@@ -159,6 +165,9 @@ public class PaymentHandler {
                 if (shippingAddress == null) {
                     return completedFuture(PaymentHandleResponse.of400BadRequest(format("Shipping address must not be null for cartId=[%s]", cartWithPaymentsExpansion.getId())));
                 }
+
+                // since patch is processed only for default payments - get default payment mapper
+                final AddressMapper addressMapper = paymentMapperHelper.getDefaultPaymentMapper().getAddressMapper();
 
                 Patch patchShippingAddress = new Patch(ADD_ACTION, SHIPPING_ADDRESS_PATH).setValue(addressMapper.ctpAddressToPaypalPlusShippingAddress(shippingAddress));
                 patches.add(patchShippingAddress);
@@ -406,8 +415,11 @@ public class PaymentHandler {
      */
     private CompletionStage<Payment> createPaypalPlusPaymentAndUpdateCtpPayment(@Nonnull io.sphere.sdk.payments.Payment ctpPayment,
                                                                                 @Nonnull Cart ctpCart) {
-        Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(
-                new CtpPaymentWithCart(ctpPayment, ctpCart));
+        CtpPaymentWithCart paymentWithCart = new CtpPaymentWithCart(ctpPayment, ctpCart);
+
+        PaymentMapper paymentMapper = paymentMapperHelper.getPaymentMapperOrDefault(paymentWithCart.getPaymentMethod());
+
+        Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(paymentWithCart);
         AddInterfaceInteraction action = createAddInterfaceInteractionAction(paypalPlusPayment, REQUEST);
         // 1. save create paypal request to ctp payment's interface interaction
         return ctpFacade.getPaymentService().updatePayment(ctpPayment, Collections.singletonList(action))

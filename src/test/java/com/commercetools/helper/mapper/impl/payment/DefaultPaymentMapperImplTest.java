@@ -1,30 +1,27 @@
-package com.commercetools.helper.mapper.impl;
+package com.commercetools.helper.mapper.impl.payment;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.paypal.api.payments.*;
-import io.sphere.sdk.carts.LineItem;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getPaymentWithCart_complexAndDiscount;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getPaymentWithCart_complexWithoutDiscount;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-public class PaymentMapperImplTest {
+public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
 
     @Autowired
-    private PaymentMapperImpl paymentMapper;
+    private DefaultPaymentMapperImpl paymentMapper;
 
     @Test
     public void ctpPaymentToPaypalPlus_withDiscount() throws Exception {
@@ -37,6 +34,12 @@ public class PaymentMapperImplTest {
 
         assertThat(ppPayment.getPayer()).isNotNull();
         assertThat(ppPayment.getPayer().getPaymentMethod()).isEqualTo(PAYPAL);
+        assertThat(ppPayment.getPayer().getExternalSelectedFundingInstrumentType())
+                .withFailMessage(format("ExternalSelectedFundingInstrumentType must be empty for default Paypal payment, but [%s] found", ppPayment.getPayer().getExternalSelectedFundingInstrumentType()))
+                .isNullOrEmpty();
+        assertThat(ppPayment.getPayer().getPayerInfo())
+                .withFailMessage(format("PayerInfo must be empty for default Paypal payment, but [%s] found", ppPayment.getPayer().getPayerInfo()))
+                .isNull();
 
         assertThat(ppPayment.getState()).isNull();
 
@@ -57,8 +60,11 @@ public class PaymentMapperImplTest {
 
         ItemList itemList = transaction.getItemList();
         assertThat(itemList).isNotNull();
-        assertThat(itemList.getItems().size()).isEqualTo(5);
+        assertThat(itemList.getShippingAddress())
+                .withFailMessage(format("Shipping address for default Paypal payment must be empty, but [%s] found", itemList.getShippingAddress()))
+                .isNull();
 
+        assertThat(itemList.getItems().size()).isEqualTo(5);
         assertItem(getItemBySkuQuantityPrice(itemList, "123454323454667", "1", "115.24"), "Halskette", "1", "115.24", "USD");
         assertItem(getItemBySkuQuantityPrice(itemList, "123454323454667", "3", "115.24"), "Halskette", "3", "115.24", "USD");
         assertItem(getItemBySku(itemList, "2345234523"), "Kasten", "1", "0.00", "USD");
@@ -79,6 +85,12 @@ public class PaymentMapperImplTest {
 
         assertThat(ppPayment.getPayer()).isNotNull();
         assertThat(ppPayment.getPayer().getPaymentMethod()).isEqualTo(PAYPAL);
+        assertThat(ppPayment.getPayer().getExternalSelectedFundingInstrumentType())
+                .withFailMessage(format("ExternalSelectedFundingInstrumentType must be empty for default Paypal payment, but [%s] found", ppPayment.getPayer().getExternalSelectedFundingInstrumentType()))
+                .isNullOrEmpty();
+        assertThat(ppPayment.getPayer().getPayerInfo())
+                .withFailMessage(format("PayerInfo must be empty for default Paypal payment, but [%s] found", ppPayment.getPayer().getPayerInfo()))
+                .isNull();
 
         assertThat(ppPayment.getState()).isNull();
 
@@ -98,72 +110,17 @@ public class PaymentMapperImplTest {
 
         ItemList itemList = transaction.getItemList();
         assertThat(itemList).isNotNull();
+
+        assertThat(itemList.getShippingAddress())
+                .withFailMessage(format("Shipping address for default Paypal payment must be empty, but [%s] found", itemList.getShippingAddress()))
+                .isNull();
+
         assertThat(itemList.getItems().size()).isEqualTo(3);
         assertItem(getItemBySku(itemList, "123456"), "Necklace Swarovski", "1", "129.00", "EUR");
         assertItem(getItemBySku(itemList, "776655"), "Every piece", "1", "0.00", "EUR");
         assertItem(getItemBySku(itemList, "998877665544"), "Earrings", "4", "45.00", "EUR");
 
         assertTransactionAmounts(transaction);
-    }
-
-    private Item getItemBySku(ItemList itemList, String sku) {
-        return itemList.getItems().stream()
-                .filter(item -> sku.equals(item.getSku()))
-                .findFirst()
-                .orElse(null);
-    }
-
-    /**
-     * Some items with the same SKU may be duplicated, because they have complex discounted price, thus one line item
-     * is split to several. See
-     * {@link PaymentMapperImpl#mapLineItemToPaypalPlusItem(LineItem, List)}
-     */
-    private Item getItemBySkuQuantityPrice(ItemList itemList, String sku, String quantity, String price) {
-        return itemList.getItems().stream()
-                .filter(item -> sku.equals(item.getSku()))
-                .filter(item -> quantity.equals(item.getQuantity()))
-                .filter(item -> price.equals(item.getPrice()))
-                .findFirst()
-                .orElse(null);
-    }
-
-    private void assertItem(Item item, String name, String quantity, String price, String currency) {
-        assertItem(item, name, currency);
-        assertThat(item.getQuantity()).isEqualTo(quantity);
-        assertThat(item.getPrice()).isEqualTo(price);
-    }
-
-    private void assertItem(Item item, String name, String currency) {
-        assertThat(item).isNotNull();
-        assertThat(item.getName()).isEqualTo(name);
-        assertThat(item.getCurrency()).isEqualTo(currency);
-    }
-
-    /**
-     * Validate:<ul>
-     * <li>{@link Amount#details} sum is equal to {@link Amount#total}</li>
-     * <li>{@link Transaction#getItemList()} (prices * quantity) sum equal to {@link Amount#total}</li>
-     * </ul>
-     * <b>Note:</b> the test is temporary disabled while
-     * <a href="https://github.com/commercetools/commercetools-paypal-plus-integration/issues/28">Paypal Plus taxes
-     * counting issue</a> is not solved.
-     *
-     * @param transaction {@link Transaction} to validate.
-     */
-    private void assertTransactionAmounts(Transaction transaction) {
-        BigDecimal total = new BigDecimal(transaction.getAmount().getTotal());
-        Details details = transaction.getAmount().getDetails();
-        BigDecimal shippingCost = new BigDecimal(details.getShipping());
-        BigDecimal detailsTotal = shippingCost
-                .add(new BigDecimal(details.getSubtotal()));
-
-        assertThat(detailsTotal).isEqualTo(total);
-
-        BigDecimal totalLineItems = transaction.getItemList().getItems().stream()
-                .map(item -> new BigDecimal(item.getPrice()).multiply(new BigDecimal(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        assertThat(totalLineItems.add(shippingCost)).isEqualTo(total);
     }
 
 }

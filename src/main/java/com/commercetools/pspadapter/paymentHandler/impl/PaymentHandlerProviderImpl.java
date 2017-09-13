@@ -1,7 +1,6 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
-import com.commercetools.helper.mapper.AddressMapper;
-import com.commercetools.helper.mapper.PaymentMapper;
+import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
@@ -19,21 +18,18 @@ import java.util.Optional;
 public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
 
     private final TenantConfigFactory configFactory;
-    private final PaymentMapper paymentMapper;
-    private final AddressMapper addressMapper;
-    private final Gson paypalGson;
     private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
+    private final PaymentMapperHelper paymentMapperHelper;
+    private final Gson paypalGson;
 
     @Autowired
     public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory,
                                       @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory,
-                                      @Nonnull PaymentMapper paymentMapper,
-                                      @Nonnull AddressMapper addressMapper,
+                                      @Nonnull PaymentMapperHelper paymentMapperHelper,
                                       @Nonnull Gson paypalGson) {
         this.configFactory = configFactory;
         this.paypalPlusFacadeFactory = paypalPlusFacadeFactory;
-        this.paymentMapper = paymentMapper;
-        this.addressMapper = addressMapper;
+        this.paymentMapperHelper = paymentMapperHelper;
         this.paypalGson = paypalGson;
     }
 
@@ -43,7 +39,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
                     PaypalPlusFacade payPalPlusFacade = paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
-                    return new PaymentHandler(ctpFacade, paymentMapper, addressMapper, payPalPlusFacade, tenantName, paypalGson);
+                    return new PaymentHandler(ctpFacade, paymentMapperHelper, payPalPlusFacade, tenantName, paypalGson);
                 });
     }
 

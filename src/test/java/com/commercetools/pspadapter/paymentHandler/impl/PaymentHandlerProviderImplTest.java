@@ -2,7 +2,9 @@ package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.Application;
 import com.commercetools.helper.mapper.PaymentMapper;
+import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.constants.ctp.CtpPaymentMethods;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
@@ -39,7 +41,6 @@ import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
-import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
@@ -58,7 +59,7 @@ public class PaymentHandlerProviderImplTest {
     private PaymentHandlerProvider paymentHandlerProvider;
 
     @Autowired
-    private PaymentMapper paymentMapper;
+    private PaymentMapperHelper paymentMapperHelper;
 
     @Autowired
     private PaypalPlusFacadeFactory paypalPlusFacadeFactory;
@@ -132,6 +133,10 @@ public class PaymentHandlerProviderImplTest {
     public void shouldCreateChargeTransaction() {
         CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
 
+        PaymentMapper paymentMapper = paymentMapperHelper.getPaymentMapper(ctpPaymentWithCart.getPaymentMethod())
+                .orElse(null);
+        assertThat(paymentMapper).isNotNull();
+
         Payment paypalPlusPayment = paymentMapper.ctpPaymentToPaypalPlus(ctpPaymentWithCart);
         paypalPlusPayment = executeBlocking(this.paypalPlusFacade.getPaymentService().create(paypalPlusPayment));
 
@@ -179,7 +184,6 @@ public class PaymentHandlerProviderImplTest {
     /**
      * Private methods
      **/
-
     private CtpPaymentWithCart createCartWithPayment() {
         CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
                 .currency(EUR)
@@ -188,7 +192,7 @@ public class PaymentHandlerProviderImplTest {
         CtpPaymentWithCart ctpPaymentWithCart = executeBlocking(sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts))
                 .thenCompose(cart -> sphereClient.execute(PaymentCreateCommand.of(
                         PaymentDraftBuilder.of(cart.getTotalPrice())
-                                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(PAYPAL).build())
+                                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(CtpPaymentMethods.DEFAULT).build())
                                 .custom(CustomFieldsDraftBuilder.ofTypeKey("payment-paypal")
                                         .addObject(SUCCESS_URL_FIELD, "http://example.com/success/23456789")
                                         .addObject(CANCEL_URL_FIELD, "http://example.com/cancel/23456789")

@@ -33,6 +33,18 @@
     "phone": "+491234567890",
     "email": "max.mustermann@gmail.com"
   },
+  "billingAddress": {
+    "title": "Mr.",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm 100",
+    "additionalStreetInfo": "",
+    "postalCode": "10709",
+    "city": "Berlin",
+    "country": "DE",
+    "phone": "+491234567890",
+    "email": "max.mustermann@gmail.com"
+  },
   "shippingInfo": {
     "shippingMethodName": "DHL",
     "price": {
@@ -75,18 +87,6 @@
         "centAmount": 0
       }
     }
-  },
-  "shippingAddress": {
-    "title": "Mr.",
-    "firstName": "Max",
-    "lastName": "Mustermann",
-    "streetName": "Kurfürstendamm 100",
-    "additionalStreetInfo": "",
-    "postalCode": "10709",
-    "city": "Berlin",
-    "country": "DE",
-    "phone": "+491234567890",
-    "email": "max.mustermann@gmail.com"
   },
   "inventoryMode": "None",
   "taxMode": "Platform",

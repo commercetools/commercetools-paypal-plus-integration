@@ -72,7 +72,7 @@ public class PaymentHandler {
     private final PaypalPlusFacade paypalPlusFacade;
     private final PaymentMapper paymentMapper;
     private final AddressMapper addressMapper;
-    private final Gson gson;
+    private final Gson paypalGson;
 
     private final Logger logger;
 
@@ -85,12 +85,12 @@ public class PaymentHandler {
                           @Nonnull AddressMapper addressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName,
-                          @Nonnull Gson gson) {
+                          @Nonnull Gson paypalGson) {
         this.ctpFacade = ctpFacade;
         this.paymentMapper = paymentMapper;
         this.addressMapper = addressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
-        this.gson = gson;
+        this.paypalGson = paypalGson;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
     }
 
@@ -267,7 +267,7 @@ public class PaymentHandler {
 
     private AddInterfaceInteraction createAddInterfaceInteractionAction(@Nonnull PayPalModel model,
                                                                         @Nonnull InterfaceInteractionType type) {
-        String json = this.gson.toJson(model);
+        String json = this.paypalGson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(type.getInterfaceKey(),
                 ImmutableMap.of(type.getValueFieldName(), json,
                         TIMESTAMP_FIELD, ZonedDateTime.now()));

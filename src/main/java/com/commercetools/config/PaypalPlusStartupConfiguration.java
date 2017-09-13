@@ -5,8 +5,10 @@ import com.commercetools.pspadapter.notification.validation.NotificationValidati
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
 import com.commercetools.pspadapter.notification.webhook.WebhookContainer;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,5 +59,17 @@ public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {
     @Bean
     public Filter notificationValidationFilter() {
         return new NotificationValidationFilter();
+    }
+
+    /**
+     * This Gson uses _ to separate words in JSON. It conforms to the JSON
+     * naming conventions used in Paypal API request and responses
+     */
+    @Bean
+    public Gson paypalGson() {
+        return new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .disableHtmlEscaping()
+                .create();
     }
 }

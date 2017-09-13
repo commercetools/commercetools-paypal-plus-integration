@@ -10,7 +10,11 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-import com.paypal.api.payments.*;
+import com.paypal.api.payments.Amount;
+import com.paypal.api.payments.Patch;
+import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.PaymentExecution;
+import com.paypal.api.payments.PaymentInstruction;
 import com.paypal.base.rest.PayPalModel;
 import com.paypal.base.rest.PayPalRESTException;
 import io.sphere.sdk.carts.Cart;
@@ -68,7 +72,7 @@ public class PaymentHandler {
     private final PaypalPlusFacade paypalPlusFacade;
     private final PaymentMapper paymentMapper;
     private final AddressMapper addressMapper;
-    private final Gson gson;
+    private final Gson paypalGson;
 
     private final Logger logger;
 
@@ -81,12 +85,12 @@ public class PaymentHandler {
                           @Nonnull AddressMapper addressMapper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName,
-                          @Nonnull Gson gson) {
+                          @Nonnull Gson paypalGson) {
         this.ctpFacade = ctpFacade;
         this.paymentMapper = paymentMapper;
         this.addressMapper = addressMapper;
         this.paypalPlusFacade = paypalPlusFacade;
-        this.gson = gson;
+        this.paypalGson = paypalGson;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
     }
 
@@ -95,13 +99,13 @@ public class PaymentHandler {
             CompletionStage<PaymentHandleResponse> createPaymentCS = ctpFacade.getPaymentService().getById(ctpPaymentId)
                     .thenCombineAsync(ctpFacade.getCartService().getByPaymentId(ctpPaymentId),
                             // TODO: re-factor this wasps nest!!!
-                            (optPayment, optCart) -> {
-                                if (!(optPayment.isPresent() && optCart.isPresent())) {
+                            (paymentOpt, cartOpt) -> {
+                                if (!(paymentOpt.isPresent() && cartOpt.isPresent())) {
                                     return completedFuture(of404NotFound(
                                             format("Payment or cart for ctpPaymentId=[%s] not found", ctpPaymentId)));
                                 }
 
-                                io.sphere.sdk.payments.Payment ctpPayment = optPayment.get();
+                                io.sphere.sdk.payments.Payment ctpPayment = paymentOpt.get();
 
                                 // TODO: andrii.kovalenko: this should be a common solution across all the controllers
                                 // https://github.com/commercetools/commercetools-paypal-plus-integration/issues/38
@@ -112,7 +116,7 @@ public class PaymentHandler {
                                                     ctpPayment.getPaymentMethodInfo().getPaymentInterface())));
                                 }
 
-                                return createPaypalPlusPaymentAndUpdateCtpPayment(optPayment.get(), optCart.get())
+                                return createPaypalPlusPaymentAndUpdateCtpPayment(paymentOpt.get(), cartOpt.get())
                                         .thenApply(PaymentMapper::getApprovalUrl)
                                         .thenApply(approvalUrlOpt -> approvalUrlOpt
                                                 .map(PaymentHandleResponse::of201CreatedApprovalUrl)
@@ -204,6 +208,13 @@ public class PaymentHandler {
         return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, executeCS);
     }
 
+    public CompletionStage<PaymentHandleResponse> lookUpPayment(String paypalPaymentId) {
+        return runWithExceptionallyHandling(paypalPaymentId, PAYPAL_PLUS_PAYMENT_ID,
+                paypalPlusFacade.getPaymentService().getByPaymentId(paypalPaymentId)
+                        .thenApply(PaymentHandleResponse::of200OkResponseBody)
+        );
+    }
+
     protected CompletionStage<io.sphere.sdk.payments.Payment> updatePayerIdInCtpPayment(@Nonnull String paypalPlusPaymentId,
                                                                                         @Nonnull String payerId) {
         // TODO: lojzatran think about Optional, looks like it is proper place to use it here
@@ -211,7 +222,7 @@ public class PaymentHandler {
                 .thenCompose(paymentOpt -> paymentOpt.map(payment -> {
                             List<UpdateAction<io.sphere.sdk.payments.Payment>> updateActions = Collections.singletonList(SetCustomField.ofObject(PAYER_ID, payerId));
                             return ctpFacade.getPaymentService().updatePayment(payment, updateActions);
-                        }).orElse(null)
+                        }).orElse(completedFuture(null))
                 );
     }
 
@@ -256,7 +267,7 @@ public class PaymentHandler {
 
     private AddInterfaceInteraction createAddInterfaceInteractionAction(@Nonnull PayPalModel model,
                                                                         @Nonnull InterfaceInteractionType type) {
-        String json = this.gson.toJson(model);
+        String json = this.paypalGson.toJson(model);
         return AddInterfaceInteraction.ofTypeKeyAndObjects(type.getInterfaceKey(),
                 ImmutableMap.of(type.getValueFieldName(), json,
                         TIMESTAMP_FIELD, ZonedDateTime.now()));
@@ -343,22 +354,26 @@ public class PaymentHandler {
     private CompletionStage<PaymentHandleResponse> saveResponseToInterfaceInteraction(@Nullable String paymentId,
                                                                                       @Nullable String paymentIdType,
                                                                                       @Nonnull PayPalRESTException restException) {
-        CompletionStage<String> ctpPaymentIdStage = CompletableFuture.completedFuture(paymentId);
+        CompletionStage<Optional<String>> ctpPaymentIdOptStage = CompletableFuture.completedFuture(Optional.ofNullable(paymentId));
         if (PAYPAL_PLUS_PAYMENT_ID.equals(paymentIdType)) {
             // if it's paypal plus payment id and not ctp payment id,
             // then fetch ctp payment to get ctp payment id
-            ctpPaymentIdStage = this.ctpFacade.getPaymentService()
+            ctpPaymentIdOptStage = this.ctpFacade.getPaymentService()
                     .getByPaymentInterfaceNameAndInterfaceId(PAYPAL_PLUS, paymentId)
-                    .thenApply(ctpPayment -> ctpPayment.map(Resource::getId).orElse(null));
+                    .thenApply(ctpPayment -> ctpPayment.map(Resource::getId));
         }
 
-        CompletionStage<PaymentHandleResponse> paymentHandleResponseStage = ctpPaymentIdStage
-                .thenCompose(ctpPaymentId -> {
-                    AddInterfaceInteraction action = createAddInterfaceInteractionAction(restException.getDetails(), RESPONSE);
-                    return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, Collections.singletonList(action))
-                            .thenApply(ignore -> PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
-                                    format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, restException.getMessage())));
-                });
+        CompletionStage<PaymentHandleResponse> paymentHandleResponseStage = ctpPaymentIdOptStage
+                .thenCompose(ctpPaymentIdOpt ->
+                        ctpPaymentIdOpt.map(ctpPaymentId -> {
+                            AddInterfaceInteraction action = createAddInterfaceInteractionAction(restException.getDetails(), RESPONSE);
+                            return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, Collections.singletonList(action))
+                                    .thenApply(ignore -> PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
+                                            format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, restException.getMessage())));
+                        }).orElseGet(() -> CompletableFuture.completedFuture(
+                                PaymentHandleResponse.of404NotFound(format("%s=[%s] is not found.", paymentIdType, paymentId))
+                        ))
+                );
         return paymentHandleResponseStage;
     }
 

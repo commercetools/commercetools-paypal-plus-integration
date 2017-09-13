@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.4.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.7.RELEASE")
     }
 }
 
@@ -31,8 +31,8 @@ jar {
 }
 
 final depVersions = [
-        springBoot         : '1.5.4.RELEASE', // also don't forget an update in buildscript.dependencies
-        commercetoolsSdkJvm: '1.22.0',
+        springBoot         : '1.5.7.RELEASE', // also don't forget an update in buildscript.dependencies
+        commercetoolsSdkJvm: '1.23.0',
         paypalPlusSdk      : '1.13.1',
         assertJ            : '3.8.0',
         guava              : '23.0'

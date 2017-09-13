@@ -58,7 +58,7 @@ public class PaymentServiceImpl extends BaseSphereService implements PaymentServ
     @Override
     public CompletionStage<Payment> updatePayment(@Nonnull String paymentId, @Nullable List<UpdateAction<Payment>> updateActions) {
         return getById(paymentId)
-                .thenApply(optPayment -> optPayment.orElseThrow(() ->
+                .thenApply(paymentOpt -> paymentOpt.orElseThrow(() ->
                         new CtpServiceException(format("Update payment error: payment [%s] has not found", paymentId))))
                 .thenCompose(payment -> updatePayment(payment, updateActions));
     }

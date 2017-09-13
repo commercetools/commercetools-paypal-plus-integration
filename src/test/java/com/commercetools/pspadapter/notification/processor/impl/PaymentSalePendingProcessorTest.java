@@ -1,5 +1,6 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
@@ -57,6 +58,9 @@ public class PaymentSalePendingProcessorTest {
     @Mock
     private OrderService orderService;
 
+    @Mock
+    private PaypalPlusFormatter paypalPlusFormatter;
+
     private Event event;
 
     private PaymentServiceImpl paymentService;
@@ -82,7 +86,7 @@ public class PaymentSalePendingProcessorTest {
         this.ctpFacade = spy(new CtpFacade(cartService, orderService, paymentService));
         when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(existingCtpTransaction));
 
-        this.processorBase = spy(new PaymentSalePendingProcessor(new GsonBuilder().create()));
+        this.processorBase = spy(new PaymentSalePendingProcessor(new GsonBuilder().create(), paypalPlusFormatter));
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpMockPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());
     }

@@ -1,6 +1,10 @@
 package com.commercetools.helper.formatter.impl;
 
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.paypal.api.payments.Amount;
+import com.paypal.api.payments.Currency;
+import org.javamoney.moneta.Money;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -8,11 +12,12 @@ import javax.money.MonetaryAmount;
 import javax.money.format.AmountFormatQuery;
 import javax.money.format.MonetaryAmountFormat;
 import javax.money.format.MonetaryFormats;
+import java.math.BigDecimal;
 
 import static java.util.Locale.US;
 
+@Component
 public class PaypalPlusFormatterImpl implements PaypalPlusFormatter {
-
 
     /**
      * Get a formatter which converts a {@link MonetaryAmount} to a string as
@@ -57,5 +62,23 @@ public class PaypalPlusFormatterImpl implements PaypalPlusFormatter {
     @Override
     public String monetaryAmountToString(@Nullable MonetaryAmount monetaryAmount) {
         return monetaryAmount == null ? "" : getPaypalPlusMonetaryFormat().queryFrom(monetaryAmount);
+    }
+
+    @Nonnull
+    @Override
+    public MonetaryAmount paypalPlusAmountToCtpMonetaryAmount(@Nonnull String ppAmount, @Nonnull String currencyCode) {
+        return Money.of(new BigDecimal(ppAmount), currencyCode);
+    }
+
+    @Nonnull
+    @Override
+    public MonetaryAmount paypalPlusAmountToCtpMonetaryAmount(@Nonnull Amount amount) {
+        return paypalPlusAmountToCtpMonetaryAmount(amount.getTotal(), amount.getCurrency());
+    }
+
+    @Nonnull
+    @Override
+    public MonetaryAmount paypalPlusAmountToCtpMonetaryAmount(@Nonnull Currency amount) {
+        return paypalPlusAmountToCtpMonetaryAmount(amount.getValue(), amount.getCurrency());
     }
 }

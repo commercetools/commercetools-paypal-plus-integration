@@ -1,5 +1,6 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
@@ -18,11 +19,11 @@ import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,6 +40,9 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings("unchecked")
 public class PaymentSaleDeniedProcessorTest {
 
+    @Mock
+    private PaypalPlusFormatter paypalPlusFormatter;
+
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
         // set up
@@ -46,7 +50,7 @@ public class PaymentSaleDeniedProcessorTest {
 
         Payment ctpMockPayment = createMockPayment(testInteractionId);
 
-        NotificationProcessorBase processorBase = spy(new PaymentSaleDeniedProcessor(new GsonBuilder().create()));
+        NotificationProcessorBase processorBase = spy(new PaymentSaleDeniedProcessor(new GsonBuilder().create(), paypalPlusFormatter));
 
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpMockPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());

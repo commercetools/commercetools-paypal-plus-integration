@@ -18,19 +18,19 @@ import java.util.Optional;
 public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
 
     private final TenantConfigFactory configFactory;
-    private final PaymentMapperHelper paymentMapperHelper;
-    private final Gson gson;
     private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
+    private final PaymentMapperHelper paymentMapperHelper;
+    private final Gson paypalGson;
 
     @Autowired
     public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory,
                                       @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory,
                                       @Nonnull PaymentMapperHelper paymentMapperHelper,
-                                      @Nonnull Gson gson) {
+                                      @Nonnull Gson paypalGson) {
         this.configFactory = configFactory;
         this.paypalPlusFacadeFactory = paypalPlusFacadeFactory;
         this.paymentMapperHelper = paymentMapperHelper;
-        this.gson = gson;
+        this.paypalGson = paypalGson;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
                     PaypalPlusFacade payPalPlusFacade = paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
-                    return new PaymentHandler(ctpFacade, paymentMapperHelper, payPalPlusFacade, tenantName, gson);
+                    return new PaymentHandler(ctpFacade, paymentMapperHelper, payPalPlusFacade, tenantName, paypalGson);
                 });
     }
 

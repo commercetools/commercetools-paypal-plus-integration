@@ -12,19 +12,15 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.annotation.Nonnull;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
+import static com.commercetools.util.IOUtil.getBody;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 /**
@@ -106,14 +102,4 @@ public class NotificationValidationInterceptor extends HandlerInterceptorAdapter
         return map;
     }
 
-    private String getBody(@Nonnull HttpServletRequest request) throws IOException {
-        ServletInputStream inputStream = request.getInputStream();
-        if (inputStream != null) {
-            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-                return bufferedReader.lines().collect(Collectors.joining());
-            }
-        } else {
-            return "";
-        }
-    }
 }

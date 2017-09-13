@@ -106,8 +106,8 @@ public class PaymentIntegrationTest {
         String request = requestInteractionOpt.get().getFieldAsString(
                 InterfaceInteractionType.REQUEST.getValueFieldName()
         );
-        assertThat(request).isNotEmpty();
-        assertThat(SphereJsonUtils.parse(request)).isNotEmpty();
+        JsonNode requestJson = SphereJsonUtils.parse(request);
+        assertThat(requestJson.get("redirect_urls")).isNotNull();
 
         Optional<CustomFields> responseInteractionOpt = paymentWithExpandedInteractions.getInterfaceInteractions().stream()
                 .filter(customFields -> customFields.getType().getObj().getKey().equals(InterfaceInteractionType.RESPONSE.getInterfaceKey()))

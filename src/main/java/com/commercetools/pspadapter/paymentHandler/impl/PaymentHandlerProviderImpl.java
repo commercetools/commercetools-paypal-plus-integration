@@ -21,7 +21,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
     private final TenantConfigFactory configFactory;
     private final PaymentMapper paymentMapper;
     private final AddressMapper addressMapper;
-    private final Gson gson;
+    private final Gson paypalGson;
     private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
 
     @Autowired
@@ -29,12 +29,12 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
                                       @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory,
                                       @Nonnull PaymentMapper paymentMapper,
                                       @Nonnull AddressMapper addressMapper,
-                                      @Nonnull Gson gson) {
+                                      @Nonnull Gson paypalGson) {
         this.configFactory = configFactory;
         this.paypalPlusFacadeFactory = paypalPlusFacadeFactory;
         this.paymentMapper = paymentMapper;
         this.addressMapper = addressMapper;
-        this.gson = gson;
+        this.paypalGson = paypalGson;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
                     PaypalPlusFacade payPalPlusFacade = paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
-                    return new PaymentHandler(ctpFacade, paymentMapper, addressMapper, payPalPlusFacade, tenantName, gson);
+                    return new PaymentHandler(ctpFacade, paymentMapper, addressMapper, payPalPlusFacade, tenantName, paypalGson);
                 });
     }
 

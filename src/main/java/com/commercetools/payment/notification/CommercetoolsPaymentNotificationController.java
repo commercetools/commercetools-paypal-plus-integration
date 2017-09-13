@@ -1,6 +1,5 @@
 package com.commercetools.payment.notification;
 
-import com.commercetools.model.PaypalPlusNotificationEvent;
 import com.commercetools.payment.handler.BaseCommercetoolsController;
 import com.commercetools.pspadapter.notification.NotificationEventDispatcherProvider;
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
@@ -8,6 +7,7 @@ import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
 import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandler;
 import com.commercetools.web.bind.annotation.PostJsonRequestJsonResponseMapping;
 import com.google.gson.Gson;
+import com.paypal.api.payments.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,7 @@ public class CommercetoolsPaymentNotificationController extends BaseCommercetool
     @PostJsonRequestJsonResponseMapping(value = "/{tenantName}/" + NOTIFICATION_PATH_URL)
     public CompletionStage<ResponseEntity> handleNotification(@PathVariable String tenantName,
                                                               @Nonnull HttpServletRequest request) throws IOException {
-        PaypalPlusNotificationEvent eventFromPaypal = paypalGson.fromJson(getBody(request), PaypalPlusNotificationEvent.class);
+        Event eventFromPaypal = paypalGson.fromJson(getBody(request), Event.class);
         return eventDispatcherProvider.getNotificationDispatcher(tenantName)
                 .map(notificationDispatcher -> notificationDispatcher.handleEvent(eventFromPaypal, tenantName))
                 .orElseGet(() -> {

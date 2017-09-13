@@ -38,6 +38,7 @@ import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("unchecked")
 public class PaymentSalePendingProcessorTest {
 
     private static final String TEST_INTERACTION_ID = "testInteractionId";

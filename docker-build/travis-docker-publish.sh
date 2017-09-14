@@ -19,7 +19,7 @@ docker tag $REPO:$COMMIT $REPO:$DOCKER_TAG
 echo "Adding additional tag '${REPO}:travis-${TRAVIS_BUILD_NUMBER}' to already built Docker image '${REPO}:${COMMIT}'."
 docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
 
-if [ "$TRAVIS_TAG" -a "$TRAVIS_BRANCH" == "master" ]; then
+if [ "$TRAVIS_TAG" ]; then
   echo "Adding additional tag '${REPO}:${TRAVIS_TAG}' to already built Docker image '${REPO}:${COMMIT}'."
   docker tag $REPO:$COMMIT $REPO:${TRAVIS_TAG};
 fi

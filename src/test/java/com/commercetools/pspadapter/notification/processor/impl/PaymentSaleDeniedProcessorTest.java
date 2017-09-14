@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
-public class PaymentSaleDeniedProcessorTest {
+public class PaymentSaleDeniedProcessorTest extends BaseNotificationTest {
 
     private PaypalPlusFormatter paypalPlusFormatter = new PaypalPlusFormatterImpl();
 
@@ -47,7 +47,7 @@ public class PaymentSaleDeniedProcessorTest {
         // set up
         String testInteractionId = "testInteractionId";
 
-        Payment ctpMockPayment = createMockPayment(testInteractionId);
+        Payment ctpMockPayment = createMockPayment(testInteractionId, TransactionType.CHARGE, TransactionState.PENDING);
 
         NotificationProcessorBase processorBase = spy(new PaymentSaleDeniedProcessor(new GsonBuilder().create(), paypalPlusFormatter));
 
@@ -69,7 +69,7 @@ public class PaymentSaleDeniedProcessorTest {
 
         // test
         doAnswer(invocation -> {
-            verifyUpdatePaymentCall(ctpMockPayment, invocation);
+            verifyUpdatePaymentCall(ctpMockPayment, invocation, TransactionState.FAILURE);
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 
@@ -81,25 +81,4 @@ public class PaymentSaleDeniedProcessorTest {
                 .updatePayment(any(Payment.class), anyList());
     }
 
-    private Payment createMockPayment(String interactionId) {
-        Payment ctpMockPayment = mock(Payment.class);
-        Transaction transaction = mock(Transaction.class);
-        when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(transaction));
-        when(transaction.getState()).thenReturn(TransactionState.PENDING);
-        when(transaction.getType()).thenReturn(TransactionType.CHARGE);
-        when(transaction.getInteractionId()).thenReturn(interactionId);
-        return ctpMockPayment;
-    }
-
-    private void verifyUpdatePaymentCall(Payment ctpMockPayment, InvocationOnMock invocation) {
-        Payment payment = invocation.getArgumentAt(0, Payment.class);
-        List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
-        assertThat(payment).isEqualTo(ctpMockPayment);
-        assertThat(updateActions.size()).isEqualTo(2);
-        // One of the action is AddInterfaceInteraction, which is common for all notification processors.
-        // I already covered this case in {PaymentSalePendingProcessorTest},
-        // so it's not necessary to repeat it here.
-        ChangeTransactionState changeTransactionState = (ChangeTransactionState) updateActions.get(1);
-        assertThat(changeTransactionState.getState()).isEqualTo(TransactionState.FAILURE);
-    }
 }

@@ -29,13 +29,13 @@ public class PaymentSaleRefundedProcessor extends PaymentSaleNotificationProcess
 
     @Nonnull
     @Override
-    protected TransactionType getExpectedTransactionType() {
+    protected TransactionType getCtpTransactionType() {
         return TransactionType.REFUND;
     }
 
     @Nonnull
     @Override
-    protected TransactionState getExpectedTransactionState() {
+    protected TransactionState getCtpTransactionState() {
         return TransactionState.SUCCESS;
     }
 }

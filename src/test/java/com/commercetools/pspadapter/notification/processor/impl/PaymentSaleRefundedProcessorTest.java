@@ -14,6 +14,7 @@ import com.paypal.api.payments.Event;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.Payment;
+import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import org.javamoney.moneta.Money;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
-public class PaymentSaleRefundedProcessorTest {
+public class PaymentSaleRefundedProcessorTest extends BaseNotificationTest {
 
     private static final String CREATE_TIME_VALUE = "2014-10-31T15:41:51Z";
 
@@ -53,6 +54,11 @@ public class PaymentSaleRefundedProcessorTest {
 
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
+        // set up
+        String testInteractionId = "testInteractionId";
+
+        Payment ctpMockPayment = createMockPayment(testInteractionId, TransactionType.CHARGE, TransactionState.SUCCESS);
+
         NotificationProcessorBase processorBase = spy(new PaymentSaleRefundedProcessor(new GsonBuilder().create(), paypalPlusFormatter));
 
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpMockPayment)))
@@ -66,7 +72,7 @@ public class PaymentSaleRefundedProcessorTest {
         );
 
         Map<String, String> amountMap = ImmutableMap.of(TOTAL, REFUNDED_AMOUNT, CURRENCY, REFUNDED_CURRENCY);
-        Map<String, Object> resourceMap = ImmutableMap.of(AMOUNT, amountMap, CREATE_TIME, CREATE_TIME_VALUE);
+        Map<String, Object> resourceMap = ImmutableMap.of(ID, testInteractionId + "_random_text", AMOUNT, amountMap, CREATE_TIME, CREATE_TIME_VALUE);
 
         Event event = new Event();
         event.setEventType(NotificationEventType.PAYMENT_SALE_REFUNDED.toString());

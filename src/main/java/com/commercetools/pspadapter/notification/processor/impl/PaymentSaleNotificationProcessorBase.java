@@ -47,7 +47,7 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
         String resourceId = getResourceId(event);
         return findTransactionByInteractionId(ctpPayment.getTransactions(), resourceId)
                 .map(this::processNotificationForTransaction)
-                .orElseGet(() -> createAddTransactionActionList(event, getExpectedTransactionType()));
+                .orElseGet(() -> createAddTransactionActionList(event, getCtpTransactionType()));
     }
 
     private List<UpdateAction<Payment>> processNotificationForTransaction(@Nonnull Transaction txn) {
@@ -61,13 +61,13 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
     }
 
     @Nonnull
-    abstract protected TransactionType getExpectedTransactionType();
+    abstract protected TransactionType getCtpTransactionType();
 
     @Nonnull
-    abstract protected TransactionState getExpectedTransactionState();
+    abstract protected TransactionState getCtpTransactionState();
 
     protected List<UpdateAction<Payment>> createChangeTransactionStateActionList(Transaction txn) {
-        return Collections.singletonList(ChangeTransactionState.of(getExpectedTransactionState(), txn.getId()));
+        return Collections.singletonList(ChangeTransactionState.of(getCtpTransactionState(), txn.getId()));
     }
 
     protected List<UpdateAction<Payment>> createAddTransactionActionList(@Nonnull Event event,
@@ -85,7 +85,7 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
                     .of(transactionType, paypalPlusFormatter.paypalPlusAmountToCtpMonetaryAmount(total, currencyCode))
                     .timestamp(toZonedDateTime(createTime))
                     .interactionId(resourceId)
-                    .state(getExpectedTransactionState())
+                    .state(getCtpTransactionState())
                     .build();
             return Collections.singletonList(AddTransaction.of(transactionDraft));
         } catch (Throwable e) {
@@ -101,6 +101,6 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
     }
 
     private boolean isTxnAlreadyUpdated(Transaction txn) {
-        return txn.getType().equals(getExpectedTransactionType()) && txn.getState().equals(getExpectedTransactionState());
+        return txn.getState().equals(getCtpTransactionState());
     }
 }

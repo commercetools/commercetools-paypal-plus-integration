@@ -1,5 +1,7 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
@@ -36,12 +38,14 @@ public class PaymentSaleCompletedProcessorTest {
 
     private final Gson gson = new GsonBuilder().create();
 
+    private PaypalPlusFormatter paypalPlusFormatter = new PaypalPlusFormatterImpl();
+
     @Test
     public void shouldRecognizeIfEventIsPaymentSaleCompleted() {
         Event event = new Event();
         event.setEventType(PAYMENT_SALE_COMPLETED.getPaypalEventTypeName());
         PaymentSaleCompletedProcessor processor
-                = new PaymentSaleCompletedProcessor(gson);
+                = new PaymentSaleCompletedProcessor(gson, paypalPlusFormatter);
         assertThat(processor.canProcess(event)).isTrue();
     }
 
@@ -57,7 +61,7 @@ public class PaymentSaleCompletedProcessorTest {
         when(mockEvent.getResource()).thenReturn(resourceMap);
 
         PaymentSaleCompletedProcessor processor
-                = new PaymentSaleCompletedProcessor(gson);
+                = new PaymentSaleCompletedProcessor(gson, paypalPlusFormatter);
 
         assertThat(processor.createUpdatePaymentActions(ctpPayment, mockEvent)).isNotEmpty();
     }
@@ -74,7 +78,7 @@ public class PaymentSaleCompletedProcessorTest {
         when(mockEvent.getResource()).thenReturn(resourceMap);
 
         PaymentSaleCompletedProcessor processor
-                = new PaymentSaleCompletedProcessor(gson);
+                = new PaymentSaleCompletedProcessor(gson, paypalPlusFormatter);
 
         assertThat(processor.createUpdatePaymentActions(ctpPayment, mockEvent)).isEmpty();
     }
@@ -87,7 +91,7 @@ public class PaymentSaleCompletedProcessorTest {
 
         Payment ctpPayment = mockCtpPayment(testInteractionId, TransactionState.PENDING);
 
-        NotificationProcessorBase processorBase = spy(new PaymentSaleCompletedProcessor(gson));
+        NotificationProcessorBase processorBase = spy(new PaymentSaleCompletedProcessor(gson, paypalPlusFormatter));
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());
         SphereClient sphereClient = mock(SphereClient.class);

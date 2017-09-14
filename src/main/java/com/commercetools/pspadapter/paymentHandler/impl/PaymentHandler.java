@@ -107,8 +107,6 @@ public class PaymentHandler {
 
                                 io.sphere.sdk.payments.Payment ctpPayment = paymentOpt.get();
 
-                                // TODO: andrii.kovalenko: this should be a common solution across all the controllers
-                                // https://github.com/commercetools/commercetools-paypal-plus-integration/issues/38
                                 if (!PAYPAL_PLUS.equals(ctpPayment.getPaymentMethodInfo().getPaymentInterface())) {
                                     return completedFuture(of400BadRequest(
                                             format("Payment ctpPaymentId=[%s] has incorrect payment interface: " +

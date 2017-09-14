@@ -220,7 +220,7 @@ public class PaymentHandler {
         return runWithExceptionallyHandling(paypalPlusPaymentId, PAYPAL_PLUS_PAYMENT_ID, executeCS);
     }
 
-    public CompletionStage<PaymentHandleResponse> lookUpPayment(String paypalPaymentId) {
+    public CompletionStage<PaymentHandleResponse> getPayment(String paypalPaymentId) {
         return runWithExceptionallyHandling(paypalPaymentId, PAYPAL_PLUS_PAYMENT_ID,
                 paypalPlusFacade.getPaymentService().getByPaymentId(paypalPaymentId)
                         .thenApply(PaymentHandleResponse::of200OkResponseBody)

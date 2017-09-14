@@ -26,6 +26,6 @@ public class CommercetoolsGetPaymentsController extends BaseCommercetoolsPayment
             produces = APPLICATION_JSON_VALUE)
     public CompletionStage<ResponseEntity> getPayment(@PathVariable String tenantName,
                                                       @PathVariable String paypalPaymentId) {
-        return getTenantHandlerResponse(tenantName, paymentHandler -> paymentHandler.lookUpPayment(paypalPaymentId));
+        return getTenantHandlerResponse(tenantName, paymentHandler -> paymentHandler.getPayment(paypalPaymentId));
     }
 }

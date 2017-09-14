@@ -184,7 +184,7 @@ Additionally, response can contain additional response body. All fields of the r
     1. user is redirected to Paypal payment page
     1. in a different tab, user changes his cart to e.g. item2=20€
     1. user completes the payment in the first tab and is redirected back to shop
-    1. paypal approves the payment for 10€, but the real total amount has changed to 20€
+    1. paypal approves the payment for 10€, but the real total amount of sold (shipped) items has changed to 20€
     
     **Possible solution:** the backend has to compare total amount of the payment and total amount of payment's cart before calling `patch/payments` endpoint.
      In case of differences, the whole payment process must be restarted.

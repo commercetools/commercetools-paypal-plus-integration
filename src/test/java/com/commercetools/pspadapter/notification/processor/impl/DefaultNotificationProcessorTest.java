@@ -1,5 +1,7 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.notification.NotificationDispatcher;
 import com.commercetools.pspadapter.notification.processor.NotificationProcessorContainer;
@@ -10,6 +12,7 @@ import com.paypal.api.payments.Event;
 import io.sphere.sdk.payments.Payment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 
@@ -26,18 +29,24 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultNotificationProcessorTest {
 
+    @Mock
+    private CtpFacade ctpFacade;
+
+    @Mock
+    private Payment payment;
+
+    private PaypalPlusFormatter paypalPlusFormatter = new PaypalPlusFormatterImpl();
+
     @Test
     public void whenNotificationHasNoProcessor_defaultProcessorIsUsed() {
         Gson gson = new GsonBuilder().create();
-        CtpFacade ctpFacade = mock(CtpFacade.class);
-        Payment mockPayment = mock(Payment.class);
         DefaultNotificationProcessor mockDefaultProcessor = mock(DefaultNotificationProcessor.class);
         when(mockDefaultProcessor.processEventNotification(any(), any()))
-                .thenReturn(CompletableFuture.completedFuture(mockPayment));
-        PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(gson);
-        PaymentSaleRefundedProcessor paymentRefundedProcessor =new PaymentSaleRefundedProcessor(gson);
-        PaymentSaleDeniedProcessor paymentDeniedProcessor = new PaymentSaleDeniedProcessor(gson);
-        PaymentSaleReversedProcessor paymentReversedProcessor = new PaymentSaleReversedProcessor(gson);
+                .thenReturn(CompletableFuture.completedFuture(payment));
+        PaymentSaleCompletedProcessor paymentCompletedProcessor = new PaymentSaleCompletedProcessor(gson, paypalPlusFormatter);
+        PaymentSaleRefundedProcessor paymentRefundedProcessor = new PaymentSaleRefundedProcessor(gson, paypalPlusFormatter);
+        PaymentSaleDeniedProcessor paymentDeniedProcessor = new PaymentSaleDeniedProcessor(gson, paypalPlusFormatter);
+        PaymentSaleReversedProcessor paymentReversedProcessor = new PaymentSaleReversedProcessor(gson, paypalPlusFormatter);
 
         List<PaymentSaleNotificationProcessorBase> processors = Arrays.asList(paymentCompletedProcessor, paymentRefundedProcessor, paymentDeniedProcessor, paymentReversedProcessor);
 

@@ -1,5 +1,7 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
@@ -18,6 +20,7 @@ import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import org.javamoney.moneta.Money;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -44,6 +47,11 @@ public class PaymentSaleRefundedProcessorTest extends BaseNotificationTest {
 
     private static final String REFUNDED_CURRENCY = "USD";
 
+    @Mock
+    private Payment ctpMockPayment;
+
+    private PaypalPlusFormatter paypalPlusFormatter = new PaypalPlusFormatterImpl();
+
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
         // set up
@@ -51,7 +59,7 @@ public class PaymentSaleRefundedProcessorTest extends BaseNotificationTest {
 
         Payment ctpMockPayment = createMockPayment(testInteractionId, TransactionType.CHARGE, TransactionState.SUCCESS);
 
-        NotificationProcessorBase processorBase = spy(new PaymentSaleRefundedProcessor(new GsonBuilder().create()));
+        NotificationProcessorBase processorBase = spy(new PaymentSaleRefundedProcessor(new GsonBuilder().create(), paypalPlusFormatter));
 
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpMockPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());

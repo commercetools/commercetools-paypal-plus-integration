@@ -1,5 +1,7 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
@@ -10,13 +12,11 @@ import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.Transaction;
-import io.sphere.sdk.payments.TransactionState;
-import io.sphere.sdk.payments.TransactionType;
+import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.updateactions.AddInterfaceInteraction;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
+import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.payment.constants.paypalPlus.NotificationEventData.*;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
+import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
@@ -56,6 +57,8 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
 
     @Mock
     private OrderService orderService;
+
+    private PaypalPlusFormatter paypalPlusFormatter = new PaypalPlusFormatterImpl();
 
     private Event event;
 
@@ -82,7 +85,7 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
         this.ctpFacade = spy(new CtpFacade(cartService, orderService, paymentService));
         when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(existingCtpTransaction));
 
-        this.processorBase = spy(new PaymentSalePendingProcessor(new GsonBuilder().create()));
+        this.processorBase = spy(new PaymentSalePendingProcessor(new GsonBuilder().create(), paypalPlusFormatter));
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpMockPayment)))
                 .when(processorBase).getRelatedCtpPayment(any(), any());
     }
@@ -116,9 +119,12 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
             UpdateAction<Payment> addInterfaceInteractionAction = updateActions.get(0);
             assertThat(addInterfaceInteractionAction).isInstanceOf(AddInterfaceInteraction.class);
             AddTransaction addTransactionAction = (AddTransaction) updateActions.get(1);
-            assertThat(addTransactionAction.getTransaction().getType()).isEqualTo(TransactionType.CHARGE);
-            assertThat(addTransactionAction.getTransaction().getState()).isEqualTo(TransactionState.PENDING);
-            assertThat(addTransactionAction.getTransaction().getInteractionId()).isEqualTo(TEST_INTERACTION_ID);
+            TransactionDraft addedTxn = addTransactionAction.getTransaction();
+            assertThat(addedTxn.getType()).isEqualTo(TransactionType.CHARGE);
+            assertThat(addedTxn.getState()).isEqualTo(TransactionState.PENDING);
+            assertThat(addedTxn.getInteractionId()).isEqualTo(TEST_INTERACTION_ID);
+            assertThat(addedTxn.getAmount()).isEqualTo(Money.of(1, USD));
+
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 

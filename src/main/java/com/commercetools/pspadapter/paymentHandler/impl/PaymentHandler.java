@@ -2,6 +2,7 @@ package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.exception.PaypalPlusException;
 import com.commercetools.exception.PaypalPlusServiceException;
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.helper.mapper.PaymentMapperHelper;
@@ -28,14 +29,13 @@ import io.sphere.sdk.payments.commands.updateactions.AddInterfaceInteraction;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import io.sphere.sdk.payments.commands.updateactions.SetCustomField;
 import io.sphere.sdk.payments.commands.updateactions.SetInterfaceId;
-import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
+import javax.money.MonetaryAmount;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,6 +72,7 @@ public class PaymentHandler {
     private final PaypalPlusFacade paypalPlusFacade;
     private final PaymentMapperHelper paymentMapperHelper;
     private final Gson paypalGson;
+    private final PaypalPlusFormatter paypalPlusFormatter;
 
     private final Logger logger;
 
@@ -83,12 +84,14 @@ public class PaymentHandler {
                           @Nonnull PaymentMapperHelper paymentMapperHelper,
                           @Nonnull PaypalPlusFacade paypalPlusFacade,
                           @Nonnull String tenantName,
-                          @Nonnull Gson paypalGson) {
+                          @Nonnull Gson paypalGson,
+                          @Nonnull PaypalPlusFormatter paypalPlusFormatter) {
         this.ctpFacade = ctpFacade;
         this.paymentMapperHelper = paymentMapperHelper;
         this.paypalPlusFacade = paypalPlusFacade;
         this.paypalGson = paypalGson;
         this.logger = LoggerFactory.getLogger(createLoggerName(PaymentHandler.class, tenantName));
+        this.paypalPlusFormatter = paypalPlusFormatter;
     }
 
     public CompletionStage<PaymentHandleResponse> createPayment(@Nonnull String ctpPaymentId) {
@@ -251,10 +254,13 @@ public class PaymentHandler {
                         format("Can't create transaction form paypalPaymentId=[%s]: transaction amount is not found",
                                 paypalPayment.getId())));
 
-        BigDecimal total = new BigDecimal(totalAmount.getTotal());
-        String updateTimeStr = paypalPayment.getUpdateTime() == null ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
+        MonetaryAmount monetaryAmount = paypalPlusFormatter.paypalPlusAmountToCtpMonetaryAmount(totalAmount);
+
+        String updateTimeStr = paypalPayment.getUpdateTime() == null
+                ? paypalPayment.getCreateTime() : paypalPayment.getUpdateTime();
+
         TransactionDraft transactionDraft = TransactionDraftBuilder
-                .of(TransactionType.CHARGE, Money.of(total, totalAmount.getCurrency()))
+                .of(TransactionType.CHARGE, monetaryAmount)
                 .timestamp(toZonedDateTime(updateTimeStr))
                 .state(transactionState)
                 .interactionId(getFirstSaleTransactionFromPayment(paypalPayment)
@@ -335,8 +341,7 @@ public class PaymentHandler {
         setCustomFieldActions.add(SetCustomField.ofObject(IBAN, paymentInstruction.getRecipientBankingInstruction().getInternationalBankAccountNumber()));
         setCustomFieldActions.add(SetCustomField.ofObject(BIC, paymentInstruction.getRecipientBankingInstruction().getBankIdentifierCode()));
         setCustomFieldActions.add(SetCustomField.ofObject(PAYMENT_DUE_DATE, paymentInstruction.getPaymentDueDate()));
-        setCustomFieldActions.add(SetCustomField.ofObject(AMOUNT, Money.of(new BigDecimal(paymentInstruction.getAmount().getValue()),
-                paymentInstruction.getAmount().getCurrency())));
+        setCustomFieldActions.add(SetCustomField.ofObject(AMOUNT, paypalPlusFormatter.paypalPlusAmountToCtpMonetaryAmount(paymentInstruction.getAmount())));
         return setCustomFieldActions;
     }
 

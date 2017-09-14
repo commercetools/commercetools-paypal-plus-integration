@@ -1,5 +1,6 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
@@ -21,16 +22,19 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
     private final PaypalPlusFacadeFactory paypalPlusFacadeFactory;
     private final PaymentMapperHelper paymentMapperHelper;
     private final Gson paypalGson;
+    private final PaypalPlusFormatter paypalPlusFormatter;
 
     @Autowired
     public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory,
                                       @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory,
                                       @Nonnull PaymentMapperHelper paymentMapperHelper,
-                                      @Nonnull Gson paypalGson) {
+                                      @Nonnull Gson paypalGson,
+                                      @Nonnull PaypalPlusFormatter paypalPlusFormatter) {
         this.configFactory = configFactory;
         this.paypalPlusFacadeFactory = paypalPlusFacadeFactory;
         this.paymentMapperHelper = paymentMapperHelper;
         this.paypalGson = paypalGson;
+        this.paypalPlusFormatter = paypalPlusFormatter;
     }
 
     @Override
@@ -39,7 +43,7 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
                 .map(tenantConfig -> {
                     CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
                     PaypalPlusFacade payPalPlusFacade = paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
-                    return new PaymentHandler(ctpFacade, paymentMapperHelper, payPalPlusFacade, tenantName, paypalGson);
+                    return new PaymentHandler(ctpFacade, paymentMapperHelper, payPalPlusFacade, tenantName, paypalGson, paypalPlusFormatter);
                 });
     }
 

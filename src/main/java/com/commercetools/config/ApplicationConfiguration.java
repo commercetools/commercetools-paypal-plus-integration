@@ -1,7 +1,5 @@
 package com.commercetools.config;
 
-import com.commercetools.helper.formatter.PaypalPlusFormatter;
-import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -16,11 +14,6 @@ import javax.annotation.Nonnull;
 
 @Configuration
 public class ApplicationConfiguration {
-
-    @Bean
-    public PaypalPlusFormatter paypalPlusFormatter() {
-        return new PaypalPlusFormatterImpl();
-    }
 
     /**
      * @return bean which forces to treat trailing slash same as without it.

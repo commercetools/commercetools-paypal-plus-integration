@@ -1,5 +1,6 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.google.gson.Gson;
 import io.sphere.sdk.payments.TransactionState;
@@ -16,8 +17,8 @@ import javax.annotation.Nonnull;
 public class PaymentSaleReversedProcessor extends PaymentSaleNotificationProcessorBase {
 
     @Autowired
-    public PaymentSaleReversedProcessor(@Nonnull Gson gson) {
-        super(gson);
+    public PaymentSaleReversedProcessor(@Nonnull Gson gson, @Nonnull PaypalPlusFormatter paypalPlusFormatter) {
+        super(gson, paypalPlusFormatter);
     }
 
     @Override

@@ -1,23 +1,17 @@
 package com.commercetools.pspadapter.notification.processor.impl;
 
+import com.commercetools.helper.formatter.PaypalPlusFormatter;
 import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.google.gson.Gson;
 import com.paypal.api.payments.Event;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.Transaction;
-import io.sphere.sdk.payments.TransactionDraft;
-import io.sphere.sdk.payments.TransactionDraftBuilder;
-import io.sphere.sdk.payments.TransactionState;
-import io.sphere.sdk.payments.TransactionType;
+import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
-import org.javamoney.moneta.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +27,11 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
 
     private final static Logger logger = LoggerFactory.getLogger(PaymentSaleNotificationProcessorBase.class);
 
-    PaymentSaleNotificationProcessorBase(Gson gson) {
+    private final PaypalPlusFormatter paypalPlusFormatter;
+
+    PaymentSaleNotificationProcessorBase(@Nonnull Gson gson, @Nonnull PaypalPlusFormatter paypalPlusFormatter) {
         super(gson);
+        this.paypalPlusFormatter = paypalPlusFormatter;
     }
 
     @Nonnull
@@ -78,13 +75,14 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
         try {
             Map resource = (Map) event.getResource();
             String resourceId = (String) resource.get(ID);
-            Map amount = (Map) resource.get(AMOUNT);
-            BigDecimal total = new BigDecimal((String) amount.get(TOTAL));
-            String currencyCode = (String) amount.get(CURRENCY);
             String createTime = (String) resource.get(CREATE_TIME);
 
+            Map amount = (Map) resource.get(AMOUNT);
+            String total = (String) amount.get(TOTAL);
+            String currencyCode = (String) amount.get(CURRENCY);
+
             TransactionDraft transactionDraft = TransactionDraftBuilder
-                    .of(transactionType, Money.of(total, currencyCode))
+                    .of(transactionType, paypalPlusFormatter.paypalPlusAmountToCtpMonetaryAmount(total, currencyCode))
                     .timestamp(toZonedDateTime(createTime))
                     .interactionId(resourceId)
                     .state(getCtpTransactionState())

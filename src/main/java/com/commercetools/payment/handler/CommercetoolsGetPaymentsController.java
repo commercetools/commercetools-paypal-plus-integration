@@ -14,18 +14,18 @@ import static com.commercetools.payment.constants.Psp.PSP_NAME;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-public class CommercetoolsLookUpPaymentsController extends BaseCommercetoolsPaymentsHandleController {
+public class CommercetoolsGetPaymentsController extends BaseCommercetoolsPaymentsHandleController {
 
-    public CommercetoolsLookUpPaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,
-                                                 @Nonnull PaymentHandlerProvider paymentHandlerProvider) {
+    public CommercetoolsGetPaymentsController(@Nonnull StringTrimmerEditor stringTrimmerEditor,
+                                              @Nonnull PaymentHandlerProvider paymentHandlerProvider) {
         super(stringTrimmerEditor, paymentHandlerProvider);
     }
 
     @GetMapping(
             value = "/{tenantName}/" + PSP_NAME + "/payments/{paypalPaymentId}",
             produces = APPLICATION_JSON_VALUE)
-    public CompletionStage<ResponseEntity> lookUpPayment(@PathVariable String tenantName,
-                                                         @PathVariable String paypalPaymentId) {
-        return getTenantHandlerResponse(tenantName, paymentHandler -> paymentHandler.lookUpPayment(paypalPaymentId));
+    public CompletionStage<ResponseEntity> getPayment(@PathVariable String tenantName,
+                                                      @PathVariable String paypalPaymentId) {
+        return getTenantHandlerResponse(tenantName, paymentHandler -> paymentHandler.getPayment(paypalPaymentId));
     }
 }

@@ -152,7 +152,7 @@ All endpoints accept and return data as JSON.
 1. Return HTTP codes on `execute/payments` endpoint URL:
 - **201**: successfully executed payment in PayPal, created transaction in CTP
 
-1. Return HTTP codes on `look-up/payments` endpoint URL:
+1. Return HTTP codes on `paypalplus/payments/${paypalPaymentId}` endpoint URL:
 - **200**: Paypal payment found and returned as JSON response body
 
 1. Common error codes

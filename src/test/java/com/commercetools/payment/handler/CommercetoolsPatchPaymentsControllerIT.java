@@ -95,7 +95,7 @@ public class CommercetoolsPatchPaymentsControllerIT {
         // A bug from Paypal makes this test sometimes fails, sometimes not
         // until it's fixed, it will be disabled
         // https://github.com/paypal/PayPal-REST-API-issues/issues/124
-//        com.paypal.api.payments.Payment ppPayment = executeBlocking(ppFacade.getPaymentService().lookUp(ctpPayment.getInterfaceId()));
+//        com.paypal.api.payments.Payment ppPayment = executeBlocking(ppFacade.getPaymentService().getByPaymentId(ctpPayment.getInterfaceId()));
 //        assertThat(ppPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
 //        assertThat(ppPayment.getPayer().getPayerInfo().getBillingAddress()).isNotNull();
     }
@@ -117,7 +117,7 @@ public class CommercetoolsPatchPaymentsControllerIT {
         // until it's fixed, it will be disabled
         // https://github.com/paypal/PayPal-REST-API-issues/issues/124
 //        com.paypal.api.payments.Payment ppPayment = executeBlocking(ppFacade.getPaymentService()
-//                .lookUp(ctpPayment.getInterfaceId()));
+//                .getByPaymentId(ctpPayment.getInterfaceId()));
 //        assertThat(ppPayment.getTransactions().get(0).getItemList().getShippingAddress()).isNotNull();
 //        assertThat(ppPayment.getPayer().getPayerInfo().getBillingAddress()).isNotNull();
     }

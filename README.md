@@ -174,7 +174,7 @@ Additionally, response can contain additional response body. All fields of the r
     1. user inputs an address Berlin, Germany
     1. he clicks on Continue and is redirected to Paypal payment page with this address.
     1. In a different tab, the same user changes his address to Paris, France.
-    1. The user confirms the payment in the first tab
+    1. The user confirms the payment in the first tab and is redirected back to shop
     1. Paypal has the address of Berlin, but the shop will deliver the goods to Paris.
     
     **Possible solution:** the backend calls `patch/payments` endpoint every time user changes it.
@@ -183,7 +183,7 @@ Additionally, response can contain additional response body. All fields of the r
     1. user has cart with item1=10€
     1. user is redirected to Paypal payment page
     1. in a different tab, user changes his cart to e.g. item2=20€
-    1. user completes the payment in the first tab
+    1. user completes the payment in the first tab and is redirected back to shop
     1. paypal approves the payment for 10€, but the real total amount has changed to 20€
     
     **Possible solution:** the backend has to compare total amount of the payment and total amount of payment's cart before calling `patch/payments` endpoint.

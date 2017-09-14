@@ -3,15 +3,22 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [commercetools _Paypal Plus_ Integration Service](#commercetools-_paypal-plus_-integration-service)
-  - [Front-end integration guide](#front-end-integration-guide)
-  - [Local debug](#local-debug)
-  - [Tests](#tests)
-    - [Integration tests](#integration-tests)
-  - [How to use](#how-to-use)
-  - [HTTP Responses](#http-responses)
+- [Definition](#definition)
+- [Front-end integration guide](#front-end-integration-guide)
+- [Local debug](#local-debug)
+- [Tests](#tests)
+  - [Integration tests](#integration-tests)
+- [How to use](#how-to-use)
+- [HTTP Responses](#http-responses)
+- [Possible edge cases](#possible-edge-cases)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Definition
+In this process, there are 3 parties involved:
+* **The frontend** -  the browser part of the shop. This is what the user interacts with.
+* **The backend** - the shop server.
+* **Paypal-integration** - hosted service (this repository) which exposes public endpoints 
 
 ## Front-end integration guide
 
@@ -39,11 +46,6 @@ which is used for local run/debug, because the integration tests will remove all
 
 
 ## How to use
-In this process, there are 3 parties involved:
-* The frontend -  the browser part of the shop. This is what the user interacts with.
-* The backend - the shop server.
-* Paypal-integration - hosted service (this repository) which exposes public endpoints 
-
 1. Show available PayPal payment methods
     1. Backend creates CTP payment and assigns it to the cart. 
         - Required fields for the CTP cart:

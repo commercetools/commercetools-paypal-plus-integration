@@ -12,15 +12,16 @@ import com.paypal.api.payments.Event;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.Payment;
+import io.sphere.sdk.payments.Transaction;
+import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
-import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
-import org.javamoney.moneta.Money;
+import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
-public class PaymentSaleReversedProcessorTest {
+public class PaymentSaleReversedProcessorTest extends BaseNotificationTest {
 
     private static final String CREATE_TIME_VALUE = "2014-10-31T15:41:51Z";
 
@@ -46,7 +47,9 @@ public class PaymentSaleReversedProcessorTest {
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
         // set up
-        Payment ctpMockPayment = mock(Payment.class);
+        String testInteractionId = "testInteractionId";
+
+        Payment ctpMockPayment = createMockPayment(testInteractionId, TransactionType.CHARGE, TransactionState.SUCCESS);
 
         NotificationProcessorBase processorBase = spy(new PaymentSaleReversedProcessor(new GsonBuilder().create()));
 
@@ -61,7 +64,7 @@ public class PaymentSaleReversedProcessorTest {
         );
 
         Map<String, String> amountMap = ImmutableMap.of(TOTAL, REVERSED_AMOUNT, CURRENCY, REVERSED_CURRENCY);
-        Map<String, Object> resourceMap = ImmutableMap.of(AMOUNT, amountMap, CREATE_TIME, CREATE_TIME_VALUE);
+        Map<String, Object> resourceMap = ImmutableMap.of(ID, testInteractionId, AMOUNT, amountMap, CREATE_TIME, CREATE_TIME_VALUE);
 
         Event event = new Event();
         event.setEventType(NotificationEventType.PAYMENT_SALE_REVERSED.toString());
@@ -69,7 +72,7 @@ public class PaymentSaleReversedProcessorTest {
 
         // test
         doAnswer(invocation -> {
-            verifyUpdatePaymentCall(ctpMockPayment, REVERSED_AMOUNT, REVERSED_CURRENCY, invocation);
+            verifyUpdatePaymentCall(ctpMockPayment, invocation, TransactionState.FAILURE);
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 
@@ -81,17 +84,6 @@ public class PaymentSaleReversedProcessorTest {
                 .updatePayment(any(Payment.class), anyList());
     }
 
-    private void verifyUpdatePaymentCall(Payment ctpMockPayment, String reversedAmount, String reversedCurrency, InvocationOnMock invocation) {
-        Payment payment = invocation.getArgumentAt(0, Payment.class);
-        List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
-        assertThat(payment).isEqualTo(ctpMockPayment);
-        assertThat(updateActions.size()).isEqualTo(2);
-        // One of the action is AddInterfaceInteraction, which is common for all notification processors.
-        // I already covered this case in {PaymentSalePendingProcessorTest},
-        // so it's not necessary to repeat it here.
-        AddTransaction addTransaction = (AddTransaction) updateActions.get(1);
-        assertThat(addTransaction.getTransaction().getType()).isEqualTo(TransactionType.CHARGEBACK);
-        assertThat(addTransaction.getTransaction().getAmount()).isEqualTo(Money.of(new BigDecimal(reversedAmount), reversedCurrency));
-    }
+
 
 }

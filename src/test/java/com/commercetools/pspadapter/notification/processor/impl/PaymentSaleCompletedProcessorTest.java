@@ -32,7 +32,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PaymentSaleCompletedProcessorTest {
+public class PaymentSaleCompletedProcessorTest extends BaseNotificationTest {
 
     private final Gson gson = new GsonBuilder().create();
 
@@ -49,7 +49,7 @@ public class PaymentSaleCompletedProcessorTest {
     public void whenTxnIsChargePending_shouldReturnChangeStateAction() {
         String testInteractionId = "testInteractionId";
 
-        Payment ctpPayment = mockCtpPayment(testInteractionId, TransactionState.PENDING);
+        Payment ctpPayment = createMockPayment(testInteractionId, TransactionType.CHARGE, TransactionState.PENDING);
 
         Map<String, String> resourceMap = ImmutableMap.of(ID, testInteractionId);
 
@@ -66,7 +66,7 @@ public class PaymentSaleCompletedProcessorTest {
     public void whenTxnIsChargeSuccess_shouldReturnNullChangeStateAction() {
         String testInteractionId = "testInteractionId";
 
-        Payment ctpPayment = mockCtpPayment(testInteractionId, TransactionState.SUCCESS);
+        Payment ctpPayment = createMockPayment(testInteractionId, TransactionType.CHARGE, TransactionState.SUCCESS);
 
         Map<String, String> resourceMap = ImmutableMap.of(ID, testInteractionId);
 
@@ -85,7 +85,7 @@ public class PaymentSaleCompletedProcessorTest {
         // set up
         String testInteractionId = "testInteractionId";
 
-        Payment ctpPayment = mockCtpPayment(testInteractionId, TransactionState.PENDING);
+        Payment ctpPayment = createMockPayment(testInteractionId, TransactionType.CHARGE, TransactionState.PENDING);
 
         NotificationProcessorBase processorBase = spy(new PaymentSaleCompletedProcessor(gson));
         doReturn(CompletableFuture.completedFuture(Optional.of(ctpPayment)))
@@ -114,18 +114,5 @@ public class PaymentSaleCompletedProcessorTest {
         assertThat(returnedPayment).isEqualTo(ctpPayment);
         verify(paymentService, times(1))
                 .updatePayment(any(Payment.class), anyList());
-    }
-
-    private Payment mockCtpPayment(String testInteractionId, TransactionState transactionState) {
-        Transaction transaction = mock(Transaction.class);
-        when(transaction.getType()).thenReturn(TransactionType.CHARGE);
-        when(transaction.getState()).thenReturn(transactionState);
-        when(transaction.getId()).thenReturn("testId");
-        when(transaction.getInteractionId()).thenReturn(testInteractionId);
-
-        Payment ctpPayment = mock(Payment.class);
-        when(ctpPayment.getTransactions())
-                .thenReturn(Collections.singletonList(transaction));
-        return ctpPayment;
     }
 }

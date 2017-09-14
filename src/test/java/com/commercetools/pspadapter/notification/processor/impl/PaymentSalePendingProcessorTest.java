@@ -39,7 +39,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
-public class PaymentSalePendingProcessorTest {
+public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
 
     private static final String TEST_INTERACTION_ID = "testInteractionId";
     @Mock
@@ -95,7 +95,7 @@ public class PaymentSalePendingProcessorTest {
 
         // test
         doAnswer(invocation -> {
-            verifyUpdatePaymentCall(ctpMockPayment, invocation);
+            verifyUpdatePaymentCall(ctpMockPayment, invocation, TransactionState.PENDING);
             return CompletableFuture.completedFuture(ctpMockPayment);
         }).when(paymentService).updatePayment(any(Payment.class), anyList());
 
@@ -126,18 +126,6 @@ public class PaymentSalePendingProcessorTest {
 
         // assert
         assertThat(returnedPayment).isSameAs(ctpMockPayment);
-    }
-
-    private void verifyUpdatePaymentCall(Payment ctpMockPayment, InvocationOnMock invocation) {
-        Payment payment = invocation.getArgumentAt(0, Payment.class);
-        List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
-        assertThat(payment).isEqualTo(ctpMockPayment);
-        assertThat(updateActions.size()).isEqualTo(2);
-        // One of the action is AddInterfaceInteraction, which is common for all notification processors.
-        // I already covered this case in {whenTransactionIsNotFound_shouldAddNewTransaction},
-        // so it's not necessary to repeat it here.
-        ChangeTransactionState changeTransactionState = (ChangeTransactionState) updateActions.get(1);
-        assertThat(changeTransactionState.getState()).isEqualTo(TransactionState.PENDING);
     }
 
 }

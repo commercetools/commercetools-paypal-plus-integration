@@ -1,9 +1,11 @@
 package com.commercetools.payment.handler;
 
+import com.commercetools.model.ApplicationInfo;
 import com.commercetools.pspadapter.tenant.TenantProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,11 +30,11 @@ public class CommercetoolsHealthController extends BaseCommercetoolsController {
     @RequestMapping(
             value = {"/health", "/"},
             produces = APPLICATION_JSON_VALUE)
-    public Map<String, Object> checkHealth() {
-        // TODO: akovalenko: re-factor to use common PaymentHandleResponse approach
+    public ResponseEntity<?> checkHealth(@Autowired ApplicationInfo applicationInfo) {
         Map<String, Object> tenantResponse = new HashMap<>();
         tenantResponse.put("tenants", this.tenantProperties.getTenants().keySet());
-        tenantResponse.put("statusCode", HttpStatus.OK.value());
-        return tenantResponse;
+        tenantResponse.put("applicationInfo", applicationInfo);
+
+        return new ResponseEntity<>(tenantResponse, HttpStatus.OK);
     }
 }

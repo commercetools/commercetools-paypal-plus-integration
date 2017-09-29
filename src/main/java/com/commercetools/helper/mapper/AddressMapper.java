@@ -17,12 +17,13 @@ public interface AddressMapper {
     ShippingAddress ctpAddressToPaypalPlusShippingAddress(@Nonnull Address ctpAddress);
 
     /**
+     * Maps CTP address to Paypal Plus billing address
+     */
+    com.paypal.api.payments.Address ctpAddressToPaypalPlusBillingAddress(@Nonnull Address ctpAddress);
+
+    /**
      * Maps CTP address to Paypal Plus /payer/payer_info
      */
     PayerInfo ctpAddressToPaypalPlusPayerInfo(@Nonnull Address ctpAddress);
 
-    /**
-     * Maps CTP address to Paypal Plus billing address
-     */
-    com.paypal.api.payments.Address ctpAddressToPaypalPlusBillingAddress(@Nonnull Address ctpAddress);
 }

@@ -1,4 +1,4 @@
-package com.commercetools.payment.handler;
+package com.commercetools.controller;
 
 import com.commercetools.Application;
 import org.junit.Test;

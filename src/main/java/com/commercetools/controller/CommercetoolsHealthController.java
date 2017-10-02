@@ -1,6 +1,7 @@
-package com.commercetools.payment.handler;
+package com.commercetools.controller;
 
 import com.commercetools.model.ApplicationInfo;
+import com.commercetools.payment.handler.BaseCommercetoolsController;
 import com.commercetools.pspadapter.tenant.TenantProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;

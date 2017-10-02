@@ -27,9 +27,10 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * <li>{@code requestMethod}: used request method which landed to the error (<i>POST</i>, <i>GET</i> and so on)</li>
  * <li>{@code timestamp}: an ISO-8601 representation of the request time</li>
  * <li>{@code applicationInfo}: {@link ApplicationInfo} about the running application</li>
+ * <li>other default values from {@link ErrorAttributes} (like <i>status</i>, <i>error</i>, <i>message</i>,
+ * <i>path</i>)</li>
  * </ul>
  */
-// TODO: tests
 @RestController
 public class CommercetoolsCustomErrorController implements ErrorController {
 
@@ -53,7 +54,6 @@ public class CommercetoolsCustomErrorController implements ErrorController {
         return PATH;
     }
 
-    // TODO: test responses
     private Map<String, Object> getErrorAttributes(@Nonnull HttpServletRequest request,
                                                    @Nonnull ApplicationInfo applicationInfo) {
         RequestAttributes requestAttributes = new ServletRequestAttributes(request);

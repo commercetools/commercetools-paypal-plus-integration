@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.commercetools.model.ApplicationInfo.APP_INFO_KEY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -34,7 +35,7 @@ public class CommercetoolsHealthController extends BaseCommercetoolsController {
     public ResponseEntity<?> checkHealth(@Autowired ApplicationInfo applicationInfo) {
         Map<String, Object> tenantResponse = new HashMap<>();
         tenantResponse.put("tenants", this.tenantProperties.getTenants().keySet());
-        tenantResponse.put("applicationInfo", applicationInfo);
+        tenantResponse.put(APP_INFO_KEY, applicationInfo);
 
         return new ResponseEntity<>(tenantResponse, HttpStatus.OK);
     }

@@ -13,6 +13,9 @@ import static java.util.Optional.ofNullable;
  */
 @Component
 public class ApplicationInfo {
+
+    public static final String APP_INFO_KEY = "applicationInfo";
+
     private final String version;
     private final String title;
 

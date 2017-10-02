@@ -17,10 +17,17 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.Map;
 
+import static com.commercetools.model.ApplicationInfo.APP_INFO_KEY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Custom (unexpected) error response implementation.
+ * <p>
+ * The implementation returns error response with JSON body content with the following properties:<ul>
+ * <li>{@code requestMethod}: used request method which landed to the error (<i>POST</i>, <i>GET</i> and so on)</li>
+ * <li>{@code timestamp}: an ISO-8601 representation of the request time</li>
+ * <li>{@code applicationInfo}: {@link ApplicationInfo} about the running application</li>
+ * </ul>
  */
 // TODO: tests
 @RestController
@@ -55,7 +62,7 @@ public class CommercetoolsCustomErrorController implements ErrorController {
 
         // override timestamp from DefaultErrorAttributes.getErrorAttributes() which is too verbose
         errorAttributes.put("timestamp", Instant.now().toString());
-        errorAttributes.put("applicationInfo", applicationInfo);
+        errorAttributes.put(APP_INFO_KEY, applicationInfo);
         return errorAttributes;
     }
 

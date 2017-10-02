@@ -33,25 +33,30 @@ public class CommercetoolsCustomErrorControllerIT {
     @Test
     public void error() throws Exception {
         // GET to wrong URL
-        assertResponse(testRestTemplate.getForObject(format("http://localhost:%s/woot", port), Map.class), GET);
-        assertResponse(testRestTemplate.getForObject(format("http://localhost:%s/woot/", port), Map.class), GET);
+        assertResponse(testRestTemplate.getForObject(format("http://localhost:%s/woot", port), Map.class), "/woot", GET);
+        assertResponse(testRestTemplate.getForObject(format("http://localhost:%s/woot/", port), Map.class), "/woot/", GET);
 
         // GET request to the page which supports only POST requests
         assertResponse(testRestTemplate.getForObject(format("http://localhost:%s/%s/commercetools/create/payments/11111111-1111-1111-1111-111111111111/",
-                port, MAIN_TEST_TENANT_NAME), Map.class), GET);
+                port, MAIN_TEST_TENANT_NAME), Map.class),
+                format("/%s/commercetools/create/payments/11111111-1111-1111-1111-111111111111/", MAIN_TEST_TENANT_NAME), GET);
 
         // POST to wrong URL
-        assertResponse(testRestTemplate.postForObject(format("http://localhost:%s/woot", port), null, Map.class), POST);
-        assertResponse(testRestTemplate.postForObject(format("http://localhost:%s/woot/", port), null, Map.class), POST);
+        assertResponse(testRestTemplate.postForObject(format("http://localhost:%s/woot", port), null, Map.class),
+                "/woot", POST);
+        assertResponse(testRestTemplate.postForObject(format("http://localhost:%s/woot/", port), null, Map.class),
+                "/woot/", POST);
 
         // POST request to the page which supports only GET requests
         assertResponse(testRestTemplate.postForObject(format("http://localhost:%s/%s/payments/11111111-1111-1111-1111-111111111111/",
-                port, MAIN_TEST_TENANT_NAME), null, Map.class), POST);
+                port, MAIN_TEST_TENANT_NAME), null, Map.class),
+                format("/%s/payments/11111111-1111-1111-1111-111111111111/", MAIN_TEST_TENANT_NAME), POST);
     }
 
     @SuppressWarnings("unchecked")
-    private void assertResponse(Map result, String requestMethod) throws Exception {
+    private void assertResponse(Map result, String path, String requestMethod) throws Exception {
         assertThat(result.get("requestMethod")).isEqualTo(requestMethod);
+        assertThat(result.get("path")).isEqualTo(path);
 
         // assert that responsed timestamp is not more that 10 seconds ago (expecting some delays in the tests)
         Instant timestamp = Instant.parse((String) result.get("timestamp"));

@@ -5,7 +5,7 @@ set -e
 export SCRIPT_DIR=$(dirname "$0")
 export COMMIT="${TRAVIS_COMMIT::8}"
 
-if [[ "$TRAVIS_PULL_REQUEST" == "false" ]] ; then
+if [[ "$TRAVIS_PULL_REQUEST" != "false" ]] ; then
    # skip images build for pull requests
    echo "Pull request $TRAVIS_PULL_REQUEST identified, docker image build is skipped" ;
    exit 0

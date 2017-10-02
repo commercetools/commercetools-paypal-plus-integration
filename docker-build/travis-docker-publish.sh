@@ -14,7 +14,7 @@ fi
 export REPO="commercetoolsps/commercetools-paypal-plus-integration"
 export DOCKER_TAG=`if [[ "$TRAVIS_BRANCH" == "master" ]] ; then echo "latest"; else echo "wip-${TRAVIS_BRANCH//\//-}" ; fi`
 
-echo "Docker build scrip variables:"
+echo "Docker build script variables:"
 echo "    COMMIT=$COMMIT"
 echo "    TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER"
 echo "    TRAVIS_BRANCH=$TRAVIS_BRANCH"

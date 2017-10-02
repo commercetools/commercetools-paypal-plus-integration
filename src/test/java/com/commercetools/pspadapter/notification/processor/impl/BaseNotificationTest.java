@@ -7,8 +7,6 @@ import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.mockito.invocation.InvocationOnMock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +27,7 @@ public class BaseNotificationTest {
         return ctpMockPayment;
     }
 
+    @SuppressWarnings("unchecked")
     protected void verifyUpdatePaymentCall(Payment ctpMockPayment, InvocationOnMock invocation, TransactionState state) {
         Payment payment = invocation.getArgumentAt(0, Payment.class);
         List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);

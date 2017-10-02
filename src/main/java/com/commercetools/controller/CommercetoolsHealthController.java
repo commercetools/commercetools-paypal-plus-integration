@@ -17,6 +17,16 @@ import java.util.Map;
 import static com.commercetools.model.ApplicationInfo.APP_INFO_KEY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+/**
+ * Health endpoint, which might be used to check the service availability.
+ * <p>
+ * The endpoint accepts both <i>GET</i> and <i>POST</i> requests, both to <i>/health</i> and <i>/</i> (root) endpoints.
+ * <p>
+ * The response is always <i>200 (OK)</i>, JSON body contains:<ul>
+ * <li>{@code tenants}: list of tenants this services processes</li>
+ * <li>{@code applicationInfo}: {@link ApplicationInfo} about the running application</li>
+ * </ul>
+ */
 @RestController
 public class CommercetoolsHealthController extends BaseCommercetoolsController {
 

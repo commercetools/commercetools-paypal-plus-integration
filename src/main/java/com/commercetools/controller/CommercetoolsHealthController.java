@@ -1,5 +1,6 @@
 package com.commercetools.controller;
 
+import com.commercetools.http.converter.json.PrettyFormattedBody;
 import com.commercetools.model.ApplicationInfo;
 import com.commercetools.payment.handler.BaseCommercetoolsController;
 import com.commercetools.pspadapter.tenant.TenantProperties;
@@ -8,6 +9,7 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nonnull;
@@ -42,11 +44,13 @@ public class CommercetoolsHealthController extends BaseCommercetoolsController {
     @RequestMapping(
             value = {"/health", "/"},
             produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> checkHealth(@Autowired ApplicationInfo applicationInfo) {
+    public ResponseEntity<?> checkHealth(@RequestParam(required = false) String pretty,
+                                         @Autowired ApplicationInfo applicationInfo) {
         Map<String, Object> tenantResponse = new HashMap<>();
         tenantResponse.put("tenants", this.tenantProperties.getTenants().keySet());
         tenantResponse.put(APP_INFO_KEY, applicationInfo);
 
-        return new ResponseEntity<>(tenantResponse, HttpStatus.OK);
+        return new ResponseEntity<>(PrettyFormattedBody.of(tenantResponse, pretty != null),
+                HttpStatus.OK);
     }
 }

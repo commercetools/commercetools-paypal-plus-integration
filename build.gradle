@@ -53,7 +53,7 @@ jar {
 
 final depVersions = [
         springBoot         : ext.springBoot,
-        commercetoolsSdkJvm: '1.23.0',
+        commercetoolsSdkJvm: '1.26.0',
         paypalPlusSdk      : '1.14.0',
         assertJ            : '3.8.0',
         guava              : '23.0'

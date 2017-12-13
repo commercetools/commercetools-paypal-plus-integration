@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.is;
 public class PrettyGsonMessageConverterTest {
 
     /**
-     * We ensure that default "gsonMessageConverter" bean satisfies default and pretty JSON output.
+     * We ensure that default "gsonMessageConverter
      */
     @Autowired
     private PrettyGsonMessageConverter gsonMessageConverter;

@@ -55,6 +55,19 @@ public final class CustomFieldUtil {
         return getCustomFieldStringOrDefault(customFieldHolder, fieldName, "");
     }
 
+    /**
+     * Get string custom field value from {@code customFieldHolder} if exists, otherwise return null.
+     *
+     * @param customFieldHolder instance which has custom fields
+     * @param fieldName         name of the custom field to fetch
+     * @return string value of the custom field if exists, otherwise null.
+     */
+    @Nullable
+    public static String getCustomFieldStringOrNull(@Nullable Custom customFieldHolder,
+                                                    @Nullable String fieldName) {
+        return getCustomFieldString(customFieldHolder, fieldName).orElse(null);
+    }
+
     private CustomFieldUtil() {
     }
 }

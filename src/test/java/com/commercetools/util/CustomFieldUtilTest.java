@@ -97,4 +97,29 @@ public class CustomFieldUtilTest {
         assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "spider-man")).isEqualTo("");
     }
 
+    @Test
+    public void getCustomFieldStringOrNull_defaultCases() throws Exception {
+        assertThat(getCustomFieldStringOrNull(null, null)).isNull();
+        assertThat(getCustomFieldStringOrNull(null, "foo")).isNull();
+
+        when(customFieldsHolder.getCustom()).thenReturn(customFields);
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "foo")).isNull();
+
+        when(customFields.getFieldAsString("foo")).thenReturn(null);
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "foo")).isNull();
+
+        when(customFields.getFieldAsString("foo")).thenReturn("");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "foo")).isEqualTo("");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, null)).isNull();
+    }
+
+    @Test
+    public void getCustomFieldStringOrNull_normalCases() throws Exception {
+        when(customFieldsHolder.getCustom()).thenReturn(customFields);
+        when(customFields.getFieldAsString("foo")).thenReturn("bar");
+        when(customFields.getFieldAsString("bar")).thenReturn("woot");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "foo")).isEqualTo("bar");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "bar")).isEqualTo("woot");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "spider-man")).isNull();
+    }
 }

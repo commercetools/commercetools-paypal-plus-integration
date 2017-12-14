@@ -231,6 +231,18 @@
         "inputHint": "SingleLine"
       },
       {
+        "name": "experienceProfileId",
+        "label": {
+          "de": "experienceProfileId",
+          "en": "experienceProfileId"
+        },
+        "required": false,
+        "type": {
+          "name": "String"
+        },
+        "inputHint": "SingleLine"
+      },
+      {
         "name": "paidToAccountBankName",
         "label": {
           "en": "paidToAccountBankName"

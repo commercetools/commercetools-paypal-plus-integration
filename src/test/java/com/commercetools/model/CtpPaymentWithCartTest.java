@@ -77,6 +77,18 @@ public class CtpPaymentWithCartTest {
     }
 
     @Test
+    public void getExperienceProfileId() throws Exception {
+        assertThat(paymentWithCart.getExperienceProfileId()).isNull();
+        CustomFields customFields = mock(CustomFields.class);
+
+        when(payment.getCustom()).thenReturn(customFields);
+        assertThat(paymentWithCart.getExperienceProfileId()).isNull();
+
+        when(customFields.getFieldAsString(EXPERIENCE_PROFILE_ID)).thenReturn("WTF");
+        assertThat(paymentWithCart.getExperienceProfileId()).isEqualTo("WTF");
+    }
+
+    @Test
     public void getLocalesWithDefault() throws Exception {
         assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(DEFAULT_LOCALE);
 

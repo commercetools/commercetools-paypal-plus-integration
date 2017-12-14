@@ -7,12 +7,12 @@ import io.sphere.sdk.payments.PaymentMethodInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
-import static com.commercetools.util.CustomFieldUtil.getCustomFieldString;
-import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
+import static com.commercetools.util.CustomFieldUtil.*;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -70,6 +70,17 @@ public class CtpPaymentWithCart {
     @Nonnull
     public String getCancelUrl() {
         return getCustomFieldStringOrEmpty(payment, CANCEL_URL_FIELD);
+    }
+
+    /**
+     * @return Seller Paypal Plus
+     * <a href="https://developer.paypal.com/docs/integration/direct/payment-experience/"><i>experience profile id</i>
+     * </a> from {@link com.commercetools.payment.constants.ctp.CtpPaymentCustomFields#EXPERIENCE_PROFILE_ID}
+     * custom field, if exists. Otherwise returns <b>null</b>.
+     */
+    @Nullable
+    public String getExperienceProfileId() {
+        return getCustomFieldStringOrNull(payment, EXPERIENCE_PROFILE_ID);
     }
 
     /**

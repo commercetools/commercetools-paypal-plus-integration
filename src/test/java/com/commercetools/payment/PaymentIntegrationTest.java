@@ -25,6 +25,7 @@ import io.sphere.sdk.types.CustomFields;
 import org.springframework.test.web.servlet.MvcResult;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 import java.io.IOException;
 import java.net.URL;
@@ -70,7 +71,7 @@ public class PaymentIntegrationTest {
     }
 
     protected PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice,
-                                                            @Nonnull Locale locale) {
+                                                            @Nullable Locale locale) {
         return CtpResourcesUtil.createPaymentDraftBuilder(totalPrice, locale);
     }
 
@@ -136,5 +137,17 @@ public class PaymentIntegrationTest {
         assertThat(createdPpPayment.getRedirectUrls().getReturnUrl()).startsWith("http://example.com/success/23456789");
 
         assertThat(getApprovalUrl(createdPpPayment)).contains(returnedApprovalUrl);
+    }
+
+    /**
+     * Same as {@link #assertCustomFields(com.paypal.api.payments.Payment, String, String)}, but also verifies
+     * {@code experienceProfileId} field
+     */
+    protected static void assertCustomFields(com.paypal.api.payments.Payment createdPpPayment,
+                                             String returnedApprovalUrl, String ppPaymentId,
+                                             String experienceProfileId) throws PayPalRESTException {
+        assertCustomFields(createdPpPayment, returnedApprovalUrl, ppPaymentId);
+
+        assertThat(createdPpPayment.getExperienceProfileId()).isEqualTo(experienceProfileId);
     }
 }

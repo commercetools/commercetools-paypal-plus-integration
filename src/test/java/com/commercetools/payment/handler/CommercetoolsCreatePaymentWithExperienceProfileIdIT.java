@@ -2,21 +2,22 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.payment.PaymentIntegrationTest;
-import com.commercetools.payment.constants.ctp.CtpPaymentMethods;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
+import com.commercetools.testUtil.customTestConfigs.WebProfileConfiguration;
 import com.paypal.api.payments.Address;
 import com.paypal.api.payments.PayerInfo;
+import com.paypal.api.payments.WebProfile;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
+import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +32,15 @@ import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 import java.util.Locale;
 
-import static com.commercetools.helper.mapper.impl.payment.InstallmentPaymentMapperImpl.CREDIT;
-import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
-import static com.commercetools.payment.constants.ctp.CtpPaymentMethods.INSTALLMENT;
+import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
+import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+import static javax.swing.Action.DEFAULT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -47,21 +49,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * This test is similar to  {@link CommercetoolsCreatePaymentsControllerIT},
- * but tests {@link CtpPaymentMethods#INSTALLMENT} payment creation.
+ * Test payment creation with web experience profile id.
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-@Import(OrdersCartsPaymentsCleanupConfiguration.class)
-// completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
-public class CommercetoolsCreatePaymentInstallmentIT extends PaymentIntegrationTest {
+// 1) completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
+// 1) ensure noAddressOverrideWebProfile profile exists
+@Import({OrdersCartsPaymentsCleanupConfiguration.class, WebProfileConfiguration.class})
+public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends PaymentIntegrationTest {
 
     @Autowired
     private MockMvcAsync mockMvcAsync;
 
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
+
+    /**
+     * From {@link WebProfileConfiguration}
+     */
+    @Autowired
+    private WebProfile noAddressOverrideWebProfile;
 
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
@@ -71,28 +79,12 @@ public class CommercetoolsCreatePaymentInstallmentIT extends PaymentIntegrationT
     public void setUp() throws Exception {
         tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
                 .orElseThrow(IllegalStateException::new);
-
         ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-
         sphereClient = tenantConfig.createSphereClient();
     }
 
-    @Override
-    protected PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, @Nullable Locale locale) {
-        return super.createPaymentDraftBuilder(totalPrice, locale)
-                .paymentMethodInfo(PaymentMethodInfoBuilder.of()
-                        .paymentInterface(PAYPAL_PLUS)
-                        .method(INSTALLMENT)
-                        .build());
-    }
-
-    /**
-     * Similar to {@link CommercetoolsCreatePaymentsControllerIT#shouldReturnNewPaypalPaymentId()},
-     * but for {@link CtpPaymentMethods#INSTALLMENT} payments.
-     */
     @Test
-    @Ignore("The test is unstable, see bug in Paypal Plus: https://github.com/paypal/PayPal-REST-API-issues/issues/124")
-    public void installmentPaymentCreated() throws Exception {
+    public void paymentWithExperienceProfileIdCreated() throws Exception {
         final String ctpPaymentId = createCartAndPayment(sphereClient);
         MvcResult mvcResult = mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, ctpPaymentId)))
                 .andDo(print())
@@ -109,7 +101,7 @@ public class CommercetoolsCreatePaymentInstallmentIT extends PaymentIntegrationT
 
         assertThat(getCustomFieldStringOrEmpty(updatedPayment, APPROVAL_URL)).isEqualTo(returnedApprovalUrl);
 
-        assertThat(updatedPayment.getPaymentMethodInfo().getMethod()).isEqualTo(INSTALLMENT);
+        assertThat(updatedPayment.getPaymentMethodInfo().getMethod()).isEqualTo(DEFAULT);
 
         String ppPaymentId = updatedPayment.getInterfaceId();
         assertThat(ppPaymentId).isNotNull();
@@ -118,12 +110,10 @@ public class CommercetoolsCreatePaymentInstallmentIT extends PaymentIntegrationT
 
         com.paypal.api.payments.Payment createdPpPayment = getPpPayment(tenantConfig, ppPaymentId);
 
-        assertCustomFields(createdPpPayment, returnedApprovalUrl, ppPaymentId);
+        assertCustomFields(createdPpPayment, returnedApprovalUrl, ppPaymentId, noAddressOverrideWebProfile.getId());
 
-        // opposite to default payment - installment should have ExternalSelectedFundingInstrumentType == CREDIT
-        // and payer info with billing address
+        // validate the rest of the fields
         assertThat(createdPpPayment.getPayer()).isNotNull();
-        assertThat(createdPpPayment.getPayer().getExternalSelectedFundingInstrumentType()).isEqualTo(CREDIT);
         PayerInfo payerInfo = createdPpPayment.getPayer().getPayerInfo();
         assertThat(payerInfo).isNotNull();
         assertThat(payerInfo.getFirstName()).isEqualTo("Max");
@@ -134,5 +124,23 @@ public class CommercetoolsCreatePaymentInstallmentIT extends PaymentIntegrationT
         assertThat(billingAddress.getCity()).isEqualTo("Berlin");
         assertThat(billingAddress.getPostalCode()).isEqualTo("10709");
         assertThat(billingAddress.getCountryCode()).isEqualTo("DE");
+    }
+
+    @Override
+    protected PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, @Nullable Locale locale) {
+        return super.createPaymentDraftBuilder(totalPrice, locale)
+                .paymentMethodInfo(PaymentMethodInfoBuilder.of()
+                        .paymentInterface(PAYPAL_PLUS)
+                        .method(DEFAULT)
+                        .build())
+                .custom(CustomFieldsDraftBuilder.ofTypeKey("payment-paypal")
+                        .addObject(SUCCESS_URL_FIELD, "http://example.com/success/23456789")
+                        .addObject(CANCEL_URL_FIELD, "http://example.com/cancel/23456789")
+                        .addObject(REFERENCE, "556677889900")
+                        .addObject(LANGUAGE_CODE_FIELD, ofNullable(locale).orElse(DEFAULT_LOCALE).getLanguage())
+
+                        // exactly this field is validated in current test
+                        .addObject(EXPERIENCE_PROFILE_ID, noAddressOverrideWebProfile.getId())
+                        .build());
     }
 }

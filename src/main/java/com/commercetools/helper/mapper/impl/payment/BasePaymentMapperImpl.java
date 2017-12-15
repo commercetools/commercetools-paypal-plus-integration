@@ -51,6 +51,7 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
         mappedPayment.setPayer(getPayer(paymentWithCartLike));
         mappedPayment.setTransactions(getTransactions(paymentWithCartLike));
         mappedPayment.setRedirectUrls(getRedirectUrls(paymentWithCartLike));
+        mappedPayment.setExperienceProfileId(getExperienceProfileId(paymentWithCartLike));
 
         return mappedPayment;
     }
@@ -94,6 +95,11 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
         return new RedirectUrls()
                 .setReturnUrl(paymentWithCartLike.getReturnUrl())
                 .setCancelUrl(paymentWithCartLike.getCancelUrl());
+    }
+
+    @Nullable
+    protected String getExperienceProfileId(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
+        return paymentWithCartLike.getExperienceProfileId();
     }
 
     @Nonnull

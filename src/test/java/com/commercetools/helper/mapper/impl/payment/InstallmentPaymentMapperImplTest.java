@@ -59,6 +59,7 @@ public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {
 
         assertThat(ppPayment.getRedirectUrls().getReturnUrl()).isEqualTo("https://www.sparta.de/success/12333456");
         assertThat(ppPayment.getRedirectUrls().getCancelUrl()).isEqualTo("https://www.sparta.de/cancel/12333456");
+        assertThat(ppPayment.getExperienceProfileId()).isNull();
 
         Transaction transaction = ppPayment.getTransactions().get(0);
         assertThat(transaction.getDescription()).isEqualTo("Payment from commercetools Paypal Plus integration service");
@@ -131,6 +132,7 @@ public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {
 
         assertThat(ppPayment.getRedirectUrls().getReturnUrl()).isEqualTo("https://www.sparta.de/success/556677884433");
         assertThat(ppPayment.getRedirectUrls().getCancelUrl()).isEqualTo("https://www.sparta.de/cancel/556677884433");
+        assertThat(ppPayment.getExperienceProfileId()).isEqualTo("dummy-experience-profile-id");
 
         Transaction transaction = ppPayment.getTransactions().get(0);
         assertThat(transaction.getDescription()).isEqualTo("Payment from commercetools Paypal Plus integration service");

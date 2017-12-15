@@ -53,16 +53,22 @@ which is used for local run/debug, because the integration tests will remove all
             - Cart total amount should be > 0
             - Shipping address should be set
         - Required fields for the CTP payment:
-            - amountPlanned
-            - cancelUrl
-            - successUrl
-            - paymentMethodInfo needs to be set like this:
+            - `amountPlanned`
+            - `cancelUrl` (custom field)
+            - `successUrl` (custom field)
+            - `paymentMethodInfo` needs to be set like this:
+            
             ```json
             "paymentMethodInfo": {
               "paymentInterface": "PAYPAL_PLUS",
               "method": "paypal"
             }
             ```
+            
+        - Optional fields for the CTP payment:
+            - `experienceProfileId` (custom field): if the payment should be supplied with certain 
+            [Paypal Plus Experience Profile Id](https://developer.paypal.com/docs/api/payment-experience/) 
+            
     1. Backend POSTs CTP payment ID created in the previous step to Paypal-integration. Example: 
         ```
         POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/create/payments/${ctpPaymentId}

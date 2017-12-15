@@ -20,6 +20,10 @@ This documentation describes how to setup, start and use `commercetools-paypal-p
 
 ## Preparing commercetools Platform accounts
 
+  - create *`payment-paypal`* custom type with fields, specified in 
+  [ctPaymentCustomType.json](/src/main/resources/referenceModels/ctPaymentCustomType.json). See also 
+  [CtpPaymentCustomFields](/src/main/java/com/commercetools/payment/constants/ctp/CtpPaymentCustomFields.java) class.
+
 ## Front-end workflow
 
 ## Create default payments

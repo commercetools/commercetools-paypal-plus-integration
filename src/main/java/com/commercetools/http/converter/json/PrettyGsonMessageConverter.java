@@ -90,12 +90,12 @@ public class PrettyGsonMessageConverter extends GsonHttpMessageConverter {
         // based on: if objectToWrite is PrettyFormattedBody && isPretty == true => use custom formatter
         // otherwise - use the default base GsonHttpMessageConverter#writeInternal(Object, Type, HttpOutputMessage)
 
-        final Optional<PrettyFormattedBody> prettyFormatted = Optional.ofNullable(objectToWrite)
+        Optional<PrettyFormattedBody> prettyFormatted = Optional.ofNullable(objectToWrite)
                 .filter(o -> o instanceof PrettyFormattedBody)
                 .map(o -> (PrettyFormattedBody) objectToWrite);
 
-        final boolean pretty = prettyFormatted.map(PrettyFormattedBody::isPretty).orElse(false);
-        final Object realObject = prettyFormatted.map(PrettyFormattedBody::getBody).orElse(objectToWrite);
+        boolean pretty = prettyFormatted.map(PrettyFormattedBody::isPretty).orElse(false);
+        Object realObject = prettyFormatted.map(PrettyFormattedBody::getBody).orElse(objectToWrite);
 
         if (pretty) {
             // this is basically full copy of super.writeInternal(), but with custom (pretty) gson mapper

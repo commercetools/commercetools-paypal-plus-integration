@@ -1,0 +1,178 @@
+{
+  "key": "payment-paypal",
+  "name": {
+    "en": "payment-paypal"
+  },
+  "resourceTypeIds": [
+    "payment"
+  ],
+  "fieldDefinitions": [
+    {
+      "name": "languageCode",
+      "label": {
+        "en": "languageCode"
+      },
+      "required": true,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "reference",
+      "label": {
+        "en": "reference"
+      },
+      "required": true,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "referenceText",
+      "label": {
+        "en": "referenceText"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine"
+    },
+    {
+      "name": "redirectUrl",
+      "label": {
+        "en": "redirectUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "successUrl",
+      "label": {
+        "en": "successUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "errorUrl",
+      "label": {
+        "en": "errorUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "cancelUrl",
+      "label": {
+        "en": "cancelUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "approvalUrl",
+      "label": {
+        "de": "approvalUrl",
+        "en": "approvalUrl"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "payerId",
+      "label": {
+        "de": "payerId",
+        "en": "payerId"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "paidToAccountBankName",
+      "label": {
+        "en": "paidToAccountBankName"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "paidToAccountHolderName",
+      "label": {
+        "en": "paidToAccountHolderName"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "paidToIBAN",
+      "label": {
+        "en": "paidToIBAN"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "paidToBIC",
+      "label": {
+        "en": "paidToBIC"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "paymentDueDate",
+      "label": {
+        "en": "dueDate"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "amount",
+      "label": {
+        "en": "amount"
+      },
+      "required": false,
+      "type": {
+        "name": "Money"
+      },
+      "inputHint": "SingleLine"
+    }
+  ]
+}

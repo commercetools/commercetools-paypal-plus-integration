@@ -61,9 +61,12 @@ final depVersions = [
         springBoot         : ext.springBoot,
         commercetoolsSdkJvm: '1.27.0',
         paypalPlusSdk      : '1.14.0',
-        assertJ            : '3.8.0',
         guava              : '23.0',
-        apacheCollections  : '4.0'
+        apacheCollections  : '4.0',
+
+        // tests
+        assertJ            : '3.8.0',
+        systemRules        : '1.17.0'
 ]
 
 dependencies {
@@ -83,6 +86,8 @@ dependencies {
     }
 
     testCompile "org.assertj:assertj-core:${depVersions.assertJ}"
+    testCompile "com.github.stefanbirkner:system-rules:${depVersions.systemRules}"
+
 }
 
 tasks.withType(JavaCompile) {

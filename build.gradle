@@ -67,22 +67,22 @@ final depVersions = [
 ]
 
 dependencies {
-    implementation "org.springframework.boot:spring-boot-starter-web:${depVersions.springBoot}"
+    compile "org.springframework.boot:spring-boot-starter-web:${depVersions.springBoot}"
 
-    implementation "com.paypal.sdk:rest-api-sdk:${depVersions.paypalPlusSdk}"
+    compile "com.paypal.sdk:rest-api-sdk:${depVersions.paypalPlusSdk}"
 
-    implementation "com.commercetools.sdk.jvm.core:commercetools-models:${depVersions.commercetoolsSdkJvm}"
-    implementation "com.commercetools.sdk.jvm.core:commercetools-java-client:${depVersions.commercetoolsSdkJvm}"
-    implementation "com.commercetools.sdk.jvm.core:commercetools-convenience:${depVersions.commercetoolsSdkJvm}"
-    implementation "com.google.guava:guava:${depVersions.guava}"
-    implementation "org.apache.commons:commons-collections4:${depVersions.apacheCollections}"
+    compile "com.commercetools.sdk.jvm.core:commercetools-models:${depVersions.commercetoolsSdkJvm}"
+    compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${depVersions.commercetoolsSdkJvm}"
+    compile "com.commercetools.sdk.jvm.core:commercetools-convenience:${depVersions.commercetoolsSdkJvm}"
+    compile "com.google.guava:guava:${depVersions.guava}"
+    compile "org.apache.commons:commons-collections4:${depVersions.apacheCollections}"
 
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test:${depVersions.springBoot}") {
+    testCompile("org.springframework.boot:spring-boot-starter-test:${depVersions.springBoot}") {
         exclude group: 'org.assertj', module: 'assertj-core' // below override the default outdated one with the latest
     }
 
-    testImplementation "org.assertj:assertj-core:${depVersions.assertJ}"
+    testCompile "org.assertj:assertj-core:${depVersions.assertJ}"
 }
 
 tasks.withType(JavaCompile) {

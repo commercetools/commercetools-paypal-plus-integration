@@ -5,6 +5,8 @@ import com.commercetools.pspadapter.util.CtpClientConfigurationUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.models.Base;
+import io.sphere.sdk.models.SdkDefaults;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import javax.annotation.Nonnull;
 
@@ -82,5 +84,18 @@ public class TenantConfig extends Base {
 
     public APIContextFactory createAPIContextFactory() {
         return new APIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
+    }
+
+    private static final String[] EXCLUDE_FIELD_NAMES = {"ctpClientSecret", "pPlusClientSecret"};
+
+    /**
+     * @return String representation of the instance <b>excluding</b> secret values, like {@link #ctpClientSecret}
+     * and {@link #pPlusClientSecret}
+     */
+    @Override
+    public String toString() {
+        return (new ReflectionToStringBuilder(this, SdkDefaults.TO_STRING_STYLE))
+                .setExcludeFieldNames(EXCLUDE_FIELD_NAMES)
+                .build();
     }
 }

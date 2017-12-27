@@ -33,4 +33,20 @@ public class TenantConfigTest {
                 "pPlusClientId", "pPlusClientSecret", "");
         tenantConfig.createAPIContextFactory().createAPIContext();
     }
+
+    @Test
+    public void whenConvertedToString_ShouldNotRevealSecrets() throws Exception {
+        TenantConfig tenantConfig = new TenantConfig("testTenant_name", "ctpProject_key", "ctpClient_id", "ctpClient_secret",
+                "pPlusClient_id", "pPlusClient_secret", "sandbox");
+
+        String toString = tenantConfig.toString();
+
+        assertThat(toString).contains("testTenant_name", "ctpProject_key", "ctpClient_id", "sandbox");
+
+        assertThat(toString)
+                .doesNotContain("ctpClientSecret")
+                .doesNotContain("ctpClient_secret")
+                .doesNotContain("pPlusClientSecret")
+                .doesNotContain("pPlusClient_secret");
+    }
 }

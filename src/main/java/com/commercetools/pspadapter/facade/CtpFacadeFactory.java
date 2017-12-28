@@ -4,9 +4,8 @@ import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.service.ctp.impl.CartServiceImpl;
 import com.commercetools.service.ctp.impl.OrderServiceImpl;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
+import com.commercetools.service.ctp.impl.TypeServiceImpl;
 import io.sphere.sdk.client.SphereClient;
-
-import javax.annotation.Nonnull;
 
 public class CtpFacadeFactory {
 
@@ -21,6 +20,8 @@ public class CtpFacadeFactory {
         CartServiceImpl cartService = new CartServiceImpl(sphereClient);
         OrderServiceImpl orderService = new OrderServiceImpl(sphereClient);
         PaymentServiceImpl paymentService = new PaymentServiceImpl(sphereClient);
-        return new CtpFacade(cartService, orderService, paymentService);
+        TypeServiceImpl typeService = new TypeServiceImpl(sphereClient);
+
+        return new CtpFacade(cartService, orderService, paymentService, typeService);
     }
 }

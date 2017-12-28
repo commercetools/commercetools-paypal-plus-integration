@@ -6,6 +6,7 @@ import com.commercetools.payment.constants.paypalPlus.NotificationEventType;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
+import com.commercetools.service.ctp.TypeService;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.GsonBuilder;
@@ -15,13 +16,11 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.updateactions.AddInterfaceInteraction;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
-import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
@@ -58,6 +57,9 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
     @Mock
     private OrderService orderService;
 
+    @Mock
+    private TypeService typeService;
+
     private PaypalPlusFormatter paypalPlusFormatter = new PaypalPlusFormatterImpl();
 
     private Event event;
@@ -82,7 +84,7 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
         when(existingCtpTransaction.getInteractionId()).thenReturn(TEST_INTERACTION_ID);
 
         this.paymentService = spy(new PaymentServiceImpl(sphereClient));
-        this.ctpFacade = spy(new CtpFacade(cartService, orderService, paymentService));
+        this.ctpFacade = spy(new CtpFacade(cartService, orderService, paymentService, typeService));
         when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(existingCtpTransaction));
 
         this.processorBase = spy(new PaymentSalePendingProcessor(new GsonBuilder().create(), paypalPlusFormatter));

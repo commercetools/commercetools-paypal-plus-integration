@@ -5,14 +5,15 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.util.ArgumentsUtils.requireNonBlank;
+import static com.commercetools.util.ArgumentsUtils.requireNonEmpty;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
+import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.joining;
@@ -63,19 +64,20 @@ public class AggregatedCtpTypesValidationResult {
         return !hasErrorMessage() && !hasUpdatedTypes();
     }
 
-    @Nullable
+    @Nonnull
     public String getAggregatedErrorMessage() {
-        return aggregatedErrorMessage;
+        return ofNullable(aggregatedErrorMessage).orElse("");
     }
 
     @Nonnull
     public List<Pair<String, List<Type>>> getUpdatedTypes() {
-        return updatedTypes != null ? unmodifiableList(updatedTypes) : emptyList();
+        return ofNullable(updatedTypes).map(Collections::unmodifiableList).orElseGet(Collections::emptyList);
     }
 
     /**
      * @return aggregated result where neither error found, either types were updated
      */
+    @Nonnull
     public static AggregatedCtpTypesValidationResult ofEmpty() {
         return new AggregatedCtpTypesValidationResult(null, null);
     }
@@ -84,6 +86,7 @@ public class AggregatedCtpTypesValidationResult {
      * @param aggregatedErrorMessage complete message to display to customer in the logs
      * @return instance with error message
      */
+    @Nonnull
     public static AggregatedCtpTypesValidationResult ofErrorMessage(@Nonnull String aggregatedErrorMessage) {
         requireNonBlank(aggregatedErrorMessage, "aggregatedErrorMessage argument must be non-blank");
         return new AggregatedCtpTypesValidationResult(aggregatedErrorMessage, null);
@@ -94,7 +97,9 @@ public class AggregatedCtpTypesValidationResult {
      *                     on this tenant.
      * @return instance with update tenant-types pairs
      */
+    @Nonnull
     public static AggregatedCtpTypesValidationResult ofUpdatedTypes(@Nonnull List<Pair<String, List<Type>>> updatedTypes) {
+        requireNonEmpty(updatedTypes);
         return new AggregatedCtpTypesValidationResult(null, updatedTypes);
     }
 
@@ -110,6 +115,7 @@ public class AggregatedCtpTypesValidationResult {
      * @return completion stage with {@link AggregatedCtpTypesValidationResult} containing the result of the
      * errors/update actions executing and aggregating.
      */
+    @Nonnull
     public static CompletionStage<AggregatedCtpTypesValidationResult> executeAndAggregateTenantValidationResults(
             @Nonnull List<TenantCtpTypesValidationAction> tenantTypeActions) {
 

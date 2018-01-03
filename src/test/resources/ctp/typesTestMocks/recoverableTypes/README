@@ -1,0 +1,6 @@
+Mock for the CTP types which could be updated:
+
+  payment-paypal                          : all fields are missing (should be added)
+  paypal-plus-interaction-notification    : the same as expected (nothing to be done)
+  paypal-plus-interaction-request         : #request and #transactionId fields are missing (should be added)
+  paypal-plus-interaction-response        : type is missing (should be created)

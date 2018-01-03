@@ -1,0 +1,33 @@
+{
+  "key": "paypal-plus-interaction-notification",
+  "name": {
+    "en": "paypal-plus-interaction-notification"
+  },
+  "resourceTypeIds": [
+    "product-price"
+  ],
+  "fieldDefinitions": [
+    {
+      "name": "timestamp",
+      "label": {
+        "en": "timestamp"
+      },
+      "required": true,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "notification",
+      "label": {
+        "en": "notification"
+      },
+      "required": true,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine"
+    }
+  ]
+}

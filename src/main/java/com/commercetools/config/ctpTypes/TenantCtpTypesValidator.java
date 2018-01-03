@@ -1,5 +1,7 @@
 package com.commercetools.config.ctpTypes;
 
+import com.commercetools.pspadapter.facade.CtpFacadeFactory;
+import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.service.ctp.TypeService;
 import io.sphere.sdk.types.FieldDefinition;
 import io.sphere.sdk.types.Type;
@@ -10,11 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import static com.commercetools.config.ctpTypes.TenantCtpTypesValidationAction.*;
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -52,6 +56,30 @@ public class TenantCtpTypesValidator {
         this.expectedTypesSet = expectedTypesSet;
     }
 
+    /**
+     * For every tenant get a list of errors or update actions and execute them. Return aggregated result.
+     *
+     * @return {@link AggregatedCtpTypesValidationResult} with types validation/synchronization results for all tenants.
+     */
+    public static AggregatedCtpTypesValidationResult getAggregatedCtpTypesValidationResult(
+            @Nonnull List<TenantConfig> tenantConfigs,
+            @Nonnull Set<Type> expectedTypesSet) {
+
+        // 1. fetch and validate expected types from all the tenants
+        List<CompletableFuture<TenantCtpTypesValidationAction>> tenantsValidatorsStage =
+                tenantConfigs.parallelStream()
+                        .map(tenantConfig -> TenantCtpTypesValidator.validateTenantTypes(tenantConfig.getTenantName(),
+                                new CtpFacadeFactory(tenantConfig).getCtpFacade().getTypeService(),
+                                expectedTypesSet))
+                        .map(CompletionStage::toCompletableFuture)
+                        .collect(toList());
+
+        // 2. process/aggregate validation results
+        return allOf(tenantsValidatorsStage.toArray(new CompletableFuture[]{}))
+                .thenApply(voidValue -> tenantsValidatorsStage.stream().map(CompletableFuture::join).collect(toList()))
+                .thenCompose(AggregatedCtpTypesValidationResult::executeAndAggregateTenantValidationResults)
+                .join();
+    }
 
     /**
      * Fetch tenants {@link Type}s set from the project, compare it with {@code expectedTypesSet} and return
@@ -63,7 +91,7 @@ public class TenantCtpTypesValidator {
      * @return completion stage of {@link TenantCtpTypesValidationAction}, which might be either (if all the types match),
      * or contain CTP type update actions, or contain error message if the types can't be synchronized.
      */
-    public static CompletionStage<TenantCtpTypesValidationAction> validateTenantTypes(@Nonnull String tenantName,
+    private static CompletionStage<TenantCtpTypesValidationAction> validateTenantTypes(@Nonnull String tenantName,
                                                                                       @Nonnull TypeService typeService,
                                                                                       @Nonnull Set<Type> expectedTypesSet) {
         TenantCtpTypesValidator validator = new TenantCtpTypesValidator(tenantName, typeService, expectedTypesSet);
@@ -209,7 +237,7 @@ public class TenantCtpTypesValidator {
     /**
      * Pair of {@code expectedField/actualFiled} to compare them.
      */
-    static class FieldDefinitionTuple {
+    public static class FieldDefinitionTuple {
         @Nonnull
         private final FieldDefinition expectedField;
 
@@ -227,7 +255,7 @@ public class TenantCtpTypesValidator {
          * @return {@link FieldDefinitionTuple} if actual field exists, {@code null} otherwise.
          */
         @Nullable
-        static FieldDefinitionTuple of(@Nonnull FieldDefinition expectedField, @Nullable FieldDefinition actualField) {
+        public static FieldDefinitionTuple of(@Nonnull FieldDefinition expectedField, @Nullable FieldDefinition actualField) {
             return actualField != null
                     ? new FieldDefinitionTuple(expectedField, actualField)
                     : null;
@@ -241,7 +269,7 @@ public class TenantCtpTypesValidator {
          * <li>{@link FieldDefinition#isRequired()}</li>
          * </ul>
          */
-        boolean areDifferent() {
+        public boolean areDifferent() {
             return (expectedField != actualField)
                     && !(Objects.equals(expectedField.getName(), actualField.getName())
                     && Objects.equals(expectedField.getType(), actualField.getType())

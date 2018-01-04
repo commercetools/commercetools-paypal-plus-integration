@@ -30,7 +30,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'org.ajoberstar.grgit'
-apply plugin: 'com.adarshr.test-logger'
+//apply plugin: 'com.adarshr.test-logger'
 
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
@@ -86,7 +86,24 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
-testlogger {
-    theme 'mocha'
-    slowThreshold 20000
+//testlogger {
+//    theme 'mocha'
+//    slowThreshold 20000
+//}
+
+test {
+    testLogging {
+        // set options for log level LIFECYCLE
+        events "passed", "skipped", "failed"
+        displayGranularity 2
+        exceptionFormat "full"
+        showCauses true
+        showExceptions true
+        showStackTraces true
+
+        maxGranularity 3
+
+        minGranularity 0
+
+    }
 }

@@ -70,7 +70,7 @@ public class TenantConfig extends Base {
     }
 
     public SphereClient createSphereClient() {
-        return CtpClientConfigurationUtils.createClient(createCtpConfig());
+        return CtpClientConfigurationUtils.createSphereClient(createCtpConfig());
     }
 
     private SphereClientConfig createCtpConfig() {

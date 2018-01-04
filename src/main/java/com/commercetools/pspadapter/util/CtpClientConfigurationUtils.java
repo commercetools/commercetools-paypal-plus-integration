@@ -1,12 +1,10 @@
 package com.commercetools.pspadapter.util;
 
-import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereAccessTokenSupplier;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.http.AsyncHttpClientAdapter;
 import io.sphere.sdk.http.HttpClient;
-import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
@@ -14,17 +12,16 @@ import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
 public class CtpClientConfigurationUtils {
-    public static final long DEFAULT_TIMEOUT = 30;
-    public static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
+    private static final long DEFAULT_TIMEOUT = 30;
+    private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
     /**
-     * Creates a {@link BlockingSphereClient} with a custom {@code timeout} with a custom {@link TimeUnit}.
+     * Creates a {@link SphereClient} with a default {@code timeout} value of 30 seconds for handshake.
      *
-     * @return the instanted {@link BlockingSphereClient}.
+     * @return the instantiated {@link SphereClient}.
      */
-    public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
-                                                         final long timeout,
-                                                         @Nonnull final TimeUnit timeUnit) {
+    @Nonnull
+    public static SphereClient createSphereClient(@Nonnull final SphereClientConfig clientConfig) {
         final HttpClient httpClient = createHttpClient();
         final SphereAccessTokenSupplier tokenSupplier =
                 SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
@@ -32,23 +29,14 @@ public class CtpClientConfigurationUtils {
     }
 
     /**
-     * Creates a {@link BlockingSphereClient} with a default {@code timeout} value of 30 seconds.
-     *
-     * @return the instanted {@link BlockingSphereClient}.
-     */
-    public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
-        return createClient(clientConfig, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
-    }
-
-    /**
-     * Gets an asynchronous {@link HttpClient} to be used by the {@link BlockingSphereClient}.
+     * Gets an asynchronous {@link HttpClient} to be used by the {@link SphereClient}.
      *
      * @return {@link HttpClient}
      */
+    @Nonnull
     private static HttpClient createHttpClient() {
-        final AsyncHttpClient asyncHttpClient =
-                new DefaultAsyncHttpClient(
-                        new DefaultAsyncHttpClientConfig.Builder().setAcceptAnyCertificate(true).build());
-        return AsyncHttpClientAdapter.of(asyncHttpClient);
+        return AsyncHttpClientAdapter.of(new DefaultAsyncHttpClient(
+                new DefaultAsyncHttpClientConfig.Builder()
+                        .setHandshakeTimeout((int) DEFAULT_TIMEOUT_TIME_UNIT.toMillis(DEFAULT_TIMEOUT)).build()));
     }
 }

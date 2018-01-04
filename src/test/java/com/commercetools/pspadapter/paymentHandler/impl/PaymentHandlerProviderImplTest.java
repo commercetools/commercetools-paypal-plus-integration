@@ -67,6 +67,9 @@ public class PaymentHandlerProviderImplTest {
     @Autowired
     private PaypalPlusFacadeFactory paypalPlusFacadeFactory;
 
+    @Autowired
+    private CtpFacadeFactory ctpFacadeFactory;
+
     private SphereClient sphereClient;
 
     private PaypalPlusFacade paypalPlusFacade;
@@ -83,7 +86,7 @@ public class PaymentHandlerProviderImplTest {
                 .orElse(null);
 
         this.ctpFacade = tenantConfigOpt
-                .map(tenantConfig -> new CtpFacadeFactory(tenantConfig).getCtpFacade())
+                .map(tenantConfig -> ctpFacadeFactory.getCtpFacade(tenantConfig))
                 .orElse(null);
     }
 

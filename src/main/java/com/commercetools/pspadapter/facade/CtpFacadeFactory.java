@@ -5,18 +5,14 @@ import com.commercetools.service.ctp.impl.CartServiceImpl;
 import com.commercetools.service.ctp.impl.OrderServiceImpl;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
 import io.sphere.sdk.client.SphereClient;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 
+@Component
 public class CtpFacadeFactory {
 
-    private final TenantConfig tenantConfig;
-
-    public CtpFacadeFactory(TenantConfig tenantConfig) {
-        this.tenantConfig = tenantConfig;
-    }
-
-    public CtpFacade getCtpFacade() {
+    public CtpFacade getCtpFacade(@Nonnull TenantConfig tenantConfig) {
         SphereClient sphereClient = tenantConfig.createSphereClient();
         CartServiceImpl cartService = new CartServiceImpl(sphereClient);
         OrderServiceImpl orderService = new OrderServiceImpl(sphereClient);

@@ -61,6 +61,9 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
 
+    @Autowired
+    private CtpFacadeFactory ctpFacadeFactory;
+
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
     private CtpFacade ctpFacade;
@@ -70,7 +73,7 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
         tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
                 .orElseThrow(IllegalStateException::new);
 
-        ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
+        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
 
         sphereClient = tenantConfig.createSphereClient();
     }

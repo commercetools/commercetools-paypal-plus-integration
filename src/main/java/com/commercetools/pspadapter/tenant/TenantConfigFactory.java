@@ -13,7 +13,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 @Component
-@CacheConfig(cacheNames = "PaypalPlusConfigurationCache")
+@CacheConfig(cacheNames = "ApplicationConfigurationCache")
 public class TenantConfigFactory {
 
     private final TenantProperties tenantProperties;

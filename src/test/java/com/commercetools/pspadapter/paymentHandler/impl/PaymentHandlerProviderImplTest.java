@@ -5,10 +5,7 @@ import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.constants.ctp.CtpPaymentMethods;
-import com.commercetools.pspadapter.facade.CtpFacade;
-import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.facade.PaypalPlusFacade;
-import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
+import com.commercetools.pspadapter.facade.*;
 import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
@@ -70,6 +67,9 @@ public class PaymentHandlerProviderImplTest {
     @Autowired
     private CtpFacadeFactory ctpFacadeFactory;
 
+    @Autowired
+    protected SphereClientFactory sphereClientFactory;
+
     private SphereClient sphereClient;
 
     private PaypalPlusFacade paypalPlusFacade;
@@ -79,7 +79,7 @@ public class PaymentHandlerProviderImplTest {
     @Before
     public void setUp() {
         Optional<TenantConfig> tenantConfigOpt = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME);
-        sphereClient = tenantConfigOpt.map(TenantConfig::createSphereClient).orElse(null);
+        sphereClient = tenantConfigOpt.map(sphereClientFactory::createSphereClient).orElse(null);
 
         this.paypalPlusFacade = tenantConfigOpt
                 .map(tenantConfig -> paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig))

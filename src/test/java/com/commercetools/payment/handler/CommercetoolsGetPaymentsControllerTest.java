@@ -2,17 +2,10 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.payment.PaymentIntegrationTest;
-import com.commercetools.pspadapter.facade.CtpFacade;
-import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.tenant.TenantConfig;
-import com.commercetools.pspadapter.tenant.TenantConfigFactory;
-import com.commercetools.test.web.servlet.MockMvcAsync;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -35,27 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class CommercetoolsGetPaymentsControllerTest extends PaymentIntegrationTest {
 
-    @Autowired
-    private MockMvcAsync mockMvcAsync;
-
-    @Autowired
-    private TenantConfigFactory tenantConfigFactory;
-
-    @Autowired
-    private CtpFacadeFactory ctpFacadeFactory;
-
-    private TenantConfig tenantConfig;
-    private SphereClient sphereClient;
-    private CtpFacade ctpFacade;
-
     @Before
     public void setUp() throws Exception {
-        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
-                .orElseThrow(IllegalStateException::new);
-
-        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
-
-        sphereClient = tenantConfig.createSphereClient();
+        super.setUp();
     }
 
     @Test

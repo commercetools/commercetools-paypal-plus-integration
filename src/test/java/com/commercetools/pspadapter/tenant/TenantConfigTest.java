@@ -1,7 +1,6 @@
 package com.commercetools.pspadapter.tenant;
 
 import com.paypal.base.rest.APIContext;
-import io.sphere.sdk.client.SphereClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -16,8 +15,11 @@ public class TenantConfigTest {
     public void shouldCreateSphereClient() {
         TenantConfig tenantConfig = new TenantConfig("testTenant1", "ctpProjectKey", "ctpClientId", "ctpClientSecret",
                 "pPlusClientId", "pPlusClientSecret", SANDBOX);
-        SphereClient sphereClient = tenantConfig.createSphereClient();
-        assertThat(sphereClient).isNotNull();
+
+        assertThat(tenantConfig.getSphereClientConfig()).isNotNull();
+        assertThat(tenantConfig.getSphereClientConfig().getProjectKey()).isEqualTo("ctpProjectKey");
+        assertThat(tenantConfig.getSphereClientConfig().getClientId()).isEqualTo("ctpClientId");
+        assertThat(tenantConfig.getSphereClientConfig().getClientSecret()).isEqualTo("ctpClientSecret");
     }
 
     @Test

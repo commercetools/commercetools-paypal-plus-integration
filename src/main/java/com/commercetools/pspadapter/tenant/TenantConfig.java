@@ -1,8 +1,6 @@
 package com.commercetools.pspadapter.tenant;
 
 import com.commercetools.pspadapter.APIContextFactory;
-import com.commercetools.pspadapter.util.CtpClientConfigurationUtils;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.models.Base;
 
@@ -74,11 +72,7 @@ public class TenantConfig extends Base {
         return pPlusClientMode;
     }
 
-    public SphereClient createSphereClient() {
-        return CtpClientConfigurationUtils.createSphereClient(getCtpConfig());
-    }
-
-    private SphereClientConfig getCtpConfig() {
+    public SphereClientConfig getSphereClientConfig() {
         return sphereClientConfig;
     }
 

@@ -6,6 +6,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -34,6 +35,7 @@ import javax.annotation.Nonnull;
  * </ul>
  */
 @Component
+@EnableCaching
 @CacheConfig(cacheNames = "SphereClientFactoryCache")
 public class CacheableSphereClientFactoryImpl implements SphereClientFactory {
 

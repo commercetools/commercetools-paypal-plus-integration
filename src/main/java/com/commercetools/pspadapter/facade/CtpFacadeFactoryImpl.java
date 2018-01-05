@@ -7,11 +7,13 @@ import com.commercetools.service.ctp.impl.PaymentServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 
 @Component
+@EnableCaching
 @CacheConfig(cacheNames = "CtpFacadeFactoryCache")
 public class CtpFacadeFactoryImpl implements CtpFacadeFactory {
 

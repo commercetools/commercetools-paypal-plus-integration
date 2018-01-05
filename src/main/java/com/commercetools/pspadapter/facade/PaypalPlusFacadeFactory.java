@@ -4,9 +4,11 @@ import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.service.paypalPlus.impl.PaypalPlusPaymentServiceImpl;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Component;
 
 @Component
+@EnableCaching
 @CacheConfig(cacheNames = "PaypalPlusConfigurationCache")
 public class PaypalPlusFacadeFactory {
 

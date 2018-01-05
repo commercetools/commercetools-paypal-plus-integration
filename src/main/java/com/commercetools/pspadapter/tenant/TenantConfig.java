@@ -20,10 +20,12 @@ public class TenantConfig extends Base {
     private final String ctpProjectKey;
     private final String ctpClientId;
     private final String ctpClientSecret;
+    private final SphereClientConfig sphereClientConfig;
 
     private final String pPlusClientId;
     private final String pPlusClientSecret;
     private final String pPlusClientMode;
+    private final APIContextFactory pPlusApiContextFactory;
 
     public TenantConfig(@Nonnull String tenantName,
                         @Nonnull String ctpProjectKey,
@@ -36,9 +38,12 @@ public class TenantConfig extends Base {
         this.ctpProjectKey = ctpProjectKey;
         this.ctpClientId = ctpClientId;
         this.ctpClientSecret = ctpClientSecret;
+        this.sphereClientConfig = SphereClientConfig.of(ctpProjectKey, ctpClientId, ctpClientSecret);
+
         this.pPlusClientId = pPlusClientId;
         this.pPlusClientSecret = pPlusClientSecret;
         this.pPlusClientMode = pPlusClientMode;
+        this.pPlusApiContextFactory = new APIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
     }
 
     public String getTenantName() {
@@ -70,17 +75,14 @@ public class TenantConfig extends Base {
     }
 
     public SphereClient createSphereClient() {
-        return CtpClientConfigurationUtils.createSphereClient(createCtpConfig());
+        return CtpClientConfigurationUtils.createSphereClient(getCtpConfig());
     }
 
-    private SphereClientConfig createCtpConfig() {
-        return SphereClientConfig.of(
-                this.ctpProjectKey,
-                this.ctpClientId,
-                this.ctpClientSecret);
+    private SphereClientConfig getCtpConfig() {
+        return sphereClientConfig;
     }
 
-    public APIContextFactory createAPIContextFactory() {
-        return new APIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
+    public APIContextFactory getAPIContextFactory() {
+        return pPlusApiContextFactory;
     }
 }

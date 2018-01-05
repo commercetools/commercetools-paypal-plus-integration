@@ -15,7 +15,7 @@ public class PaypalPlusFacadeFactory {
 
     @Cacheable(sync = true)
     public PaypalPlusFacade getPaypalPlusFacade(TenantConfig tenantConfig) {
-        PaypalPlusPaymentServiceImpl service = new PaypalPlusPaymentServiceImpl(tenantConfig.createAPIContextFactory());
+        PaypalPlusPaymentServiceImpl service = new PaypalPlusPaymentServiceImpl(tenantConfig.getAPIContextFactory());
         return new PaypalPlusFacade(service);
     }
 }

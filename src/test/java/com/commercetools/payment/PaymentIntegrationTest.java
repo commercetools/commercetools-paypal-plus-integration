@@ -123,7 +123,7 @@ public class PaymentIntegrationTest {
     }
 
     protected static com.paypal.api.payments.Payment getPpPayment(TenantConfig tenantConfig, String ppPaymentId) throws PayPalRESTException {
-        APIContextFactory apiContextFactory = tenantConfig.createAPIContextFactory();
+        APIContextFactory apiContextFactory = tenantConfig.getAPIContextFactory();
         return com.paypal.api.payments.Payment.get(apiContextFactory.createAPIContext(), ppPaymentId);
     }
 

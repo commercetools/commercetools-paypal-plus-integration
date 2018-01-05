@@ -13,7 +13,7 @@ import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 @Configuration
-@EnableCaching // see ApplicationConfigurationCache, CtpConfigurationCache¬, PaypalPlusConfigurationCache
+@EnableCaching
 public class ApplicationConfiguration {
 
     /**

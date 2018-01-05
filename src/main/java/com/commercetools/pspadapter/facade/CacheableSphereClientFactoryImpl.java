@@ -34,7 +34,7 @@ import javax.annotation.Nonnull;
  * </ul>
  */
 @Component
-@CacheConfig(cacheNames = "CtpConfigurationCache")
+@CacheConfig(cacheNames = "SphereClientFactoryCache")
 public class CacheableSphereClientFactoryImpl implements SphereClientFactory {
 
     @Cacheable(sync = true)

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nonnull;
 
 @Component
-@CacheConfig(cacheNames = "CtpConfigurationCache")
+@CacheConfig(cacheNames = "CtpFacadeFactoryCache")
 public class CtpFacadeFactoryImpl implements CtpFacadeFactory {
 
     private final SphereClientFactory sphereClientFactory;

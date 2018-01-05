@@ -21,7 +21,7 @@ public class TenantConfigFactory {
     private final TenantProperties tenantProperties;
 
     @Autowired
-    public TenantConfigFactory(TenantProperties tenantProperties) {
+    public TenantConfigFactory(@Nonnull TenantProperties tenantProperties) {
         this.tenantProperties = tenantProperties;
     }
 

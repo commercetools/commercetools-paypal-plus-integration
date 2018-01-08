@@ -19,6 +19,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @see com.paypal.api.payments.PaymentEx PaymentEx
  */
 public class ApplicationContext extends PayPalResource {
+
+    /**
+     * Use {@code shippingPreference} enum custom field for the values.
+     */
     private String shippingPreference;
 
     public String getShippingPreference() {

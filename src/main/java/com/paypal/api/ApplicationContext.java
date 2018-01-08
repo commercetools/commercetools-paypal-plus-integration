@@ -21,7 +21,14 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class ApplicationContext extends PayPalResource {
 
     /**
+     * Payment shipping preference:<ul>
+     * <li>NO_SHIPPING</li>
+     * <li>GET_FROM_FILE</li>
+     * <li>SET_PROVIDED_ADDRESS</li>
+     * </ul>
      * Use {@code shippingPreference} enum custom field for the values.
+     *
+     * @see <a href="https://developer.paypal.com/docs/api/orders/#definition-application_context">application_context#shipping_preference</a>
      */
     private String shippingPreference;
 

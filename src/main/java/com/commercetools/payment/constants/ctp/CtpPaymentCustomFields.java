@@ -7,6 +7,7 @@ public final class CtpPaymentCustomFields {
     public static final String APPROVAL_URL = "approvalUrl";
     public static final String PAYER_ID = "payerId";
     public static final String EXPERIENCE_PROFILE_ID = "experienceProfileId";
+    public static final String SHIPPING_PREFERENCE = "shippingPreference";
 
     public static final String LANGUAGE_CODE_FIELD = "languageCode";
 

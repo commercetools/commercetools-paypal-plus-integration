@@ -1,6 +1,7 @@
 package com.commercetools.model;
 
 
+import com.commercetools.payment.constants.ctp.CtpPaymentCustomFields;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentMethodInfo;
@@ -81,6 +82,16 @@ public class CtpPaymentWithCart {
     @Nullable
     public String getExperienceProfileId() {
         return getCustomFieldStringOrNull(payment, EXPERIENCE_PROFILE_ID);
+    }
+
+    /**
+     * @return enum key of {@link CtpPaymentCustomFields#SHIPPING_PREFERENCE SHIPPING_PREFERENCE} custom field
+     * (if exist). This value should be use in
+     * {@link com.paypal.api.ApplicationContext#shippingPreference Payment#applicationContext#shippingPreference}
+     */
+    @Nullable
+    public String getShippingPreference() {
+        return getCustomFieldEnumKeyOrNull(payment, SHIPPING_PREFERENCE);
     }
 
     /**

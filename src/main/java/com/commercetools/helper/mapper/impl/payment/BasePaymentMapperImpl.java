@@ -5,6 +5,7 @@ import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsMapping;
+import com.paypal.api.ApplicationContext;
 import com.paypal.api.payments.*;
 import io.sphere.sdk.cartdiscounts.DiscountedLineItemPriceForQuantity;
 import io.sphere.sdk.carts.CustomLineItem;
@@ -45,7 +46,12 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
     @Override
     @Nonnull
     public Payment ctpPaymentToPaypalPlus(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        Payment mappedPayment = new Payment();
+        // while PayPal Plus SDK developers are fixing issue
+        // href="https://github.com/paypal/PayPal-Java-SDK/issues/330
+        // we use this extended payment type to set application context with shipping preference
+        PaymentEx mappedPayment = new PaymentEx();
+
+        mappedPayment.setApplicationContext(getApplicationContext(paymentWithCartLike));
 
         mappedPayment.setIntent(SALE);
         mappedPayment.setPayer(getPayer(paymentWithCartLike));
@@ -100,6 +106,12 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
     @Nullable
     protected String getExperienceProfileId(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
         return paymentWithCartLike.getExperienceProfileId();
+    }
+
+    @Nullable
+    protected ApplicationContext getApplicationContext(@Nonnull CtpPaymentWithCart paymentWithCart) {
+        return new ApplicationContext()
+                .setShippingPreference(paymentWithCart.getShippingPreference());
     }
 
     @Nonnull

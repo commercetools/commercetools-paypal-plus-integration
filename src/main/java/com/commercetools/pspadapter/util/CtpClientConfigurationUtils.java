@@ -1,8 +1,8 @@
 package com.commercetools.pspadapter.util;
 
-import io.sphere.sdk.client.SphereAccessTokenSupplier;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.SphereClientFactory;
 import io.sphere.sdk.http.AsyncHttpClientAdapter;
 import io.sphere.sdk.http.HttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
@@ -22,10 +22,9 @@ public class CtpClientConfigurationUtils {
      */
     @Nonnull
     public static SphereClient createSphereClient(@Nonnull final SphereClientConfig clientConfig) {
-        final HttpClient httpClient = createHttpClient();
-        final SphereAccessTokenSupplier tokenSupplier =
-                SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
-        return SphereClient.of(clientConfig, httpClient, tokenSupplier);
+        return SphereClientFactory
+                .of(CtpClientConfigurationUtils::createHttpClient)
+                .createClient(clientConfig);
     }
 
     /**

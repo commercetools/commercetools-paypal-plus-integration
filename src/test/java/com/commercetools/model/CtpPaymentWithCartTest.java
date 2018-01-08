@@ -89,6 +89,18 @@ public class CtpPaymentWithCartTest {
     }
 
     @Test
+    public void getShippingPreference() throws Exception {
+        assertThat(paymentWithCart.getShippingPreference()).isNull();
+        CustomFields customFields = mock(CustomFields.class);
+
+        when(payment.getCustom()).thenReturn(customFields);
+        assertThat(paymentWithCart.getShippingPreference()).isNull();
+
+        when(customFields.getFieldAsEnumKey(SHIPPING_PREFERENCE)).thenReturn("WATT");
+        assertThat(paymentWithCart.getShippingPreference()).isEqualTo("WATT");
+    }
+
+    @Test
     public void getLocalesWithDefault() throws Exception {
         assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(DEFAULT_LOCALE);
 

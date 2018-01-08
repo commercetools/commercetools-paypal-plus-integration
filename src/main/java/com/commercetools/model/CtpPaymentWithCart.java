@@ -88,6 +88,7 @@ public class CtpPaymentWithCart {
      * @return enum key of {@link CtpPaymentCustomFields#SHIPPING_PREFERENCE SHIPPING_PREFERENCE} custom field
      * (if exist). This value should be use in
      * {@link com.paypal.api.ApplicationContext#shippingPreference Payment#applicationContext#shippingPreference}
+     * @see <a href="https://developer.paypal.com/docs/api/orders/#definition-application_context">application_context#shipping_preference</a>
      */
     @Nullable
     public String getShippingPreference() {

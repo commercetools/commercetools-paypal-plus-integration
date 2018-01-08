@@ -26,5 +26,35 @@
         "inputHint": "SingleLine"
       }
       ```
-    See [ctPaymentCustomType.json](/src/main/resources/referenceModels/ctPaymentCustomType.json) for full custom type 
+      
+  - add new custom field `shippingPreference` to `payment-paypal` CTP custom type:
+      ```json
+      {
+        "name": "shippingPreference",
+        "label": {
+          "en": "shippingPreference"
+        },
+        "required": false,
+        "type": {
+          "name": "Enum",
+          "values": [
+            {
+              "key": "NO_SHIPPING",
+              "label": "Redacts shipping address fields from the PayPal pages. Recommended value to use for digital goods."
+            },
+            {
+              "key": "GET_FROM_FILE",
+              "label": "Get the shipping address selected by the buyer on PayPal pages."
+            },
+            {
+              "key": "SET_PROVIDED_ADDRESS",
+              "label": "Use the address provided by the merchant. Buyer is not able to change the address on the PayPal pages. If merchant doesn't pass an address buyer has the option to choose the address on PayPal pages."
+            }
+          ]
+        },
+        "inputHint": "SingleLine"
+      }
+      ```
+  
+  - See [ctPaymentCustomType.json](/src/main/resources/referenceModels/ctPaymentCustomType.json) for full custom type 
     description.

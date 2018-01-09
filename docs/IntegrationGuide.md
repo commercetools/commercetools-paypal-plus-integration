@@ -7,6 +7,7 @@
 - [Preparing Paypal Plus accounts](#preparing-paypal-plus-accounts)
 - [Preparing commercetools Platform accounts](#preparing-commercetools-platform-accounts)
 - [Front-end workflow](#front-end-workflow)
+  - [Prevent shipping (delivery) address change in Paypal Payment Dialog](#prevent-shipping-delivery-address-change-in-paypal-payment-dialog)
 - [Create default payments](#create-default-payments)
   - [Create installment (Ratenzahlung) payments](#create-installment-ratenzahlung-payments)
 

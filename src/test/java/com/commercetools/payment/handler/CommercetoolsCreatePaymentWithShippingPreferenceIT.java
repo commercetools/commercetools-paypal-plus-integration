@@ -8,10 +8,8 @@ import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
-import com.commercetools.testUtil.customTestConfigs.WebProfileConfiguration;
 import com.paypal.api.payments.Address;
 import com.paypal.api.payments.PayerInfo;
-import com.paypal.api.payments.WebProfile;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
@@ -31,6 +29,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
@@ -40,6 +39,8 @@ import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static java.util.regex.Pattern.MULTILINE;
 import static javax.swing.Action.DEFAULT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -49,27 +50,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Test payment creation with web experience profile id.
+ * Test payment creation with application_context#shipping_preference
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 // 1) completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
-// 1) ensure noAddressOverrideWebProfile profile exists
-@Import({OrdersCartsPaymentsCleanupConfiguration.class, WebProfileConfiguration.class})
-public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends PaymentIntegrationTest {
+@Import(OrdersCartsPaymentsCleanupConfiguration.class)
+public class CommercetoolsCreatePaymentWithShippingPreferenceIT extends PaymentIntegrationTest {
 
     @Autowired
     private MockMvcAsync mockMvcAsync;
 
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
-
-    /**
-     * From {@link WebProfileConfiguration}
-     */
-    @Autowired
-    private WebProfile noAddressOverrideWebProfile;
 
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
@@ -84,7 +78,7 @@ public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends Payment
     }
 
     @Test
-    public void paymentWithExperienceProfileIdCreated() throws Exception {
+    public void paymentWithShippingPreferenceCreated() throws Exception {
         final String ctpPaymentId = createCartAndPayment(sphereClient);
         MvcResult mvcResult = mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, ctpPaymentId)))
                 .andDo(print())
@@ -119,7 +113,19 @@ public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends Payment
         com.paypal.api.payments.Payment createdPpPayment = getPpPayment(tenantConfig, ppPaymentId);
 
         assertCustomFields(createdPpPayment, returnedApprovalUrl, ppPaymentId);
-        assertThat(createdPpPayment.getExperienceProfileId()).isEqualTo(noAddressOverrideWebProfile.getId());
+
+        // jury rigg for Payment instance: Paypal Plus SDK's Payment returns stripped Payment version
+        // without application context, see https://github.com/paypal/PayPal-Java-SDK/issues/330
+        // As soon as this issue fixed - this assert will fail, but the next one should be activated then
+        assertThat(createdPpPayment.toJSON().toLowerCase())
+                .withFailMessage("If this test fails, this means application context issue is resolved "
+                        + "(https://github.com/paypal/PayPal-Java-SDK/issues/330), "
+                        + "e.g. application context with shipping preference is implemented, "
+                        + "thus the assert below should be uncommented")
+                .doesNotContainPattern(Pattern.compile("application.?context", CASE_INSENSITIVE | MULTILINE))
+                .doesNotContainPattern(Pattern.compile("shipping.?preference", CASE_INSENSITIVE | MULTILINE));
+
+        //assertThat(createdPpPayment.getApplicationContext()).isEqualTo(new ApplicationContext().setShippingPreference("SET_PROVIDED_ADDRESS"));
 
         // validate the rest of the fields
         assertThat(createdPpPayment.getPayer()).isNotNull();
@@ -149,7 +155,7 @@ public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends Payment
                         .addObject(LANGUAGE_CODE_FIELD, ofNullable(locale).orElse(DEFAULT_LOCALE).getLanguage())
 
                         // exactly this field is validated in current test
-                        .addObject(EXPERIENCE_PROFILE_ID, noAddressOverrideWebProfile.getId())
+                        .addObject(SHIPPING_PREFERENCE, "SET_PROVIDED_ADDRESS")
                         .build());
     }
 }

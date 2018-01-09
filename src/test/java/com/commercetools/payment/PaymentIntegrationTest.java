@@ -138,16 +138,4 @@ public class PaymentIntegrationTest {
 
         assertThat(getApprovalUrl(createdPpPayment)).contains(returnedApprovalUrl);
     }
-
-    /**
-     * Same as {@link #assertCustomFields(com.paypal.api.payments.Payment, String, String)}, but also verifies
-     * {@code experienceProfileId} field
-     */
-    protected static void assertCustomFields(com.paypal.api.payments.Payment createdPpPayment,
-                                             String returnedApprovalUrl, String ppPaymentId,
-                                             String experienceProfileId) throws PayPalRESTException {
-        assertCustomFields(createdPpPayment, returnedApprovalUrl, ppPaymentId);
-
-        assertThat(createdPpPayment.getExperienceProfileId()).isEqualTo(experienceProfileId);
-    }
 }

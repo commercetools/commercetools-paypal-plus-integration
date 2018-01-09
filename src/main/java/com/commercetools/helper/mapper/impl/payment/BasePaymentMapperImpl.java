@@ -261,6 +261,21 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
                 price.getCurrency().getCurrencyCode());
     }
 
+    /**
+     * As discussed with PayPal Plus support, by default shipping address should not be specified
+     * when payment is created, but only patched right before redirecting customer to the approval page:
+     * <pre>
+     *  It is not allowed to provide customer information with the create payment.
+     *  Possibly the customer doesn't use PayPal but for example ‘Vorkasse or Nachnahme’.
+     *  This is the reason for the patch call and the handling of customer information.
+     * </pre>
+     * Custom payment mapper implementations, like
+     * {@link InstallmentPaymentMapperImpl#getItemListShippingAddress(CtpPaymentWithCart)}
+     * could have some other requirements.
+     *
+     * @param ctpPaymentWithCart cart holder from which to map address
+     * @return shipping address if allowed and available in the {@code ctpPaymentWithCart}, otherwise <b>null</b>
+     */
     @Nullable
     protected ShippingAddress getItemListShippingAddress(@Nonnull CtpPaymentWithCart ctpPaymentWithCart) {
         return null;

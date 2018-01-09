@@ -3,6 +3,7 @@ package com.commercetools.payment.handler;
 import com.commercetools.Application;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
+import com.commercetools.pspadapter.facade.SphereClientFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.test.web.servlet.MockMvcAsync;
@@ -43,9 +44,14 @@ public class CommercetoolsPatchPaymentsControllerIT {
     @Autowired
     private MockMvcAsync mockMvcAsync;
 
-
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
+
+    @Autowired
+    private CtpFacadeFactory ctpFacadeFactory;
+
+    @Autowired
+    protected SphereClientFactory sphereClientFactory;
 
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
@@ -56,9 +62,9 @@ public class CommercetoolsPatchPaymentsControllerIT {
         tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
                 .orElseThrow(IllegalStateException::new);
 
-        ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
+        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
 
-        sphereClient = tenantConfig.createSphereClient();
+        sphereClient = sphereClientFactory.createSphereClient(tenantConfig);
     }
 
     @Test

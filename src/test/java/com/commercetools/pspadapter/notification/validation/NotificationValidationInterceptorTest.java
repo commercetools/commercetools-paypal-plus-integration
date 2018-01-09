@@ -42,7 +42,7 @@ public class NotificationValidationInterceptorTest {
 
         TenantConfig tenantConfig = mock(TenantConfig.class);
         when(configFactory.getTenantConfig(anyString())).thenReturn(Optional.of(tenantConfig));
-        when(tenantConfig.createAPIContextFactory()).thenReturn(mock(APIContextFactory.class));
+        when(tenantConfig.getAPIContextFactory()).thenReturn(mock(APIContextFactory.class));
 
         PaypalPlusPaymentService paymentService = mock(PaypalPlusPaymentService.class);
         when(paymentService.validateNotificationEvent(any(), anyMapOf(String.class, String.class), any())).thenReturn(completedFuture(true));

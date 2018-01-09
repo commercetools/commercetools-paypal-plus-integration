@@ -5,6 +5,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
+import java.lang.reflect.Field;
+import java.util.stream.Stream;
+
 import static com.paypal.base.Constants.SANDBOX;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,8 +63,8 @@ public class TenantConfigTest {
 
     @Test
     public void whenConvertedToString_ShouldNotRevealSecrets() throws Exception {
-        TenantConfig tenantConfig = new TenantConfig("testTenant_name", "ctpProject_key", "ctpClient_id", "ctpClient_secret",
-                "pPlusClient_id", "pPlusClient_secret", "sandbox");
+        TenantConfig tenantConfig = new TenantConfig("testTenant_name", "ctpProject_key", "ctpClient_id", "ctpClient_REAL_SECRET_VALUE",
+                "pPlusClient_id", "pPlusClient_REAL_SECRET_VALUE", "sandbox");
 
         String toString = tenantConfig.toString();
 
@@ -69,8 +72,15 @@ public class TenantConfigTest {
 
         assertThat(toString)
                 .doesNotContain("ctpClientSecret")
-                .doesNotContain("ctpClient_secret")
+                .doesNotContain("ctpClient_REAL_SECRET_VALUE")
                 .doesNotContain("pPlusClientSecret")
-                .doesNotContain("pPlusClient_secret");
+                .doesNotContain("pPlusClient_REAL_SECRET_VALUE");
+    }
+
+    @Test
+    public void toStringExclusion_containsActualPropertiesNames() throws Exception {
+        // assert that TenantConfig#EXCLUDE_FIELD_NAMES used in toString() skips actual fields
+        assertThat(Stream.of(TenantConfig.class.getDeclaredFields()).map(Field::getName))
+                .contains(TenantConfig.EXCLUDE_FIELD_NAMES);
     }
 }

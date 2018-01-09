@@ -82,7 +82,7 @@ public class TenantConfig extends Base {
         return pPlusApiContextFactory;
     }
 
-    private static final String[] EXCLUDE_FIELD_NAMES = {"ctpClientSecret", "pPlusClientSecret"};
+    static final String[] EXCLUDE_FIELD_NAMES = {"ctpClientSecret", "sphereClientConfig", "pPlusClientSecret", "pPlusApiContextFactory"};
 
     /**
      * @return String representation of the instance <b>excluding</b> secret values, like {@link #ctpClientSecret}

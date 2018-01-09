@@ -2,6 +2,7 @@ package com.commercetools.config;
 
 import com.commercetools.config.bean.ApplicationKiller;
 import com.commercetools.config.ctpTypes.AggregatedCtpTypesValidationResult;
+import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import io.sphere.sdk.types.Type;
 import org.slf4j.Logger;
@@ -25,11 +26,14 @@ public class CtpStartupConfiguration {
 
     private final TenantConfigFactory tenantConfigFactory;
     private final ApplicationKiller applicationKiller;
+    private final CtpFacadeFactory ctpFacadeFactory;
 
     @Autowired
     public CtpStartupConfiguration(@Nonnull TenantConfigFactory tenantConfigFactory,
+                                   @Nonnull CtpFacadeFactory ctpFacadeFactory,
                                    @Nonnull ApplicationKiller applicationKiller) {
         this.tenantConfigFactory = tenantConfigFactory;
+        this.ctpFacadeFactory = ctpFacadeFactory;
         this.applicationKiller = applicationKiller;
     }
 
@@ -45,7 +49,7 @@ public class CtpStartupConfiguration {
     void validateTypes() {
         try {
             AggregatedCtpTypesValidationResult typesSynchronizationResult =
-                    getAggregatedCtpTypesValidationResult(tenantConfigFactory.getTenantConfigs(), getExpectedCtpTypesFromResources());
+                    getAggregatedCtpTypesValidationResult(ctpFacadeFactory, tenantConfigFactory.getTenantConfigs(), getExpectedCtpTypesFromResources());
 
             processTypesSynchronizationResult(typesSynchronizationResult);
 

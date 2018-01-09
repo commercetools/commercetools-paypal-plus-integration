@@ -62,6 +62,7 @@ public class TenantCtpTypesValidator {
      * @return {@link AggregatedCtpTypesValidationResult} with types validation/synchronization results for all tenants.
      */
     public static AggregatedCtpTypesValidationResult getAggregatedCtpTypesValidationResult(
+            @Nonnull CtpFacadeFactory ctpFacadeFactory,
             @Nonnull List<TenantConfig> tenantConfigs,
             @Nonnull Set<Type> expectedTypesSet) {
 
@@ -69,7 +70,7 @@ public class TenantCtpTypesValidator {
         List<CompletableFuture<TenantCtpTypesValidationAction>> tenantsValidatorsStage =
                 tenantConfigs.parallelStream()
                         .map(tenantConfig -> TenantCtpTypesValidator.validateTenantTypes(tenantConfig.getTenantName(),
-                                new CtpFacadeFactory(tenantConfig).getCtpFacade().getTypeService(),
+                                ctpFacadeFactory.getCtpFacade(tenantConfig).getTypeService(),
                                 expectedTypesSet))
                         .map(CompletionStage::toCompletableFuture)
                         .collect(toList());
@@ -92,8 +93,8 @@ public class TenantCtpTypesValidator {
      * or contain CTP type update actions, or contain error message if the types can't be synchronized.
      */
     private static CompletionStage<TenantCtpTypesValidationAction> validateTenantTypes(@Nonnull String tenantName,
-                                                                                      @Nonnull TypeService typeService,
-                                                                                      @Nonnull Set<Type> expectedTypesSet) {
+                                                                                       @Nonnull TypeService typeService,
+                                                                                       @Nonnull Set<Type> expectedTypesSet) {
         TenantCtpTypesValidator validator = new TenantCtpTypesValidator(tenantName, typeService, expectedTypesSet);
         return validator.typeService.getTypes()
                 .thenApply(actualTypesList -> actualTypesList.stream().collect(toMap(Type::getKey, i -> i)))

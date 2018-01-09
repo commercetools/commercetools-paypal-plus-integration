@@ -4,7 +4,7 @@ import com.commercetools.config.bean.ApplicationKiller;
 import com.commercetools.config.ctpTypes.ExpectedCtpTypes;
 import com.commercetools.config.ctpTypes.TenantCtpTypesValidator;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.tenant.TenantConfig;
+import com.commercetools.pspadapter.facade.SphereClientFactory;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.service.ctp.TypeService;
 import com.commercetools.testUtil.CompletionStageUtil;
@@ -62,6 +62,12 @@ public class CtpStartupConfigurationTestIntegrationTest {
 
     @Autowired
     protected TenantConfigFactory tenantConfigFactory;
+
+    @Autowired
+    protected SphereClientFactory sphereClientFactory;
+
+    @Autowired
+    protected CtpFacadeFactory ctpFacadeFactory;
 
     // don't really kill the app - just verify the mock is called when expected
     @MockBean
@@ -133,7 +139,7 @@ public class CtpStartupConfigurationTestIntegrationTest {
 
     private void wipeOutTypes() {
         tenantConfigFactory.getTenantConfigs().parallelStream()
-                .map(TenantConfig::createSphereClient)
+                .map(sphereClientFactory::createSphereClient)
                 .forEach(sphereClient -> {
                     cleanupOrders(sphereClient);
                     cleanupCarts(sphereClient);
@@ -148,7 +154,7 @@ public class CtpStartupConfigurationTestIntegrationTest {
      */
     protected void verifyTenantsTypesAreCreated() throws Exception {
         tenantConfigFactory.getTenantConfigs().parallelStream()
-                .map(tenantConfig -> new CtpFacadeFactory(tenantConfig).getCtpFacade().getTypeService())
+                .map(tenantConfig -> ctpFacadeFactory.getCtpFacade(tenantConfig).getTypeService())
                 .map(TypeService::getTypes)
                 .map(CompletionStage::toCompletableFuture)
                 .map(CompletableFuture::join)
@@ -201,7 +207,8 @@ public class CtpStartupConfigurationTestIntegrationTest {
 
         tenantConfigFactory.getTenantConfigs()
                 .parallelStream()
-                .flatMap(config -> recoverableTypeDrafts.parallelStream().map(draft -> config.createSphereClient().execute(TypeCreateCommand.of(draft))))
+                .flatMap(config -> recoverableTypeDrafts.parallelStream()
+                        .map(draft -> sphereClientFactory.createSphereClient(config).execute(TypeCreateCommand.of(draft))))
                 .forEach(CompletionStageUtil::executeBlocking);
     }
 }

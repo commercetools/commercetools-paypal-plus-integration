@@ -4,6 +4,7 @@ import com.commercetools.Application;
 import com.commercetools.payment.PaymentIntegrationTest;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
+import com.commercetools.pspadapter.facade.SphereClientFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.test.web.servlet.MockMvcAsync;
@@ -65,6 +66,12 @@ public class CommercetoolsCreatePaymentWithShippingPreferenceIT extends PaymentI
     @Autowired
     private TenantConfigFactory tenantConfigFactory;
 
+    @Autowired
+    private CtpFacadeFactory ctpFacadeFactory;
+
+    @Autowired
+    private SphereClientFactory sphereClientFactory;
+
     private TenantConfig tenantConfig;
     private SphereClient sphereClient;
     private CtpFacade ctpFacade;
@@ -73,8 +80,8 @@ public class CommercetoolsCreatePaymentWithShippingPreferenceIT extends PaymentI
     public void setUp() throws Exception {
         tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
                 .orElseThrow(IllegalStateException::new);
-        ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-        sphereClient = tenantConfig.createSphereClient();
+        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
+        sphereClient = sphereClientFactory.createSphereClient(tenantConfig);
     }
 
     @Test

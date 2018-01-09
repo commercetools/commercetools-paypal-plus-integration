@@ -11,13 +11,17 @@ public final class TenantConfigMockUtil {
 
     @Nonnull
     public static TenantConfig getMockTenantConfig() {
-        return new TenantConfig("mockTenantName", "mockTenantCtpKey", "mockTenantCtpId", "mockTenantCtpSecret",
-                "mockTenantPpClientId", "mockTenantPpClientSecret", SANDBOX);
+        return getMockTenantConfig("mockTenantName");
     }
 
     @Nonnull
     public static TenantConfig getMockTenantConfig(String tenantName) {
-        return new TenantConfig(tenantName, "mockTenantCtpKey", "mockTenantCtpId", "mockTenantCtpSecret",
+        return getMockTenantConfig(tenantName, "mockTenantCtpKey");
+    }
+
+    @Nonnull
+    public static TenantConfig getMockTenantConfig(String tenantName, String projectKey) {
+        return new TenantConfig(tenantName, projectKey, "mockTenantCtpId", "mockTenantCtpSecret",
                 "mockTenantPpClientId", "mockTenantPpClientSecret", SANDBOX);
     }
 

@@ -4,6 +4,7 @@ import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.util.CtpClientConfigurationUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
@@ -35,19 +36,40 @@ import javax.annotation.Nonnull;
  * </ul>
  */
 @Component
-@EnableCaching
-@CacheConfig(cacheNames = "SphereClientFactoryCache")
 public class CacheableSphereClientFactoryImpl implements SphereClientFactory {
 
-    @Cacheable(sync = true)
-    @Override
-    public SphereClient createSphereClient(@Nonnull TenantConfig tenantConfig) {
-        return createSphereClient(tenantConfig.getSphereClientConfig());
+    private final SphereFactoryInternalCache sphereFactoryInternalCache;
+
+    @Autowired
+    public CacheableSphereClientFactoryImpl(@Nonnull SphereFactoryInternalCache sphereFactoryInternalCache) {
+        this.sphereFactoryInternalCache = sphereFactoryInternalCache;
     }
 
-    @Cacheable(sync = true)
+    @Override
+    public SphereClient createSphereClient(@Nonnull TenantConfig tenantConfig) {
+        return sphereFactoryInternalCache.createSphereClient(tenantConfig.getSphereClientConfig());
+    }
+
     @Override
     public SphereClient createSphereClient(@Nonnull SphereClientConfig clientConfig) {
-        return CtpClientConfigurationUtils.createSphereClient(clientConfig);
+        return sphereFactoryInternalCache.createSphereClient(clientConfig);
+    }
+
+    /**
+     * Spring caching feature works over AOP proxies, thus internal calls to cached methods don't work. That's why
+     * this internal bean is created: it "proxifies" overloaded {@code #createSphereClient(...)} methods
+     * to real AOP proxified cacheable bean method {@link #createSphereClient}.
+     *
+     * @see <a href="https://stackoverflow.com/questions/16899604/spring-cache-cacheable-not-working-while-calling-from-another-method-of-the-s">Spring Cache @Cacheable - not working while calling from another method of the same bean</a>
+     * @see <a href="https://stackoverflow.com/questions/12115996/spring-cache-cacheable-method-ignored-when-called-from-within-the-same-class">Spring cache @Cacheable method ignored when called from within the same class</a>
+     */
+    @EnableCaching
+    @CacheConfig(cacheNames = "SphereClientFactoryCache")
+    static class SphereFactoryInternalCache {
+
+        @Cacheable(sync = true)
+        public SphereClient createSphereClient(@Nonnull SphereClientConfig clientConfig) {
+            return CtpClientConfigurationUtils.createSphereClient(clientConfig);
+        }
     }
 }

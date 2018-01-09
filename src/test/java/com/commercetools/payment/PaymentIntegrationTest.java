@@ -2,8 +2,13 @@ package com.commercetools.payment;
 
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.facade.CtpFacade;
+import com.commercetools.pspadapter.facade.CtpFacadeFactory;
+import com.commercetools.pspadapter.facade.SphereClientFactory;
 import com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType;
 import com.commercetools.pspadapter.tenant.TenantConfig;
+import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.ctpUtil.CtpResourcesUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.paypal.base.rest.PayPalRESTException;
@@ -22,6 +27,7 @@ import io.sphere.sdk.payments.PaymentDraftDsl;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFields;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
 import javax.annotation.Nonnull;
@@ -39,12 +45,39 @@ import static com.commercetools.helper.mapper.PaymentMapper.getApprovalUrl;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
+import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PaymentIntegrationTest {
+
+    @Autowired
+    protected MockMvcAsync mockMvcAsync;
+
+    @Autowired
+    protected TenantConfigFactory tenantConfigFactory;
+
+    @Autowired
+    protected CtpFacadeFactory ctpFacadeFactory;
+
+    @Autowired
+    protected SphereClientFactory sphereClientFactory;
+
+    protected TenantConfig tenantConfig;
+    protected SphereClient sphereClient;
+    protected CtpFacade ctpFacade;
+
+    public void setUp() throws Exception {
+        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
+                .orElseThrow(IllegalStateException::new);
+
+        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
+
+        sphereClient = sphereClientFactory.createSphereClient(tenantConfig);
+    }
+
 
     protected String createCartAndPayment(@Nonnull SphereClient sphereClient) {
         Cart updatedCart = executeBlocking(createCartCS(sphereClient)
@@ -124,7 +157,7 @@ public class PaymentIntegrationTest {
     }
 
     protected static com.paypal.api.payments.Payment getPpPayment(TenantConfig tenantConfig, String ppPaymentId) throws PayPalRESTException {
-        APIContextFactory apiContextFactory = tenantConfig.createAPIContextFactory();
+        APIContextFactory apiContextFactory = tenantConfig.getAPIContextFactory();
         return com.paypal.api.payments.Payment.get(apiContextFactory.createAPIContext(), ppPaymentId);
     }
 

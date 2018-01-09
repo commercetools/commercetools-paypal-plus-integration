@@ -23,25 +23,28 @@ public class PaymentHandlerProviderImpl implements PaymentHandlerProvider {
     private final PaymentMapperHelper paymentMapperHelper;
     private final Gson paypalGson;
     private final PaypalPlusFormatter paypalPlusFormatter;
+    private final CtpFacadeFactory ctpFacadeFactory;
 
     @Autowired
     public PaymentHandlerProviderImpl(@Nonnull TenantConfigFactory configFactory,
                                       @Nonnull PaypalPlusFacadeFactory paypalPlusFacadeFactory,
                                       @Nonnull PaymentMapperHelper paymentMapperHelper,
                                       @Nonnull Gson paypalGson,
-                                      @Nonnull PaypalPlusFormatter paypalPlusFormatter) {
+                                      @Nonnull PaypalPlusFormatter paypalPlusFormatter,
+                                      @Nonnull CtpFacadeFactory ctpFacadeFactory) {
         this.configFactory = configFactory;
         this.paypalPlusFacadeFactory = paypalPlusFacadeFactory;
         this.paymentMapperHelper = paymentMapperHelper;
         this.paypalGson = paypalGson;
         this.paypalPlusFormatter = paypalPlusFormatter;
+        this.ctpFacadeFactory = ctpFacadeFactory;
     }
 
     @Override
     public Optional<PaymentHandler> getPaymentHandler(@Nonnull String tenantName) {
         return configFactory.getTenantConfig(tenantName)
                 .map(tenantConfig -> {
-                    CtpFacade ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
+                    CtpFacade ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
                     PaypalPlusFacade payPalPlusFacade = paypalPlusFacadeFactory.getPaypalPlusFacade(tenantConfig);
                     return new PaymentHandler(ctpFacade, paymentMapperHelper, payPalPlusFacade, tenantName, paypalGson, paypalPlusFormatter);
                 });

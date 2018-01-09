@@ -1,6 +1,7 @@
 package com.commercetools.pspadapter;
 
 import com.paypal.base.rest.APIContext;
+import io.sphere.sdk.models.Base;
 
 /**
  * Helper class for {@link APIContext} as we cannot directly inject {@link APIContext} into
@@ -11,7 +12,7 @@ import com.paypal.base.rest.APIContext;
  *     Github issue</a>
  *
  */
-public class APIContextFactory {
+public class APIContextFactory extends Base {
 
     private final String pPlusClientId;
     private final String pPlusClientSecret;
@@ -25,6 +26,9 @@ public class APIContextFactory {
         this.pPlusClientMode = pPlusClientMode;
     }
 
+    /**
+     * @return new instance of {@link APIContext} with respective Paypal Plus clientId, clientSecret and mode.
+     */
     public APIContext createAPIContext() {
         return new APIContext(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
     }

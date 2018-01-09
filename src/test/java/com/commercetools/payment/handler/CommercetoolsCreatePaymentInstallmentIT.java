@@ -3,15 +3,9 @@ package com.commercetools.payment.handler;
 import com.commercetools.Application;
 import com.commercetools.payment.PaymentIntegrationTest;
 import com.commercetools.payment.constants.ctp.CtpPaymentMethods;
-import com.commercetools.pspadapter.facade.CtpFacade;
-import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.tenant.TenantConfig;
-import com.commercetools.pspadapter.tenant.TenantConfigFactory;
-import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.paypal.api.payments.Address;
 import com.paypal.api.payments.PayerInfo;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
@@ -19,7 +13,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -57,24 +50,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
 public class CommercetoolsCreatePaymentInstallmentIT extends PaymentIntegrationTest {
 
-    @Autowired
-    private MockMvcAsync mockMvcAsync;
-
-    @Autowired
-    private TenantConfigFactory tenantConfigFactory;
-
-    private TenantConfig tenantConfig;
-    private SphereClient sphereClient;
-    private CtpFacade ctpFacade;
-
     @Before
     public void setUp() throws Exception {
-        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
-                .orElseThrow(IllegalStateException::new);
-
-        ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-
-        sphereClient = tenantConfig.createSphereClient();
+        super.setUp();
     }
 
     @Override

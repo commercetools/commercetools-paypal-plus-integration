@@ -1,8 +1,6 @@
 package com.commercetools.pspadapter.tenant;
 
 import com.commercetools.pspadapter.APIContextFactory;
-import com.commercetools.pspadapter.util.CtpClientConfigurationUtils;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.models.Base;
 
@@ -20,10 +18,12 @@ public class TenantConfig extends Base {
     private final String ctpProjectKey;
     private final String ctpClientId;
     private final String ctpClientSecret;
+    private final SphereClientConfig sphereClientConfig;
 
     private final String pPlusClientId;
     private final String pPlusClientSecret;
     private final String pPlusClientMode;
+    private final APIContextFactory pPlusApiContextFactory;
 
     public TenantConfig(@Nonnull String tenantName,
                         @Nonnull String ctpProjectKey,
@@ -36,9 +36,12 @@ public class TenantConfig extends Base {
         this.ctpProjectKey = ctpProjectKey;
         this.ctpClientId = ctpClientId;
         this.ctpClientSecret = ctpClientSecret;
+        this.sphereClientConfig = SphereClientConfig.of(ctpProjectKey, ctpClientId, ctpClientSecret);
+
         this.pPlusClientId = pPlusClientId;
         this.pPlusClientSecret = pPlusClientSecret;
         this.pPlusClientMode = pPlusClientMode;
+        this.pPlusApiContextFactory = new APIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
     }
 
     public String getTenantName() {
@@ -69,18 +72,11 @@ public class TenantConfig extends Base {
         return pPlusClientMode;
     }
 
-    public SphereClient createSphereClient() {
-        return CtpClientConfigurationUtils.createClient(createCtpConfig());
+    public SphereClientConfig getSphereClientConfig() {
+        return sphereClientConfig;
     }
 
-    private SphereClientConfig createCtpConfig() {
-        return SphereClientConfig.of(
-                this.ctpProjectKey,
-                this.ctpClientId,
-                this.ctpClientSecret);
-    }
-
-    public APIContextFactory createAPIContextFactory() {
-        return new APIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
+    public APIContextFactory getAPIContextFactory() {
+        return pPlusApiContextFactory;
     }
 }

@@ -3,14 +3,8 @@ package com.commercetools.payment.notification;
 import com.commercetools.Application;
 import com.commercetools.payment.PaymentIntegrationTest;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
-import com.commercetools.pspadapter.facade.CtpFacade;
-import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.tenant.TenantConfig;
-import com.commercetools.pspadapter.tenant.TenantConfigFactory;
-import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.commercetools.testUtil.customTestConfigs.ServiceConfig;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.PaymentUpdateCommand;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
@@ -19,7 +13,6 @@ import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,30 +45,15 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
 
     private static final String INTERACTION_ID = "testInteractionId";
 
-    @Autowired
-    private MockMvcAsync mockMvcAsync;
-
     @Value(value = "classpath:mockData/notification/paymentSaleCompletedResponse.json")
     private Resource paymentSaleCompletedResponseResource;
 
     @Value(value = "classpath:mockData/notification/fakeNotificationResponse.json")
     private Resource fakeNotificationResponseResource;
 
-    @Autowired
-    private TenantConfigFactory tenantConfigFactory;
-
-    private TenantConfig tenantConfig;
-    private SphereClient sphereClient;
-    private CtpFacade ctpFacade;
-
     @Before
     public void setUp() throws Exception {
-        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
-                .orElseThrow(IllegalStateException::new);
-
-        ctpFacade = new CtpFacadeFactory(tenantConfig).getCtpFacade();
-
-        sphereClient = tenantConfig.createSphereClient();
+        super.setUp();
     }
 
     @Test

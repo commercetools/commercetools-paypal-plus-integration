@@ -97,4 +97,84 @@ public class CustomFieldUtilTest {
         assertThat(getCustomFieldStringOrEmpty(customFieldsHolder, "spider-man")).isEqualTo("");
     }
 
+    @Test
+    public void getCustomFieldStringOrNull_defaultCases() throws Exception {
+        assertThat(getCustomFieldStringOrNull(null, null)).isNull();
+        assertThat(getCustomFieldStringOrNull(null, "foo")).isNull();
+
+        when(customFieldsHolder.getCustom()).thenReturn(customFields);
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "foo")).isNull();
+
+        when(customFields.getFieldAsString("foo")).thenReturn(null);
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "foo")).isNull();
+
+        when(customFields.getFieldAsString("foo")).thenReturn("");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "foo")).isEqualTo("");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, null)).isNull();
+    }
+
+    @Test
+    public void getCustomFieldStringOrNull_normalCases() throws Exception {
+        when(customFieldsHolder.getCustom()).thenReturn(customFields);
+        when(customFields.getFieldAsString("foo")).thenReturn("bar");
+        when(customFields.getFieldAsString("bar")).thenReturn("woot");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "foo")).isEqualTo("bar");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "bar")).isEqualTo("woot");
+        assertThat(getCustomFieldStringOrNull(customFieldsHolder, "spider-man")).isNull();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Enum
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void getCustomFieldEnumKey_emptyCases() throws Exception {
+        assertThat(getCustomFieldEnumKey(null, null)).isEmpty();
+        assertThat(getCustomFieldEnumKey(null, "foo")).isEmpty();
+
+        when(customFieldsHolder.getCustom()).thenReturn(customFields);
+        assertThat(getCustomFieldEnumKey(customFieldsHolder, "foo")).isEmpty();
+
+        when(customFields.getFieldAsEnumKey("foo")).thenReturn(null);
+        assertThat(getCustomFieldEnumKey(customFieldsHolder, "foo")).isEmpty();
+
+        when(customFields.getFieldAsEnumKey("foo")).thenReturn("");
+        assertThat(getCustomFieldEnumKey(customFieldsHolder, "foo")).contains("");
+        assertThat(getCustomFieldEnumKey(customFieldsHolder, null)).isEmpty();
+    }
+
+    @Test
+    public void getCustomFieldEnumKey_normalCases() throws Exception {
+        when(customFieldsHolder.getCustom()).thenReturn(customFields);
+        when(customFields.getFieldAsEnumKey("foo")).thenReturn("bar");
+        when(customFields.getFieldAsEnumKey("bar")).thenReturn("woot");
+        assertThat(getCustomFieldEnumKey(customFieldsHolder, "foo")).contains("bar");
+        assertThat(getCustomFieldEnumKey(customFieldsHolder, "bar")).contains("woot");
+    }
+
+    @Test
+    public void getCustomFieldEnumKeyOrNull_defaultCases() throws Exception {
+        assertThat(getCustomFieldEnumKeyOrNull(null, null)).isNull();
+        assertThat(getCustomFieldEnumKeyOrNull(null, "foo")).isNull();
+
+        when(customFieldsHolder.getCustom()).thenReturn(customFields);
+        assertThat(getCustomFieldEnumKeyOrNull(customFieldsHolder, "foo")).isNull();
+
+        when(customFields.getFieldAsEnumKey("foo")).thenReturn(null);
+        assertThat(getCustomFieldEnumKeyOrNull(customFieldsHolder, "foo")).isNull();
+
+        when(customFields.getFieldAsEnumKey("foo")).thenReturn("");
+        assertThat(getCustomFieldEnumKeyOrNull(customFieldsHolder, "foo")).isEqualTo("");
+        assertThat(getCustomFieldEnumKeyOrNull(customFieldsHolder, null)).isNull();
+    }
+
+    @Test
+    public void getCustomFieldEnumKeyOrNull_normalCases() throws Exception {
+        when(customFieldsHolder.getCustom()).thenReturn(customFields);
+        when(customFields.getFieldAsEnumKey("foo")).thenReturn("bar");
+        when(customFields.getFieldAsEnumKey("bar")).thenReturn("woot");
+        assertThat(getCustomFieldEnumKeyOrNull(customFieldsHolder, "foo")).isEqualTo("bar");
+        assertThat(getCustomFieldEnumKeyOrNull(customFieldsHolder, "bar")).isEqualTo("woot");
+        assertThat(getCustomFieldEnumKeyOrNull(customFieldsHolder, "spider-man")).isNull();
+    }
 }

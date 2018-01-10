@@ -7,6 +7,7 @@
 - [Preparing Paypal Plus accounts](#preparing-paypal-plus-accounts)
 - [Preparing commercetools Platform accounts](#preparing-commercetools-platform-accounts)
 - [Front-end workflow](#front-end-workflow)
+  - [Prevent shipping (delivery) address change in Paypal Payment Dialog](#prevent-shipping-delivery-address-change-in-paypal-payment-dialog)
 - [Create default payments](#create-default-payments)
   - [Create installment (Ratenzahlung) payments](#create-installment-ratenzahlung-payments)
 
@@ -20,7 +21,49 @@ This documentation describes how to setup, start and use `commercetools-paypal-p
 
 ## Preparing commercetools Platform accounts
 
+  - create *`payment-paypal`* custom type with fields, specified in 
+  [ctPaymentCustomType.json](/src/main/resources/referenceModels/ctPaymentCustomType.json). See also 
+  [CtpPaymentCustomFields](/src/main/java/com/commercetools/payment/constants/ctp/CtpPaymentCustomFields.java) class.
+
 ## Front-end workflow
+
+### Prevent shipping (delivery) address change in Paypal Payment Dialog
+
+There is still not clear what is correct/recommended/document way to prevent buyer's address change on the
+approval page (when the buyer is redirected). As discussed with support (Kristian Büsch) there are 2 possible solutions:
+  1. (Recommended, but not documented yet): using `Payment#application_context#shipping_preference` value. The field
+  should be set to `SET_PROVIDED_ADDRESS` value.
+   
+      **Note**:
+      - use `shippingPreference` enum custom field in CTP payment to create payment with such behavior 
+      (set the field to `SET_PROVIDED_ADDRESS` value)
+      
+      - the **shipping address must be set** before user is redirected to the approval page. 
+      If this is a default payment type - `patch` endpoint should be used after payment is create, 
+      but before buyer is redirected to the approval page.
+      
+      - unfortunately, this property is neither documented on the API nor implemented by SDK. Respective issues created:
+        - https://github.com/paypal/PayPal-Java-SDK/issues/330
+        - https://github.com/paypal/PayPal-REST-API-issues/issues/179
+        - https://github.com/paypal/PayPal-REST-API-issues/issues/181
+        
+        Meanwhile we are using [Orders API](https://developer.paypal.com/docs/api/orders/#definition-application_context)
+      documentation
+      
+  2. (Documented, but not recommended way since it could be deprecated soon): using 
+  [payments experience profile](https://developer.paypal.com/docs/api/payment-experience/).
+    
+      1. [Create payment experience profile in the Paypal Merchant account](https://developer.paypal.com/docs/api/payment-experience/#web-profiles_create)
+      with `input_fields#address_override=1`
+      (Note, our _commercetools-paypalplus-integration_ service does not expose such endpoint, it should be created directly
+      using Paypal API)
+      
+      2. Set the id or created web profile to `experienceProfileId` custom field of every payment handled by our service.
+      
+      3. Same as for `shippingPreference` above: **shipping address must be set** before buyer is redirected to approval page.
+      
+  Right now our _commercetools-paypalplus-integration_ service support both ways, so any of properties described above
+  will be sent to PayPal Plus API if it is specified in a CTP Payment custom field.
 
 ## Create default payments
 

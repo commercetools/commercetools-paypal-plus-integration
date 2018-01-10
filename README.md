@@ -53,16 +53,38 @@ which is used for local run/debug, because the integration tests will remove all
             - Cart total amount should be > 0
             - Shipping address should be set
         - Required fields for the CTP payment:
-            - amountPlanned
-            - cancelUrl
-            - successUrl
-            - paymentMethodInfo needs to be set like this:
+            - `amountPlanned`
+            - `cancelUrl` (custom field)
+            - `successUrl` (custom field)
+            - `paymentMethodInfo` needs to be set like this:
+            
             ```json
             "paymentMethodInfo": {
               "paymentInterface": "PAYPAL_PLUS",
               "method": "paypal"
             }
             ```
+            
+        - Optional fields for the CTP payment:
+            - `experienceProfileId` (custom field): if the payment should be supplied with certain 
+            [Paypal Plus Experience Profile Id](https://developer.paypal.com/docs/api/payment-experience/).
+            
+              **Note**: looks like there is now certain clarity in PayPal Plus documentation/support 
+              how the web experience profiles should be used, and potentially they will be deprecated in the future,
+              so we recommend not to use them unless you are completely sure what you achieve using them.
+              If you need prevent address change by customers (buyers) - use `shippingPreference` below. 
+               
+            - `shippingPreference` (custom field): value of `Payment#application_context#shipping_preference` enum.
+            This value is used to allow/block shipping address change by the customer (buyer). Reed more at 
+            [Application Context Documentation](https://developer.paypal.com/docs/api/orders/#definition-application_context)
+            
+              **Note**: So far this feature is not properly documented by Paypal API developers, so the reference above 
+              actually refers to [Orders API](https://developer.paypal.com/docs/api/orders/#definition-application_context), 
+              instead of [Payments API](https://developer.paypal.com/docs/api/payments/#definition-application_context).
+              Respective issues are created: 
+                - [Payment/Order#applicationContext property is not available](https://github.com/paypal/PayPal-Java-SDK/issues/330#issuecomment-356008914)
+                - [Payment application_context is not documented](https://github.com/paypal/PayPal-REST-API-issues/issues/179)
+            
     1. Backend POSTs CTP payment ID created in the previous step to Paypal-integration. Example: 
         ```
         POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/create/payments/${ctpPaymentId}

@@ -48,6 +48,7 @@ public class PaymentMapperHelperImpl implements PaymentMapperHelper {
                 .orElseGet(this::getDefaultPaymentMapper);
     }
 
+    @Nonnull
     @Override
     public PaymentMapper getDefaultPaymentMapper() {
         return defaultPaymentMapper;

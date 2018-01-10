@@ -21,6 +21,7 @@ import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.javamoney.moneta.Money;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 import java.util.List;
 import java.util.Locale;
@@ -118,7 +119,7 @@ public class CtpResourcesUtil extends ResourcesUtil {
         return readObjectFromResource(resourcePath, CartDraft.class);
     }
 
-    public static PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, Locale locale) {
+    public static PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, @Nullable Locale locale) {
         return PaymentDraftBuilder.of(totalPrice)
                 .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(DEFAULT).build())
                 .custom(CustomFieldsDraftBuilder.ofTypeKey("payment-paypal")

@@ -5,6 +5,7 @@ import com.commercetools.helper.mapper.AddressMapper;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.constants.CtpToPaypalPlusPaymentMethodsMapping;
+import com.paypal.api.ApplicationContext;
 import com.paypal.api.payments.*;
 import io.sphere.sdk.cartdiscounts.DiscountedLineItemPriceForQuantity;
 import io.sphere.sdk.carts.CustomLineItem;
@@ -45,12 +46,18 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
     @Override
     @Nonnull
     public Payment ctpPaymentToPaypalPlus(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        Payment mappedPayment = new Payment();
+        // while PayPal Plus SDK developers are fixing issue
+        // href="https://github.com/paypal/PayPal-Java-SDK/issues/330
+        // we use this extended payment type to set application context with shipping preference
+        PaymentEx mappedPayment = new PaymentEx();
+
+        mappedPayment.setApplicationContext(getApplicationContext(paymentWithCartLike));
 
         mappedPayment.setIntent(SALE);
         mappedPayment.setPayer(getPayer(paymentWithCartLike));
         mappedPayment.setTransactions(getTransactions(paymentWithCartLike));
         mappedPayment.setRedirectUrls(getRedirectUrls(paymentWithCartLike));
+        mappedPayment.setExperienceProfileId(getExperienceProfileId(paymentWithCartLike));
 
         return mappedPayment;
     }
@@ -94,6 +101,17 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
         return new RedirectUrls()
                 .setReturnUrl(paymentWithCartLike.getReturnUrl())
                 .setCancelUrl(paymentWithCartLike.getCancelUrl());
+    }
+
+    @Nullable
+    protected String getExperienceProfileId(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
+        return paymentWithCartLike.getExperienceProfileId();
+    }
+
+    @Nullable
+    protected ApplicationContext getApplicationContext(@Nonnull CtpPaymentWithCart paymentWithCart) {
+        return new ApplicationContext()
+                .setShippingPreference(paymentWithCart.getShippingPreference());
     }
 
     @Nonnull
@@ -243,6 +261,21 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
                 price.getCurrency().getCurrencyCode());
     }
 
+    /**
+     * As discussed with PayPal Plus support, by default shipping address should not be specified
+     * when payment is created, but only patched right before redirecting customer to the approval page:
+     * <pre>
+     *  It is not allowed to provide customer information with the create payment.
+     *  Possibly the customer doesn't use PayPal but for example ‘Vorkasse or Nachnahme’.
+     *  This is the reason for the patch call and the handling of customer information.
+     * </pre>
+     * Custom payment mapper implementations, like
+     * {@link InstallmentPaymentMapperImpl#getItemListShippingAddress(CtpPaymentWithCart)}
+     * could have some other requirements.
+     *
+     * @param ctpPaymentWithCart cart holder from which to map address
+     * @return shipping address if allowed and available in the {@code ctpPaymentWithCart}, otherwise <b>null</b>
+     */
     @Nullable
     protected ShippingAddress getItemListShippingAddress(@Nonnull CtpPaymentWithCart ctpPaymentWithCart) {
         return null;

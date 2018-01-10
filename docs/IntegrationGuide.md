@@ -39,7 +39,7 @@ approval page (when the buyer is redirected). As discussed with support (Kristia
       (set the field to `SET_PROVIDED_ADDRESS` value)
       
       - the **shipping address must be set** before user is redirected to the approval page. 
-      If this is a default payment type - `patch` endpoint should be used after payment is create, 
+      If this is a default payment type - `patch` endpoint should be used after payment is created, 
       but before buyer is redirected to the approval page.
       
       - unfortunately, this property is neither documented on the API nor implemented by SDK. Respective issues created:

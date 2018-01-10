@@ -58,7 +58,7 @@ approval page (when the buyer is redirected). As discussed with support (Kristia
       (Note, our _commercetools-paypalplus-integration_ service does not expose such endpoint, it should be created directly
       using Paypal API)
       
-      2. Set the id or created web profile to `experienceProfileId` custom field of every payment handled by our service.
+      2. Set the id of created web profile to `experienceProfileId` custom field of every payment handled by our service.
       
       3. Same as for `shippingPreference` above: **shipping address must be set** before buyer is redirected to approval page.
       

@@ -3,17 +3,20 @@ package com.commercetools.config.ctpTypes;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.service.ctp.TypeService;
-import io.sphere.sdk.types.FieldDefinition;
-import io.sphere.sdk.types.Type;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.WithKey;
+import io.sphere.sdk.types.*;
+import io.sphere.sdk.types.commands.updateactions.AddEnumValue;
+import io.sphere.sdk.types.commands.updateactions.AddFieldDefinition;
+import io.sphere.sdk.types.commands.updateactions.AddLocalizedEnumValue;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.commercetools.config.ctpTypes.TenantCtpTypesValidationAction.*;
@@ -125,8 +128,8 @@ public class TenantCtpTypesValidator {
     private TenantCtpTypesValidationAction mapExpectedVsActualToAction(final @Nonnull Type expectedType, final @Nullable Type actualType) {
         // 1. If actualType does not exist - create a new type
         // 2. If actualType does not contain all expected resourceTypeId - create error message
-        // 3. If one of fieldDefinition has "type" or "required" field mismatch - create error message
-        // 4. If one of the expectedType fields is missing - update the actual type adding this messages
+        // 3. If one of fieldDefinition is incompatible with actual type create error message (see #getFieldsMismatchMessages() for details)
+        // 4. If one of the expectedType fields, enum/lenum keys are missing - update the actual types
 
         // 1. create a new type
         if (actualType == null) {
@@ -144,11 +147,15 @@ public class TenantCtpTypesValidator {
             return ofErrorMessages(tenantName, typeService, errorMessages);
         }
 
-        // 4. create missing field definitions, if any
-        return ofAddFieldDefinitions(tenantName, typeService,
-                actualType,
-                getMissingFields(expectedType, actualType)
-                        .collect(toList()));
+        List<UpdateAction<Type>> typeUpdateActions = Stream.of(
+                addFieldDefinition(expectedType, actualType),
+                addEnumValues(expectedType, actualType),
+                addLocalizedEnumValues(expectedType, actualType))
+                .flatMap(i -> i)
+                .collect(toList());
+
+        // 4. create missing field definitions, enum/lenum keys
+        return ofUpdateActions(tenantName, typeService, actualType, typeUpdateActions);
     }
 
     /**
@@ -170,13 +177,13 @@ public class TenantCtpTypesValidator {
 
     /**
      * Compare {@code expectedType} with {@code actualType} fields definitions and return a stream of error messages,
-     * if some field definitions are mismatched.
+     * if some field definitions are mismatched and can't be updated.
      *
      * @param tenantName   tenant name to display in the error message
      * @param expectedType expected type
      * @param actualType   actual type
-     * @return stream of error messages, if some filed definitions are mismatched in the {@code actualType}.
-     * If all actual field definitions are valid - return empty stream.
+     * @return stream of error messages, if some filed definitions are mismatched in the {@code actualType}
+     * and can't be updated. If all actual field definitions are valid - return empty stream.
      */
     private static Stream<String> getFieldsMismatchMessages(final @Nonnull String tenantName,
                                                             final @Nonnull Type expectedType, final @Nonnull Type actualType) {
@@ -206,10 +213,14 @@ public class TenantCtpTypesValidator {
 
     /**
      * Compare field definitions of expected and actual types. Returns a stream of {@link FieldDefinitionTuple} which
-     * are different. <i>Different</i> means they have mismatch in {@code name}, {@code type} or {@code required} properties.
+     * are different. <i>Different</i> means at least one of:<ul>
+     * <li>they have mismatch in {@code name}, or {@code type} or {@code required} properties.</li>
+     * <li>if field type is {@link SetFieldType} - {io.sphere.sdk.types.SetFieldType#getElementType() SetFieldType#getElementType() is not the same</li>
+     * <li>if field type is {@link ReferenceFieldType} - {io.sphere.sdk.types.ReferenceFieldType#getReferenceTypeId() ReferenceFieldType#getReferenceTypeId() is not the same</li>
+     * </ul>
      * See {@link FieldDefinitionTuple#areDifferent()} for more details.
      * <p>
-     * If field in {@code actualType} is missing - skip it (it should be added by {@link #getMissingFields(Type, Type)})
+     * If field in {@code actualType} is missing - skip it (it should be added by {@link #addFieldDefinition(Type, Type)})
      *
      * @param expectedType expected type
      * @param actualType   actual type
@@ -230,9 +241,78 @@ public class TenantCtpTypesValidator {
      * @return stream of fields which are completely missing in {@code actualType}, or empty stream, if
      * {@code actualType} contains all expected fields.
      */
-    private static Stream<FieldDefinition> getMissingFields(final @Nonnull Type expectedType, final @Nonnull Type actualType) {
+    private static Stream<AddFieldDefinition> addFieldDefinition(@Nonnull Type expectedType, @Nonnull Type actualType) {
         return expectedType.getFieldDefinitions().stream()
-                .filter(expectedField -> actualType.getFieldDefinitionByName(expectedField.getName()) == null);
+                .filter(expectedField -> actualType.getFieldDefinitionByName(expectedField.getName()) == null)
+                .map(AddFieldDefinition::of);
+    }
+
+    @Nonnull
+    private static Stream<AddEnumValue> addEnumValues(@Nonnull Type expectedType, @Nonnull Type actualType) {
+        return addTypedEnumValues(expectedType, actualType,
+                EnumFieldType.class,
+                EnumFieldType::getValues,
+                AddEnumValue::of);
+    }
+
+    @Nonnull
+    private static Stream<AddLocalizedEnumValue> addLocalizedEnumValues(@Nonnull Type expectedType, @Nonnull Type actualType) {
+        return addTypedEnumValues(expectedType, actualType,
+                LocalizedEnumFieldType.class,
+                LocalizedEnumFieldType::getValues,
+                AddLocalizedEnumValue::of);
+    }
+
+    /**
+     * Function to compare and add missing enum/lenum keys. If some values are redundant in the actual field definition
+     * - they are not removed.
+     *
+     * @param expectedType       expected type
+     * @param actualType         actual type
+     * @param clazz              actual {@link EnumFieldType} or {@link LocalizedEnumFieldType} class
+     * @param getValues          function to get values list from enum/lenum
+     * @param enumToActionMapper function to map missing enum/value to type update action
+     * @param <FT>               field type ({@link EnumFieldType} or {@link LocalizedEnumFieldType})
+     * @param <FTC>              field type class ({@code EnumFieldType.class} or {@code LocalizedEnumFieldType.class})
+     * @param <ET>               type of enum/lenum values (type of {@code #getValues()} list entires)
+     * @param <UAT>              actual {@link UpdateAction} type
+     * @return stream of update actions, if required. Empty stream if no expected values should be added.
+     */
+    @Nonnull
+    private static <FT extends FieldType, FTC extends Class<FT>, ET extends WithKey, UAT extends UpdateAction<Type>>
+    Stream<UAT> addTypedEnumValues(
+            @Nonnull Type expectedType, @Nonnull Type actualType,
+            @Nonnull FTC clazz,
+            @Nonnull Function<FT, List<ET>> getValues,
+            @Nonnull BiFunction<String, ET, UAT> enumToActionMapper) {
+        return expectedType.getFieldDefinitions().stream()
+                .flatMap(expectedDefinition -> {
+                    FieldDefinition actualDefinition = actualType.getFieldDefinitionByName(expectedDefinition.getName());
+                    if (actualDefinition != null) {
+                        FT actualFieldType = safeCastInstanceToType(clazz, actualDefinition.getType());
+                        FT expectedFieldType = safeCastInstanceToType(clazz, expectedDefinition.getType());
+                        if (actualFieldType != null && expectedFieldType != null) {
+                            Set<ET> actualEnumValues = new HashSet<>(getValues.apply(actualFieldType));
+                            List<ET> expectedEnumValues = getValues.apply(expectedFieldType);
+                            return expectedEnumValues.stream()
+                                    .filter(enumValue -> !actualEnumValues.contains(enumValue))
+                                    .map(enumValue -> enumToActionMapper.apply(actualDefinition.getName(), enumValue));
+                        }
+                    }
+                    return Stream.empty();
+                });
+    }
+
+    /**
+     * @param clazz class to which to cast
+     * @param o     instance to try to cast
+     * @param <T>   type of instance we would like to cast in
+     * @return casted instance, if possible, <b>null</b> otherwise.
+     */
+    @SuppressWarnings("unchecked")
+    @Nullable
+    private static <T> T safeCastInstanceToType(@Nonnull Class<T> clazz, @Nullable Object o) {
+        return clazz.isInstance(o) ? (T) o : null;
     }
 
     /**
@@ -268,13 +348,37 @@ public class TenantCtpTypesValidator {
          * <li>{@link FieldDefinition#getName()}</li>
          * <li>{@link FieldDefinition#getType()}</li>
          * <li>{@link FieldDefinition#isRequired()}</li>
+         * <li>for {@link ReferenceFieldType} - different {@link ReferenceFieldType#referenceTypeId¬}</li>
+         * <li>for {@link SetFieldType} - different {@link SetFieldType#elementType}</li>
          * </ul>
+         * <p>
+         * <b>Note:</b> {@link EnumFieldType} and {@link LocalizedEnumFieldType} are expected to be equal
+         * (e.g. <b>not</b> different) even if they have different values.
+         * The missed values should be added in update actions.
          */
         public boolean areDifferent() {
             return (expectedField != actualField)
-                    && !(Objects.equals(expectedField.getName(), actualField.getName())
-                    && Objects.equals(expectedField.getType(), actualField.getType())
-                    && Objects.equals(expectedField.isRequired(), actualField.isRequired()));
+                    && !(haveSameCommonValues() && haveSameFieldTypeDeclaration());
+        }
+
+        private boolean haveSameCommonValues() {
+            return Objects.equals(expectedField.getName(), actualField.getName())
+                    && Objects.equals(expectedField.isRequired(), actualField.isRequired());
+        }
+
+        private boolean haveSameFieldTypeDeclaration() {
+            FieldType expectedFieldType = expectedField.getType();
+            FieldType actualFieldType = actualField.getType();
+
+            // Note: comparing FieldType by FieldType#equals() doesn't satisfy our needs,
+            // because enum/lenum types compare also values, but values is a kind of "recoverable" mismatch
+            // and the Type#fieldDefinition should be updated adding missing values.
+            if (expectedFieldType instanceof EnumFieldType || expectedFieldType instanceof LocalizedEnumFieldType) {
+                return Objects.equals(expectedFieldType.getClass(), actualFieldType.getClass());
+            }
+
+            // all other field types must be completely equal
+            return Objects.equals(expectedFieldType, actualFieldType);
         }
     }
 

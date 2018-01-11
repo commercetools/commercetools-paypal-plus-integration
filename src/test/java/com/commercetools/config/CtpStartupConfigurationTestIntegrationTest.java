@@ -74,7 +74,9 @@ public class CtpStartupConfigurationTestIntegrationTest {
     protected ApplicationKiller applicationKiller;
 
 
+    // paths to resources with mocking "actual" CTP project Type configuration
     private static final String RECOVERABLE_CTP_TYPES_MOCKS_DIR = "ctp/typesTestMocks/recoverableTypes/";
+    private static final String RECOVERABLE_CTP_TYPES_WITH_ENUMS_MOCKS_DIR = "ctp/typesTestMocks/recoverableTypesWithEnums/";
     private static final String UNRECOVERABLE_CTP_TYPES_MOCKS_DIR = "ctp/typesTestMocks/unrecoverableTypes/";
 
     @Before
@@ -95,18 +97,6 @@ public class CtpStartupConfigurationTestIntegrationTest {
      */
     @Test
     public void whenCtpProjectIsEmpty_allTheTypesAreCreatedFromScratch() throws Exception {
-        ctpStartupConfiguration.validateTypes();
-
-        verifyTenantsTypesAreCreated();
-    }
-
-    /**
-     * Verifies types are updated from some initial state and at the end they have expected properties.
-     */
-    @Test
-    public void whenCtpProjectHasRecoverableValues_allTheTypesAreUpdated() throws Exception {
-        setupTypesFromResources(RECOVERABLE_CTP_TYPES_MOCKS_DIR);
-
         ctpStartupConfiguration.validateTypes();
 
         verifyTenantsTypesAreCreated();
@@ -135,6 +125,27 @@ public class CtpStartupConfigurationTestIntegrationTest {
         assertThat(messageCaptor.getValue())
                 .doesNotContain("paypal-plus-interaction-request")
                 .doesNotContain("paypal-plus-interaction-response");
+    }
+
+    /**
+     * Verifies types are updated from some initial state and at the end they have expected properties.
+     */
+    @Test
+    public void whenCtpProjectHasRecoverableValues_allTheTypesAreUpdated() throws Exception {
+        setupTypesFromResources(RECOVERABLE_CTP_TYPES_MOCKS_DIR);
+
+        ctpStartupConfiguration.validateTypes();
+
+        verifyTenantsTypesAreCreated();
+    }
+
+    @Test
+    public void whenCtpProjectHasRecoverableValuesWithMissedEnum_allTheTypesAreUpdated() throws Exception {
+        setupTypesFromResources(RECOVERABLE_CTP_TYPES_WITH_ENUMS_MOCKS_DIR);
+
+        ctpStartupConfiguration.validateTypes();
+
+        verifyTenantsTypesAreCreated();
     }
 
     private void wipeOutTypes() {

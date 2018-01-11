@@ -85,44 +85,6 @@ public class TypeServiceImplIntegrationTest {
     }
 
     @Test
-    public void addFieldDefinitions() throws Exception {
-        Type testType = executeBlocking(typeService.createType(TypeDraftBuilder
-                .of("test-type-1-key", LocalizedString.of(ENGLISH, "test-addFieldDefinitions-type"), singleton("payment"))
-                .build()));
-
-        executeBlocking(typeService.addFieldDefinitions(testType, asList(
-                FieldDefinition.of(StringFieldType.of(), "string-field-name",
-                        LocalizedString.of(ENGLISH, "string-field-en").plus(GERMAN, "string-field-de"),
-                        false),
-                FieldDefinition.of(DateFieldType.of(), "date-field-name",
-                        LocalizedString.of(CHINESE, "date-field-zh"),
-                        true)
-        )));
-
-        Type updatedType = executeBlocking(typeService.getTypes()).stream()
-                .filter(t -> "test-type-1-key".equals(t.getKey())).findFirst().orElseThrow(IllegalStateException::new);
-
-        assertThat(updatedType).isNotNull();
-        assertThat(updatedType.getFieldDefinitions()).hasSize(2);
-
-        FieldDefinition stringField = updatedType.getFieldDefinitionByName("string-field-name");
-        assertThat(stringField).isNotNull();
-        assertThat(stringField.getType()).isInstanceOf(StringFieldType.class);
-        assertThat(stringField.getLabel())
-                .isEqualTo(LocalizedString.of(ENGLISH, "string-field-en").plus(GERMAN, "string-field-de"));
-        assertThat(stringField.isRequired())
-                .isEqualTo(false);
-
-        FieldDefinition dateField = updatedType.getFieldDefinitionByName("date-field-name");
-        assertThat(dateField).isNotNull();
-        assertThat(dateField.getType()).isInstanceOf(DateFieldType.class);
-        assertThat(dateField.getLabel())
-                .isEqualTo(LocalizedString.of(CHINESE, "date-field-zh"));
-        assertThat(dateField.isRequired())
-                .isEqualTo(true);
-    }
-
-    @Test
     public void updateType() throws Exception {
         Type testType = executeBlocking(typeService.createType(TypeDraftBuilder
                 .of("test-type-1-key", LocalizedString.of(ENGLISH, "test-updateType-type"), singleton("payment"))

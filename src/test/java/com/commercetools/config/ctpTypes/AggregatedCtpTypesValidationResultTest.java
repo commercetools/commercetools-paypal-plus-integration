@@ -2,11 +2,13 @@ package com.commercetools.config.ctpTypes;
 
 import com.commercetools.service.ctp.impl.TypeServiceImpl;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.FieldDefinition;
 import io.sphere.sdk.types.StringFieldType;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
+import io.sphere.sdk.types.commands.updateactions.AddFieldDefinition;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
@@ -93,8 +95,8 @@ public class AggregatedCtpTypesValidationResultTest {
         AggregatedCtpTypesValidationResult result = AggregatedCtpTypesValidationResult.executeAndAggregateTenantValidationResults(asList(
                 TenantCtpTypesValidationAction.ofEmpty("tenant1", typeServiceMock()),
                 TenantCtpTypesValidationAction.ofCreateType("tenant2", typeServiceMock(), mockType("t2_key1")),
-                TenantCtpTypesValidationAction.ofAddFieldDefinitions("tenant3", typeServiceMock(), mockType("t3_key1"),
-                        singletonList(FieldDefinition.of(StringFieldType.of(), "field1", LocalizedString.of(), false))),
+                TenantCtpTypesValidationAction.ofUpdateActions("tenant3", typeServiceMock(), mockType("t3_key1"),
+                        singletonList(AddFieldDefinition.of(FieldDefinition.of(StringFieldType.of(), "field1", LocalizedString.of(), false)))),
                 TenantCtpTypesValidationAction.ofErrorMessages("tenant3", typeServiceMock(), asList("error1", "error2"))
         )).toCompletableFuture().join();
 
@@ -112,8 +114,8 @@ public class AggregatedCtpTypesValidationResultTest {
         AggregatedCtpTypesValidationResult result = AggregatedCtpTypesValidationResult.executeAndAggregateTenantValidationResults(asList(
                 TenantCtpTypesValidationAction.ofEmpty("tenant1", typeServiceMock()),
                 TenantCtpTypesValidationAction.ofCreateType("tenant2", typeServiceMock(), mockType("t2_key1")),
-                TenantCtpTypesValidationAction.ofAddFieldDefinitions("tenant3", typeServiceMock(), mockType("t3_key1"),
-                        singletonList(FieldDefinition.of(StringFieldType.of(), "field1", LocalizedString.of(), false))),
+                TenantCtpTypesValidationAction.ofUpdateActions("tenant3", typeServiceMock(), mockType("t3_key1"),
+                        singletonList(AddFieldDefinition.of(FieldDefinition.of(StringFieldType.of(), "field1", LocalizedString.of(), false)))),
                 TenantCtpTypesValidationAction.ofEmpty("tenant4", typeServiceMock())
         )).toCompletableFuture().join();
 
@@ -154,7 +156,7 @@ public class AggregatedCtpTypesValidationResultTest {
         }
 
         @Override
-        public CompletionStage<Type> addFieldDefinitions(@Nonnull Type type, @Nonnull List<FieldDefinition> fieldDefinitions) {
+        public CompletionStage<Type> updateType(@Nonnull Type type, @Nonnull List<UpdateAction<Type>> updateActions) {
             return completedFuture(type);
         }
 

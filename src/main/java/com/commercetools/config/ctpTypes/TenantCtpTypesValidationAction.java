@@ -1,7 +1,7 @@
 package com.commercetools.config.ctpTypes;
 
 import com.commercetools.service.ctp.TypeService;
-import io.sphere.sdk.types.FieldDefinition;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,7 +34,7 @@ public class TenantCtpTypesValidationAction {
     private final TypeService typeService;
 
     private final List<Type> typesToCreate = new ArrayList<>();
-    private final List<Pair<Type, List<FieldDefinition>>> fieldDefinitionsToAdd = new ArrayList<>();
+    private final List<Pair<Type, List<UpdateAction<Type>>>> typeUpdateActions = new ArrayList<>();
     private final List<String> errorMessages = new ArrayList<>();
 
     private TenantCtpTypesValidationAction(@Nonnull String tenantName, @Nonnull TypeService typeService) {
@@ -59,7 +59,7 @@ public class TenantCtpTypesValidationAction {
      * @return <b>true</b> if there are some types to create or update.
      */
     public boolean hasExecuteActions() {
-        return isNotEmpty(typesToCreate) || isNotEmpty(fieldDefinitionsToAdd);
+        return isNotEmpty(typesToCreate) || isNotEmpty(typeUpdateActions);
     }
 
     public List<String> getErrorMessages() {
@@ -69,7 +69,7 @@ public class TenantCtpTypesValidationAction {
     /**
      * Perform create/addField actions on current {@link #typeService}. It is expected that the types are different
      * in the actions lists (the type either completely created from scratch or the fields are added to the one existing
-     * type associated in {@link #fieldDefinitionsToAdd} pair), but both actions are impossible. Hence the operation
+     * type associated in {@link #typeUpdateActions} pair), but both actions are impossible. Hence the operation
      * are performed in parallel using default fork join pool for streams.
      *
      * @return completion stage of updated types, aggregated to pairs of {@code tenantName -> List of updatedTypes}
@@ -85,8 +85,8 @@ public class TenantCtpTypesValidationAction {
                 .map(typeService::createType);
 
         Stream<CompletionStage<Type>> addFieldsStream =
-                fieldDefinitionsToAdd.stream()
-                        .map(pair -> typeService.addFieldDefinitions(pair.getKey(), pair.getValue()));
+                typeUpdateActions.stream()
+                        .map(pair -> typeService.updateType(pair.getKey(), pair.getValue()));
 
         List<CompletableFuture<Type>> allUpdates = Stream.concat(createTypesStream, addFieldsStream)
                 .map(CompletionStage::toCompletableFuture)
@@ -129,23 +129,23 @@ public class TenantCtpTypesValidationAction {
     /**
      * Add field definitions to the actual type.
      *
-     * @param tenantName       tenant name on which to create a new type
-     * @param typeService      {@link TypeService} on which to create the types. The type service is expected to be associated
-     *                         with respective {@code tenantName}
-     * @param actualType       {@link Type} to be updated.
-     * @param fieldDefinitions list of field definitions to add. If the list is empty -
-     *                         empty {@link TenantCtpTypesValidationAction} is returned.
+     * @param tenantName    tenant name on which to create a new type
+     * @param typeService   {@link TypeService} on which to create the types. The type service is expected to be associated
+     *                      with respective {@code tenantName}
+     * @param actualType    {@link Type} to be updated.
+     * @param updateActions list of field definitions to add. If the list is empty -
+     *                      empty {@link TenantCtpTypesValidationAction} is returned.
      * @return action instance with add field definition actions if {@code fieldDefinitions} has values, otherwise -
      * empty object.
      */
-    public static TenantCtpTypesValidationAction ofAddFieldDefinitions(@Nonnull String tenantName,
-                                                                       @Nonnull TypeService typeService,
-                                                                       @Nonnull Type actualType,
-                                                                       @Nonnull List<FieldDefinition> fieldDefinitions) {
+    public static TenantCtpTypesValidationAction ofUpdateActions(@Nonnull String tenantName,
+                                                                 @Nonnull TypeService typeService,
+                                                                 @Nonnull Type actualType,
+                                                                 @Nonnull List<UpdateAction<Type>> updateActions) {
         TenantCtpTypesValidationAction res = ofEmpty(tenantName, typeService);
 
-        if (isNotEmpty(fieldDefinitions)) {
-            res.fieldDefinitionsToAdd.add(Pair.of(actualType, fieldDefinitions));
+        if (isNotEmpty(updateActions)) {
+            res.typeUpdateActions.add(Pair.of(actualType, updateActions));
         }
 
         return res;
@@ -190,8 +190,8 @@ public class TenantCtpTypesValidationAction {
         res.errorMessages.addAll(val2.errorMessages);
         res.typesToCreate.addAll(val1.typesToCreate);
         res.typesToCreate.addAll(val2.typesToCreate);
-        res.fieldDefinitionsToAdd.addAll(val1.fieldDefinitionsToAdd);
-        res.fieldDefinitionsToAdd.addAll(val2.fieldDefinitionsToAdd);
+        res.typeUpdateActions.addAll(val1.typeUpdateActions);
+        res.typeUpdateActions.addAll(val2.typeUpdateActions);
 
         return res;
 

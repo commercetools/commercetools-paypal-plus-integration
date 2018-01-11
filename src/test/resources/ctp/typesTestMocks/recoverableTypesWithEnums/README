@@ -1,0 +1,6 @@
+Mock for the CTP types which could be updated:
+
+  payment-paypal                          : #shippingPreference misses GET_FROM_FILE key, all other fields are missing (should be added)
+  paypal-plus-interaction-notification    : type is missing (should be created)
+  paypal-plus-interaction-request         : type is missing (should be created)
+  paypal-plus-interaction-response        : type is missing (should be created)

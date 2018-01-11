@@ -17,6 +17,7 @@ import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,9 @@ public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends Payment
     }
 
     @Test
+    @Ignore("The test is unstable, see bug in Paypal Plus: https://github.com/paypal/PayPal-REST-API-issues/issues/124, "
+            + "https://github.com/paypal/PayPal-REST-API-issues/issues/180"
+            + "https://github.com/paypal/PayPal-REST-API-issues/issues/181")
     public void paymentWithExperienceProfileIdCreated() throws Exception {
         final String ctpPaymentId = createCartAndPayment(sphereClient);
         MvcResult mvcResult = mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, ctpPaymentId)))

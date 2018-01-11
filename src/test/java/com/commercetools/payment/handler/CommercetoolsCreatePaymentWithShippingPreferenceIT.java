@@ -27,8 +27,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
+import java.lang.reflect.Method;
 import java.util.Locale;
-import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
@@ -38,8 +39,6 @@ import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
-import static java.util.regex.Pattern.MULTILINE;
 import static javax.swing.Action.DEFAULT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -121,15 +120,21 @@ public class CommercetoolsCreatePaymentWithShippingPreferenceIT extends PaymentI
 
         // jury rigg for Payment instance: Paypal Plus SDK's Payment returns stripped Payment version
         // without application context, see https://github.com/paypal/PayPal-Java-SDK/issues/330
-        // As soon as this issue fixed - this assert will fail, but the next one should be activated then
-        assertThat(createdPpPayment.toJSON().toLowerCase())
+        // As soon as this issue fixed - this assert will fail, but the next one should be activated then.
+        assertThat(Stream.of(createdPpPayment.getClass().getMethods())
+                .map(Method::getName)
+                .filter(methodName -> methodName.matches("(?i).*application.?context.*")))
                 .withFailMessage("If this test fails, this means application context issue is resolved "
                         + "(https://github.com/paypal/PayPal-Java-SDK/issues/330), "
                         + "e.g. application context with shipping preference is implemented, "
                         + "thus the assert below should be uncommented")
-                .doesNotContainPattern(Pattern.compile("application.?context", CASE_INSENSITIVE | MULTILINE))
-                .doesNotContainPattern(Pattern.compile("shipping.?preference", CASE_INSENSITIVE | MULTILINE));
+                .isEmpty();
 
+        // uncomment/refactor this when resolved:
+        // https://github.com/paypal/PayPal-REST-API-issues/issues/179
+        // https://github.com/paypal/PayPal-REST-API-issues/issues/180
+        // https://github.com/paypal/PayPal-REST-API-issues/issues/181
+        // https://github.com/paypal/PayPal-Java-SDK/issues/330
         //assertThat(createdPpPayment.getApplicationContext()).isEqualTo(new ApplicationContext().setShippingPreference("SET_PROVIDED_ADDRESS"));
     }
 

@@ -69,7 +69,7 @@ which is used for local run/debug, because the integration tests will remove all
             - `experienceProfileId` (custom field): if the payment should be supplied with certain 
             [Paypal Plus Experience Profile Id](https://developer.paypal.com/docs/api/payment-experience/).
             
-              **Note**: looks like there is now certain clarity in PayPal Plus documentation/support 
+              **Note**: looks like there is no certain clarity in PayPal Plus documentation/support 
               how the web experience profiles should be used, and potentially they will be deprecated in the future,
               so we recommend not to use them unless you are completely sure what you achieve using them.
               If you need prevent address change by customers (buyers) - use `shippingPreference` below. 

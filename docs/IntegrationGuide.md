@@ -39,7 +39,7 @@ approval page (when the buyer is redirected). As discussed with support (Kristia
       (set the field to `SET_PROVIDED_ADDRESS` value)
       
       - the **shipping address must be set** before user is redirected to the approval page. 
-      If this is a default payment type - `patch` endpoint should be used after payment is create, 
+      If this is a default payment type - `patch` endpoint should be used after payment is created, 
       but before buyer is redirected to the approval page.
       
       - unfortunately, this property is neither documented on the API nor implemented by SDK. Respective issues created:
@@ -58,9 +58,11 @@ approval page (when the buyer is redirected). As discussed with support (Kristia
       (Note, our _commercetools-paypalplus-integration_ service does not expose such endpoint, it should be created directly
       using Paypal API)
       
-      2. Set the id or created web profile to `experienceProfileId` custom field of every payment handled by our service.
+      2. Set the id of created web profile to `experienceProfileId` custom field of every payment handled by our service.
       
-      3. Same as for `shippingPreference` above: **shipping address must be set** before buyer is redirected to approval page.
+      3. The **shipping address must be set** before user is redirected to the approval page. 
+               If this is a default payment type - `patch` endpoint should be used after payment is created, 
+               but before buyer is redirected to the approval page.
       
   Right now our _commercetools-paypalplus-integration_ service support both ways, so any of properties described above
   will be sent to PayPal Plus API if it is specified in a CTP Payment custom field.

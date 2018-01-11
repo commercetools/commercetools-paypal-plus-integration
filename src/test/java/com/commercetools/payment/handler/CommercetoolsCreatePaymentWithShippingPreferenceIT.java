@@ -9,8 +9,6 @@ import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
-import com.paypal.api.payments.Address;
-import com.paypal.api.payments.PayerInfo;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
@@ -133,19 +131,6 @@ public class CommercetoolsCreatePaymentWithShippingPreferenceIT extends PaymentI
                 .doesNotContainPattern(Pattern.compile("shipping.?preference", CASE_INSENSITIVE | MULTILINE));
 
         //assertThat(createdPpPayment.getApplicationContext()).isEqualTo(new ApplicationContext().setShippingPreference("SET_PROVIDED_ADDRESS"));
-
-        // validate the rest of the fields
-        assertThat(createdPpPayment.getPayer()).isNotNull();
-        PayerInfo payerInfo = createdPpPayment.getPayer().getPayerInfo();
-        assertThat(payerInfo).isNotNull();
-        assertThat(payerInfo.getFirstName()).isEqualTo("Max");
-        assertThat(payerInfo.getLastName()).isEqualTo("Mustermann");
-        assertThat(payerInfo.getEmail()).isEqualTo("max.mustermann@gmail.com");
-        Address billingAddress = payerInfo.getBillingAddress();
-        assertThat(billingAddress.getLine1()).isEqualTo("Kurfürstendamm 100");
-        assertThat(billingAddress.getCity()).isEqualTo("Berlin");
-        assertThat(billingAddress.getPostalCode()).isEqualTo("10709");
-        assertThat(billingAddress.getCountryCode()).isEqualTo("DE");
     }
 
     @Override

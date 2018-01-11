@@ -10,8 +10,6 @@ import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.commercetools.testUtil.customTestConfigs.WebProfileConfiguration;
-import com.paypal.api.payments.Address;
-import com.paypal.api.payments.PayerInfo;
 import com.paypal.api.payments.WebProfile;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
@@ -127,19 +125,6 @@ public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends Payment
 
         assertCustomFields(createdPpPayment, returnedApprovalUrl, ppPaymentId);
         assertThat(createdPpPayment.getExperienceProfileId()).isEqualTo(noAddressOverrideWebProfile.getId());
-
-        // validate the rest of the fields
-        assertThat(createdPpPayment.getPayer()).isNotNull();
-        PayerInfo payerInfo = createdPpPayment.getPayer().getPayerInfo();
-        assertThat(payerInfo).isNotNull();
-        assertThat(payerInfo.getFirstName()).isEqualTo("Max");
-        assertThat(payerInfo.getLastName()).isEqualTo("Mustermann");
-        assertThat(payerInfo.getEmail()).isEqualTo("max.mustermann@gmail.com");
-        Address billingAddress = payerInfo.getBillingAddress();
-        assertThat(billingAddress.getLine1()).isEqualTo("Kurfürstendamm 100");
-        assertThat(billingAddress.getCity()).isEqualTo("Berlin");
-        assertThat(billingAddress.getPostalCode()).isEqualTo("10709");
-        assertThat(billingAddress.getCountryCode()).isEqualTo("DE");
     }
 
     @Override

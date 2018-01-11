@@ -55,6 +55,47 @@ public final class CustomFieldUtil {
         return getCustomFieldStringOrDefault(customFieldHolder, fieldName, "");
     }
 
+    /**
+     * Get string custom field value from {@code customFieldHolder} if exists, otherwise return null.
+     *
+     * @param customFieldHolder instance which has custom fields
+     * @param fieldName         name of the custom field to fetch
+     * @return string value of the custom field if exists, otherwise null.
+     */
+    @Nullable
+    public static String getCustomFieldStringOrNull(@Nullable Custom customFieldHolder,
+                                                    @Nullable String fieldName) {
+        return getCustomFieldString(customFieldHolder, fieldName).orElse(null);
+    }
+
+    /**
+     * Get enum key custom field value from {@code customFieldHolder} if exists.
+     *
+     * @param customFieldHolder instance which has custom fields
+     * @param fieldName         name of the enum custom field which contains the key
+     * @return string value of the custom field key, or {@link Optional#empty()} if not found.
+     */
+    @Nonnull
+    public static Optional<String> getCustomFieldEnumKey(@Nullable Custom customFieldHolder,
+                                                         @Nullable String fieldName) {
+        return ofNullable(customFieldHolder)
+                .map(Custom::getCustom)
+                .map(customFields -> customFields.getFieldAsEnumKey(fieldName));
+    }
+
+    /**
+     * Get enum key custom field value from {@code customFieldHolder} if exists.
+     *
+     * @param customFieldHolder instance which has custom fields
+     * @param fieldName         name of the enum custom field which contains the key
+     * @return string value of the custom field key, otherwise null.
+     */
+    @Nullable
+    public static String getCustomFieldEnumKeyOrNull(@Nullable Custom customFieldHolder,
+                                                     @Nullable String fieldName) {
+        return getCustomFieldEnumKey(customFieldHolder, fieldName).orElse(null);
+    }
+
     private CustomFieldUtil() {
     }
 }

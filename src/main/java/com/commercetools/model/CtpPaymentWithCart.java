@@ -1,18 +1,19 @@
 package com.commercetools.model;
 
 
+import com.commercetools.payment.constants.ctp.CtpPaymentCustomFields;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentMethodInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
-import static com.commercetools.util.CustomFieldUtil.getCustomFieldString;
-import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
+import static com.commercetools.util.CustomFieldUtil.*;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -70,6 +71,28 @@ public class CtpPaymentWithCart {
     @Nonnull
     public String getCancelUrl() {
         return getCustomFieldStringOrEmpty(payment, CANCEL_URL_FIELD);
+    }
+
+    /**
+     * @return Seller Paypal Plus
+     * <a href="https://developer.paypal.com/docs/integration/direct/payment-experience/"><i>experience profile id</i>
+     * </a> from {@link com.commercetools.payment.constants.ctp.CtpPaymentCustomFields#EXPERIENCE_PROFILE_ID}
+     * custom field, if exists. Otherwise returns <b>null</b>.
+     */
+    @Nullable
+    public String getExperienceProfileId() {
+        return getCustomFieldStringOrNull(payment, EXPERIENCE_PROFILE_ID);
+    }
+
+    /**
+     * @return enum key of {@link CtpPaymentCustomFields#SHIPPING_PREFERENCE SHIPPING_PREFERENCE} custom field
+     * (if exist). This value should be use in
+     * {@link com.paypal.api.ApplicationContext#shippingPreference Payment#applicationContext#shippingPreference}
+     * @see <a href="https://developer.paypal.com/docs/api/orders/#definition-application_context">application_context#shipping_preference</a>
+     */
+    @Nullable
+    public String getShippingPreference() {
+        return getCustomFieldEnumKeyOrNull(payment, SHIPPING_PREFERENCE);
     }
 
     /**

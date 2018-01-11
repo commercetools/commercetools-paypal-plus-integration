@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 import java.io.IOException;
 import java.net.URL;
@@ -103,7 +104,7 @@ public class PaymentIntegrationTest {
     }
 
     protected PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice,
-                                                            @Nonnull Locale locale) {
+                                                            @Nullable Locale locale) {
         return CtpResourcesUtil.createPaymentDraftBuilder(totalPrice, locale);
     }
 

@@ -2,6 +2,7 @@ package com.commercetools.helper.mapper.impl.payment;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
+import com.paypal.api.ApplicationContext;
 import com.paypal.api.payments.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +28,9 @@ public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {
     public void ctpPaymentToPaypalPlus_withDiscount() throws Exception {
         CtpPaymentWithCart paymentWithCart = new CtpPaymentWithCart(getDummyPaymentForComplexCartWithDiscounts(),
                 getDummyComplexCartWithDiscountsShippingBillingAddress());
-        Payment ppPayment = paymentMapper.ctpPaymentToPaypalPlus(paymentWithCart);
+
+        // while https://github.com/paypal/PayPal-Java-SDK/issues/330 is fixing - make explicit casting
+        PaymentEx ppPayment = (PaymentEx) paymentMapper.ctpPaymentToPaypalPlus(paymentWithCart);
 
         assertThat(ppPayment).isNotNull();
 
@@ -59,6 +62,8 @@ public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {
 
         assertThat(ppPayment.getRedirectUrls().getReturnUrl()).isEqualTo("https://www.sparta.de/success/12333456");
         assertThat(ppPayment.getRedirectUrls().getCancelUrl()).isEqualTo("https://www.sparta.de/cancel/12333456");
+        assertThat(ppPayment.getExperienceProfileId()).isNull();
+        assertThat(ppPayment.getApplicationContext()).isEqualTo(new ApplicationContext());
 
         Transaction transaction = ppPayment.getTransactions().get(0);
         assertThat(transaction.getDescription()).isEqualTo("Payment from commercetools Paypal Plus integration service");
@@ -98,7 +103,8 @@ public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {
         CtpPaymentWithCart paymentWithCart = new CtpPaymentWithCart(getDummyPaymentForComplexCartWithoutDiscounts(),
                 getDummyComplexCartWithoutDiscountsShippingBillingAddress());
 
-        Payment ppPayment = paymentMapper.ctpPaymentToPaypalPlus(paymentWithCart);
+        // while https://github.com/paypal/PayPal-Java-SDK/issues/330 is fixing - make explicit casting
+        PaymentEx ppPayment = (PaymentEx) paymentMapper.ctpPaymentToPaypalPlus(paymentWithCart);
 
         assertThat(ppPayment).isNotNull();
 
@@ -131,6 +137,8 @@ public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {
 
         assertThat(ppPayment.getRedirectUrls().getReturnUrl()).isEqualTo("https://www.sparta.de/success/556677884433");
         assertThat(ppPayment.getRedirectUrls().getCancelUrl()).isEqualTo("https://www.sparta.de/cancel/556677884433");
+        assertThat(ppPayment.getExperienceProfileId()).isEqualTo("dummy-experience-profile-id");
+        assertThat(ppPayment.getApplicationContext()).isEqualTo(new ApplicationContext().setShippingPreference("GET_FROM_FILE"));
 
         Transaction transaction = ppPayment.getTransactions().get(0);
         assertThat(transaction.getDescription()).isEqualTo("Payment from commercetools Paypal Plus integration service");

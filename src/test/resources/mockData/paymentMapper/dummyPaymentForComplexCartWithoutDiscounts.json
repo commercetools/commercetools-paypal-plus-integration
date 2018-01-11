@@ -16,6 +16,8 @@
       "reference": "556677884433",
       "cancelUrl": "https://www.sparta.de/cancel/556677884433",
       "successUrl": "https://www.sparta.de/success/556677884433",
+      "experienceProfileId": "dummy-experience-profile-id",
+      "shippingPreference":"GET_FROM_FILE",
       "languageCode": "en"
     }
   },

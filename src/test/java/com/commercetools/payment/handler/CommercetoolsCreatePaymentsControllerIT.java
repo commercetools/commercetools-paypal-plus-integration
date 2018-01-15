@@ -65,7 +65,7 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
     }
 
     @Test
-    public void shouldReturnNewPaypalPaymentId() throws Exception {
+    public void shouldReturnApprovalUrlOfCreatedPayment() throws Exception {
         final String ctpPaymentId = createCartAndPayment(sphereClient);
         MvcResult mvcResult = mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, ctpPaymentId)))
                 .andDo(print())

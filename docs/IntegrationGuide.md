@@ -302,5 +302,5 @@ approval page (when the buyer is redirected). As discussed with support (Kristia
                If this is a default payment type - `patch` endpoint should be used after payment is created,
                but before buyer is redirected to the approval page.
 
-  Right now our _commercetools-paypalplus-integration_ service support both ways, so any of properties described above
+  Right now our _commercetools-paypalplus-integration_ service supports both ways, so any of properties described above
   will be sent to PayPal Plus API if it is specified in a CTP Payment custom field.

@@ -14,6 +14,7 @@ import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import org.javamoney.moneta.Money;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
 import static com.commercetools.payment.constants.ctp.CtpPaymentMethods.DEFAULT;
+import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.util.CustomFieldUtil.getCustomFieldStringOrEmpty;
@@ -95,6 +97,52 @@ public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationT
 
         assertThat(ofNullable(createdPpPayment.getPayer())
                 .map(Payer::getExternalSelectedFundingInstrumentType)).isEmpty();
+    }
+
+    /**
+     * Similar to {@link CommercetoolsCreatePaymentsControllerIT#shouldReturnNewPaypalPaymentId()},
+     * but verifies other saved payment properties, like payer info,
+     */
+    @Test
+    @Ignore("The test is unstable, see bug in Paypal Plus: https://github.com/paypal/PayPal-REST-API-issues/issues/124, "
+            + "https://github.com/paypal/PayPal-REST-API-issues/issues/180"
+            + "https://github.com/paypal/PayPal-REST-API-issues/issues/181")
+    public void createdPaymentHasExpectedProperties() throws Exception {
+        final String ctpPaymentId = createCartAndPayment(sphereClient);
+        MvcResult mvcResult = mockMvcAsync.performAsync(post(format("/%s/commercetools/create/payments/%s", MAIN_TEST_TENANT_NAME, ctpPaymentId)))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+                .andReturn();
+
+        // validate response json: approvalUrl
+        String returnedApprovalUrl = verifyApprovalUrl(mvcResult);
+
+        // verify CTP payment values: approval url + interfaceId + interface interaction
+        Payment updatedPayment = executeBlocking(ctpFacade.getPaymentService().getById(ctpPaymentId)).orElse(null);
+        assertThat(updatedPayment).isNotNull();
+
+        assertThat(getCustomFieldStringOrEmpty(updatedPayment, APPROVAL_URL)).isEqualTo(returnedApprovalUrl);
+
+        assertThat(updatedPayment.getPaymentMethodInfo().getMethod()).isEqualTo(DEFAULT);
+
+        String ppPaymentId = updatedPayment.getInterfaceId();
+        assertThat(ppPaymentId).isNotNull();
+
+        assertInterfaceInteractions(ctpPaymentId, sphereClient);
+
+        com.paypal.api.payments.Payment createdPpPayment = getPpPayment(tenantConfig, ppPaymentId);
+
+        assertCustomFields(createdPpPayment, returnedApprovalUrl, ppPaymentId);
+
+        // validate other fields of the created payment (expected properties)
+        assertThat(createdPpPayment.getPayer()).isNotNull();
+        assertThat(createdPpPayment.getPayer().getPaymentMethod()).isEqualTo(PAYPAL);
+
+        // in default payments we don't specify any private payer specific info
+        assertThat(createdPpPayment.getPayer().getExternalSelectedFundingInstrumentType()).isNull();
+        assertThat(createdPpPayment.getPayer().getPayerInfo()).isNull();
+        assertThat(createdPpPayment.getPayer().getFundingInstruments()).isNullOrEmpty();
     }
 
     @Test

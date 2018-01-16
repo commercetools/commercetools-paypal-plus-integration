@@ -35,7 +35,7 @@ apply plugin: 'com.adarshr.test-logger'
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
-version = '0.2.0-DEV' // this will be replaced by git tag version, if available
+version = '0.3.0-DEV' // this will be replaced by git tag version, if available
 
 ext {
     // try to define git tag version and replace project.version with this value, if exists.

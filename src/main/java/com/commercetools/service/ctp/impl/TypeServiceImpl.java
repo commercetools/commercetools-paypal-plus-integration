@@ -10,6 +10,7 @@ import io.sphere.sdk.types.commands.TypeUpdateCommand;
 import io.sphere.sdk.types.queries.TypeQueryBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
@@ -31,8 +32,8 @@ public class TypeServiceImpl extends BaseSphereService implements TypeService {
     }
 
     @Override
-    public CompletionStage<Type> updateType(@Nonnull Type type, @Nonnull List<UpdateAction<Type>> updateActions) {
-        return sphereClient.execute(TypeUpdateCommand.of(type, updateActions));
+    public CompletionStage<Type> updateType(@Nonnull Type type, @Nullable List<UpdateAction<Type>> updateActions) {
+        return returnSameInstanceIfEmptyListOrExecuteCommand(type, updateActions, TypeUpdateCommand::of);
     }
 
 

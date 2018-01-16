@@ -23,6 +23,7 @@ import java.util.Locale;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupTypes;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Locale.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -102,6 +103,19 @@ public class TypeServiceImplIntegrationTest {
         assertThat(updatedType.getKey()).isEqualTo("new-test-type-key");
         assertThat(updatedType.getName().get(FRENCH)).isEqualTo("test-update-type-fr");
         assertThat(updatedType.getName().get(new Locale("uk"))).isEqualTo("test-update-type-uk");
+    }
+
+    @Test
+    public void updateTypeWithEmptyList_returnsTheSameInstance() throws Exception {
+        Type testType = executeBlocking(typeService.createType(TypeDraftBuilder
+                .of("test-type-1-key", LocalizedString.of(ENGLISH, "test-updateType-type"), singleton("payment"))
+                .build()));
+
+        Type updatedType = executeBlocking(typeService.updateType(testType, emptyList()));
+        assertThat(updatedType).isSameAs(testType);
+
+        updatedType = executeBlocking(typeService.updateType(testType, null));
+        assertThat(updatedType).isSameAs(testType);
     }
 
 }

@@ -72,7 +72,7 @@ public class TenantCtpTypesValidationAction {
      * type associated in {@link #typeUpdateActions} pair), but both actions are impossible. Hence the operation
      * are performed in parallel using default fork join pool for streams.
      *
-     * @return completion stage of updated types, aggregated to pairs of {@code tenantName -> List of updatedTypes}
+     * @return completion stage of a pair {@code tenantName -> List of updatedTypes}
      */
     public CompletionStage<Pair<String, List<Type>>> executeActions() {
         Stream<CompletionStage<Type>> createTypesStream = typesToCreate.stream().map(type ->

@@ -71,7 +71,7 @@ public class CtpStartupConfiguration {
     private void processTypesSynchronizationResult(@Nonnull AggregatedCtpTypesValidationResult typesProcessingResult) {
         Logger logger = LoggerFactory.getLogger(this.getClass());
         if (typesProcessingResult.hasErrorMessage()) {
-            String message = format("CTP Types validation failed:%n%s%n%nPlease, synchronize types manually and restart the service",
+            String message = format("CTP Types validation failed:%n%s%n%nPlease synchronize types manually and restart the service",
                     typesProcessingResult.getAggregatedErrorMessage());
 
             applicationKiller.killApplication(EXIT_CODE_CTP_TYPE_INCOMPATIBLE, message);

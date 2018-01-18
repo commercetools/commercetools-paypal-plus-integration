@@ -25,16 +25,16 @@ import static java.util.stream.Collectors.joining;
  *
  * @see #validateTypes()
  */
-public class CtpStartupConfiguration {
+public class CtpConfigStartupValidator {
 
     private final TenantConfigFactory tenantConfigFactory;
     private final ApplicationKiller applicationKiller;
     private final CtpFacadeFactory ctpFacadeFactory;
 
     @Autowired
-    public CtpStartupConfiguration(@Nonnull TenantConfigFactory tenantConfigFactory,
-                                   @Nonnull CtpFacadeFactory ctpFacadeFactory,
-                                   @Nonnull ApplicationKiller applicationKiller) {
+    public CtpConfigStartupValidator(@Nonnull TenantConfigFactory tenantConfigFactory,
+                                     @Nonnull CtpFacadeFactory ctpFacadeFactory,
+                                     @Nonnull ApplicationKiller applicationKiller) {
         this.tenantConfigFactory = tenantConfigFactory;
         this.ctpFacadeFactory = ctpFacadeFactory;
         this.applicationKiller = applicationKiller;

@@ -41,24 +41,24 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
- * Test {@link CtpStartupConfiguration} with different initial CTP project config.
+ * Test {@link CtpConfigStartupValidator} with different initial CTP project config.
  * <p>
- * <b>Note:</b> since {@link CtpStartupConfiguration} is set by default to {@link com.commercetools.Application}
+ * <b>Note:</b> since {@link CtpConfigStartupValidator} is set by default to {@link com.commercetools.Application}
  * configuration - it will start any on this test class initialization, e.g. it will try to synchronize the types.
  * This causes two issues:<ul>
  * <li>If current CTP integration test projects are "unrecoverable" (e.g. contain types which can not be updated)
  * - the test will always fail. In this case just clean up all they types on the integration test CTP projects.</li>
  * <li>To make actual tests we "mock" CTP types state from the test resources
  * (see {@link #setupTypesFromResources(java.lang.String)}) and then try to verify/update them directly calling
- * {@link CtpStartupConfiguration#validateTypes()}</li>
+ * {@link CtpConfigStartupValidator#validateTypes()}</li>
  * </ul>
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class CtpStartupConfigurationTestIntegrationTest {
+public class CtpConfigStartupValidatorTestIntegrationTest {
 
     @Autowired
-    private CtpStartupConfiguration ctpStartupConfiguration;
+    private CtpConfigStartupValidator ctpConfigStartupValidator;
 
     @Autowired
     protected TenantConfigFactory tenantConfigFactory;
@@ -97,7 +97,7 @@ public class CtpStartupConfigurationTestIntegrationTest {
      */
     @Test
     public void whenCtpProjectIsEmpty_allTheTypesAreCreatedFromScratch() throws Exception {
-        ctpStartupConfiguration.validateTypes();
+        ctpConfigStartupValidator.validateTypes();
 
         verifyTenantsTypesAreCreated();
     }
@@ -109,7 +109,7 @@ public class CtpStartupConfigurationTestIntegrationTest {
     public void whenCtpProjectHasUnrecoverableValues_theApplicationIsKilledWithLoggingMessage() throws Exception {
         setupTypesFromResources(UNRECOVERABLE_CTP_TYPES_MOCKS_DIR);
 
-        ctpStartupConfiguration.validateTypes();
+        ctpConfigStartupValidator.validateTypes();
 
         ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
 
@@ -134,7 +134,7 @@ public class CtpStartupConfigurationTestIntegrationTest {
     public void whenCtpProjectHasRecoverableValues_allTheTypesAreUpdated() throws Exception {
         setupTypesFromResources(RECOVERABLE_CTP_TYPES_MOCKS_DIR);
 
-        ctpStartupConfiguration.validateTypes();
+        ctpConfigStartupValidator.validateTypes();
 
         verifyTenantsTypesAreCreated();
     }
@@ -143,7 +143,7 @@ public class CtpStartupConfigurationTestIntegrationTest {
     public void whenCtpProjectHasRecoverableValuesWithMissedEnum_allTheTypesAreUpdated() throws Exception {
         setupTypesFromResources(RECOVERABLE_CTP_TYPES_WITH_ENUMS_MOCKS_DIR);
 
-        ctpStartupConfiguration.validateTypes();
+        ctpConfigStartupValidator.validateTypes();
 
         verifyTenantsTypesAreCreated();
     }

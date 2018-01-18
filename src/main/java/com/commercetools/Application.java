@@ -1,7 +1,7 @@
 package com.commercetools;
 
 import com.commercetools.config.ApplicationConfiguration;
-import com.commercetools.config.CtpStartupConfiguration;
+import com.commercetools.config.CtpConfigStartupValidator;
 import com.commercetools.config.PaypalPlusStartupConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 @SpringBootApplication
 @Import({
         ApplicationConfiguration.class,
-        CtpStartupConfiguration.class,
+        CtpConfigStartupValidator.class,
         PaypalPlusStartupConfiguration.class
 })
 public class Application {

@@ -12,9 +12,9 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.util.ArgumentsUtils.requireNonBlank;
 import static com.commercetools.util.ArgumentsUtils.requireNonEmpty;
+import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -146,10 +146,7 @@ public class AggregatedCtpTypesValidationResult {
                             .map(CompletionStage::toCompletableFuture)
                             .collect(toList());
 
-            return allOf(typeFutures.toArray(new CompletableFuture[]{}))
-                    .thenApply(ignoreVoid -> typeFutures.stream()
-                            .map(CompletableFuture::join)
-                            .collect(toList()))
+            return listOfFuturesToFutureOfList(typeFutures)
                     .thenApply(AggregatedCtpTypesValidationResult::ofUpdatedTypes);
         }
 

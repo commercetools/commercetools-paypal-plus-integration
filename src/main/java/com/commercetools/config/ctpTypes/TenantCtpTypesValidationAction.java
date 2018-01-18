@@ -14,8 +14,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
+import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.util.Collections.unmodifiableList;
-import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
@@ -92,10 +92,7 @@ public class TenantCtpTypesValidationAction {
                 .map(CompletionStage::toCompletableFuture)
                 .collect(toList());
 
-        return allOf(allUpdates.toArray(new CompletableFuture[]{}))
-                .thenApply(ignoreVoid -> allUpdates.stream()
-                        .map(CompletableFuture::join)
-                        .collect(toList()))
+        return listOfFuturesToFutureOfList(allUpdates)
                 .thenApply(listOfUpdatedTypes -> Pair.of(tenantName, listOfUpdatedTypes));
     }
 

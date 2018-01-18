@@ -20,8 +20,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.commercetools.config.ctpTypes.TenantCtpTypesValidationAction.*;
+import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
-import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -63,9 +63,10 @@ public class TenantCtpTypesValidator {
      * For every tenant get a list of errors or update actions and execute them.
      * Return aggregated validation/syncing result for all tenants and types.
      *
-     * @return {@link AggregatedCtpTypesValidationResult} with types validation/synchronization results for all tenants.
+     * @return stage of {@link AggregatedCtpTypesValidationResult} with types validation/synchronization results
+     * for all tenants.
      */
-    public static AggregatedCtpTypesValidationResult validateAndSyncCtpTypes(
+    public static CompletionStage<AggregatedCtpTypesValidationResult> validateAndSyncCtpTypes(
             @Nonnull CtpFacadeFactory ctpFacadeFactory,
             @Nonnull List<TenantConfig> tenantConfigs,
             @Nonnull Set<Type> expectedTypesSet) {
@@ -80,10 +81,8 @@ public class TenantCtpTypesValidator {
                         .collect(toList());
 
         // 2. process/aggregate validation results
-        return allOf(tenantsValidatorsFutures.toArray(new CompletableFuture[]{}))
-                .thenApply(voidValue -> tenantsValidatorsFutures.stream().map(CompletableFuture::join).collect(toList()))
-                .thenCompose(AggregatedCtpTypesValidationResult::executeAndAggregateTenantValidationResults)
-                .join();
+        return listOfFuturesToFutureOfList(tenantsValidatorsFutures)
+                .thenCompose(AggregatedCtpTypesValidationResult::executeAndAggregateTenantValidationResults);
     }
 
     /**

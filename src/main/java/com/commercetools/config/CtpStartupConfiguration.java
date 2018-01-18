@@ -20,7 +20,10 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
 /**
- * Verify CTP project settings are correct for all configured tenants.
+ * Verify CTP project settings are correct for all configured tenants. If the CTP project settings can't be
+ * automatically synced/updated - the errors are logged and the service exits.
+ *
+ * @see #validateTypes()
  */
 public class CtpStartupConfiguration {
 
@@ -44,12 +47,16 @@ public class CtpStartupConfiguration {
      * the update actions are performed. Otherwise error message is shown and application is finished with error code.
      * <p>
      * If neither errors exist nor update actions required - continue application startup.
+     * <p>
+     * The operation is blocking, e.g. the application startup shall not go further before this
+     * validation/synchronization is done completely.
      */
     @PostConstruct
     void validateTypes() {
         try {
             AggregatedCtpTypesValidationResult typesSynchronizationResult =
-                    validateAndSyncCtpTypes(ctpFacadeFactory, tenantConfigFactory.getTenantConfigs(), getExpectedCtpTypesFromResources());
+                    validateAndSyncCtpTypes(ctpFacadeFactory, tenantConfigFactory.getTenantConfigs(), getExpectedCtpTypesFromResources())
+                            .toCompletableFuture().join();
 
             processTypesSynchronizationResult(typesSynchronizationResult);
 

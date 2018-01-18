@@ -71,7 +71,7 @@ public class TenantCtpTypesValidator {
             @Nonnull Set<Type> expectedTypesSet) {
 
         // 1. fetch and validate expected types from all the tenants
-        List<CompletableFuture<TenantCtpTypesValidationAction>> tenantsValidatorsStage =
+        List<CompletableFuture<TenantCtpTypesValidationAction>> tenantsValidatorsFutures =
                 tenantConfigs.parallelStream()
                         .map(tenantConfig -> TenantCtpTypesValidator.validateTenantTypes(tenantConfig.getTenantName(),
                                 ctpFacadeFactory.getCtpFacade(tenantConfig).getTypeService(),
@@ -80,8 +80,8 @@ public class TenantCtpTypesValidator {
                         .collect(toList());
 
         // 2. process/aggregate validation results
-        return allOf(tenantsValidatorsStage.toArray(new CompletableFuture[]{}))
-                .thenApply(voidValue -> tenantsValidatorsStage.stream().map(CompletableFuture::join).collect(toList()))
+        return allOf(tenantsValidatorsFutures.toArray(new CompletableFuture[]{}))
+                .thenApply(voidValue -> tenantsValidatorsFutures.stream().map(CompletableFuture::join).collect(toList()))
                 .thenCompose(AggregatedCtpTypesValidationResult::executeAndAggregateTenantValidationResults)
                 .join();
     }

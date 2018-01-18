@@ -41,7 +41,7 @@ public class CtpStartupConfiguration {
      * Verify the CTP {@link Type}s are configured like expected. The implementation compares actual tenant
      * {@link Type}s with expected types from the embed resources
      * (see {@link com.commercetools.config.ctpTypes.ExpectedCtpTypes}). If the types could be updated -
-     * the update actions are performed. Otherwise error message is show and application is finished with error code.
+     * the update actions are performed. Otherwise error message is shown and application is finished with error code.
      * <p>
      * If neither errors exist nor update actions required - continue application startup.
      */

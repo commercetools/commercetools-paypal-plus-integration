@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct;
 import static com.commercetools.config.constants.ExitCodes.EXIT_CODE_CTP_TYPE_INCOMPATIBLE;
 import static com.commercetools.config.constants.ExitCodes.EXIT_CODE_CTP_TYPE_VALIDATION_EXCEPTION;
 import static com.commercetools.config.ctpTypes.ExpectedCtpTypes.getExpectedCtpTypesFromResources;
-import static com.commercetools.config.ctpTypes.TenantCtpTypesValidator.getAggregatedCtpTypesValidationResult;
+import static com.commercetools.config.ctpTypes.TenantCtpTypesValidator.validateAndSyncCtpTypes;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
@@ -49,7 +49,7 @@ public class CtpStartupConfiguration {
     void validateTypes() {
         try {
             AggregatedCtpTypesValidationResult typesSynchronizationResult =
-                    getAggregatedCtpTypesValidationResult(ctpFacadeFactory, tenantConfigFactory.getTenantConfigs(), getExpectedCtpTypesFromResources());
+                    validateAndSyncCtpTypes(ctpFacadeFactory, tenantConfigFactory.getTenantConfigs(), getExpectedCtpTypesFromResources());
 
             processTypesSynchronizationResult(typesSynchronizationResult);
 

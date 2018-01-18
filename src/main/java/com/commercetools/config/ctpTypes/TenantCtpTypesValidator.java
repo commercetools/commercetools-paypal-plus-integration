@@ -60,11 +60,12 @@ public class TenantCtpTypesValidator {
     }
 
     /**
-     * For every tenant get a list of errors or update actions and execute them. Return aggregated result.
+     * For every tenant get a list of errors or update actions and execute them.
+     * Return aggregated validation/syncing result for all tenants and types.
      *
      * @return {@link AggregatedCtpTypesValidationResult} with types validation/synchronization results for all tenants.
      */
-    public static AggregatedCtpTypesValidationResult getAggregatedCtpTypesValidationResult(
+    public static AggregatedCtpTypesValidationResult validateAndSyncCtpTypes(
             @Nonnull CtpFacadeFactory ctpFacadeFactory,
             @Nonnull List<TenantConfig> tenantConfigs,
             @Nonnull Set<Type> expectedTypesSet) {

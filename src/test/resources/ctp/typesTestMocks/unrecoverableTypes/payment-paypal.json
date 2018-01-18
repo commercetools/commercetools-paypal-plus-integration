@@ -56,7 +56,7 @@
       "label": {
         "en": "successUrl"
       },
-      "required": false,
+      "required": true,
       "type": {
         "name": "String"
       },
@@ -78,7 +78,7 @@
       "label": {
         "en": "cancelUrl"
       },
-      "required": false,
+      "required": true,
       "type": {
         "name": "String"
       },

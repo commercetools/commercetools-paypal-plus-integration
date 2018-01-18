@@ -128,7 +128,7 @@ public class TenantCtpTypesValidator {
     private TenantCtpTypesValidationAction mapExpectedVsActualToAction(final @Nonnull Type expectedType, final @Nullable Type actualType) {
         // 1. If actualType does not exist - create a new type
         // 2. If actualType does not contain all expected resourceTypeId - create error message
-        // 3. If one of fieldDefinition is incompatible with actual type create error message (see #getFieldsMismatchMessages() for details)
+        // 3. If one of fieldDefinition is incompatible with actual type - create error message (see #getFieldsMismatchMessages() for details)
         // 4. If one of the expectedType fields, enum/lenum keys are missing - update the actual types
 
         // 1. create a new type

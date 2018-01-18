@@ -92,8 +92,8 @@ public class TenantCtpTypesValidator {
      * @param tenantName       tenant to validate/update
      * @param typeService      {@link TypeService} instance which is used to read/update types
      * @param expectedTypesSet set of expected CTP type which is used to compare with actual project types
-     * @return completion stage of {@link TenantCtpTypesValidationAction}, which might be either (if all the types match),
-     * or contain CTP type update actions, or contain error message if the types can't be synchronized.
+     * @return completion stage of {@link TenantCtpTypesValidationAction}, which might be either empty (if all the types
+     * match), or contain CTP type update actions, or contain error message if the types can't be synchronized.
      */
     private static CompletionStage<TenantCtpTypesValidationAction> validateTenantTypes(@Nonnull String tenantName,
                                                                                        @Nonnull TypeService typeService,

@@ -4,4 +4,5 @@ Runnable service which simplifies integration of [**PayPal Plus**](https://www.p
 
 #### [How to setup and run the service](/docs/RunningService.md)
 #### [How to integrate into the shop](/docs/IntegrationGuide.md)
+#### [Migration Guide](/docs/MigrationGuide.md)
 #### [How to contribute](/docs/Development.md)

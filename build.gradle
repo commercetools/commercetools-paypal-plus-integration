@@ -35,7 +35,7 @@ apply plugin: 'com.adarshr.test-logger'
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
 
-version = '0.2.0-DEV' // this will be replaced by git tag version, if available
+version = '0.3.1-DEV' // this will be replaced by git tag version, if available
 
 ext {
     // try to define git tag version and replace project.version with this value, if exists.
@@ -61,12 +61,16 @@ final depVersions = [
         springBoot         : ext.springBoot,
         commercetoolsSdkJvm: '1.27.0',
         paypalPlusSdk      : '1.14.0',
+        guava              : '23.6-jre',
+        apacheCollections  : '4.1',
+
+        // tests
         assertJ            : '3.8.0',
-        guava              : '23.0'
+        systemRules        : '1.17.0'
 ]
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web:${depVersions.springBoot}")
+    compile "org.springframework.boot:spring-boot-starter-web:${depVersions.springBoot}"
 
     compile "com.paypal.sdk:rest-api-sdk:${depVersions.paypalPlusSdk}"
 
@@ -74,12 +78,16 @@ dependencies {
     compile "com.commercetools.sdk.jvm.core:commercetools-java-client:${depVersions.commercetoolsSdkJvm}"
     compile "com.commercetools.sdk.jvm.core:commercetools-convenience:${depVersions.commercetoolsSdkJvm}"
     compile "com.google.guava:guava:${depVersions.guava}"
+    compile "org.apache.commons:commons-collections4:${depVersions.apacheCollections}"
+
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${depVersions.springBoot}") {
         exclude group: 'org.assertj', module: 'assertj-core' // below override the default outdated one with the latest
     }
 
     testCompile "org.assertj:assertj-core:${depVersions.assertJ}"
+    testCompile "com.github.stefanbirkner:system-rules:${depVersions.systemRules}"
+
 }
 
 tasks.withType(JavaCompile) {

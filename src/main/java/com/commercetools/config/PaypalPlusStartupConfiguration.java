@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -22,6 +23,11 @@ import javax.servlet.Filter;
 import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
 
 @Configuration
+
+// don't run PaypalPlusStartupConfiguration configuration (which will start web hooks registration)
+// unless we are sure CTP projects configuration finished successfully
+@DependsOn("com.commercetools.config.CtpConfigStartupValidator")
+
 @Import(ApplicationConfiguration.class)
 @EnableCaching // used for cacheNames = "PaypalPlusConfigurationCache"
 public class PaypalPlusStartupConfiguration extends WebMvcConfigurerAdapter {

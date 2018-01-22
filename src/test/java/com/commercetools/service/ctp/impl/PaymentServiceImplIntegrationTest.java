@@ -25,6 +25,7 @@ import java.util.concurrent.CompletionException;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -144,7 +145,7 @@ public class PaymentServiceImplIntegrationTest {
                 .build();
         Payment payment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
 
-        Payment paymentAfterUpdate = executeBlocking(paymentService.updatePayment(payment, Collections.emptyList()));
+        Payment paymentAfterUpdate = executeBlocking(paymentService.updatePayment(payment, emptyList()));
         assertThat(paymentAfterUpdate).isEqualTo(payment);
 
         paymentAfterUpdate = executeBlocking(paymentService.updatePayment(payment, null));
@@ -198,5 +199,21 @@ public class PaymentServiceImplIntegrationTest {
                 .isInstanceOf(CompletionException.class)
                 .hasCauseExactlyInstanceOf(CtpServiceException.class)
                 .hasMessageContaining("11111111-1111-1111-1111-111111111111");
+    }
+
+    @Test
+    public void whenActionsListIsEmpty_updatePayment_shouldReturnSameInstance() {
+        String paymentKey = "testPayment_sameInstance";
+        Money amountBefore = Money.of(1, EUR);
+        PaymentDraftDsl draft = PaymentDraftBuilder.of(amountBefore)
+                .key(paymentKey)
+                .build();
+        Payment payment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(draft)));
+
+        Payment updatedPayment = executeBlocking(paymentService.updatePayment(payment, emptyList()));
+        assertThat(updatedPayment).isSameAs(payment);
+
+        updatedPayment = executeBlocking(paymentService.updatePayment(payment, null));
+        assertThat(updatedPayment).isSameAs(payment);
     }
 }

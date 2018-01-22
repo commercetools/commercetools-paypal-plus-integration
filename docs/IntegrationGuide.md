@@ -265,6 +265,51 @@ Installment payment type requires different workflow because of especial securit
 
   5. See more in _Integration Requirements for Installments Germany_ internal document.
 
+## CTP custom types synchronization on startup
+
+The service itself expects some required [CTP Types](http://dev.commercetools.com/http-api-projects-types.html)
+configured on the tenants' projects. Since version [0.2.0](https://github.com/commercetools/commercetools-paypal-plus-integration/releases/tag/v0.2.0)
+it is possible to perform automatic custom types creating/updating if some values are missing. 
+
+The expected types configurations are stored in the project resources directory 
+[**/src/main/resources/ctp/types/**](/src/main/resources/ctp/types/)  
+
+When the service is starting, it validates the actual custom types of every tenant:
+  - if at least one custom type of at least one tenant is misconfigured and can't be updated automatically &mdash; 
+  the service will log the error message and exit
+  - if some tenants/types could be automatically updated &mdash; update them and continue the service
+  
+In case of _Unrecoverable_ errors (which cause service exit) the respective CTP project must be re-configured manually
+according to expected types configuration described above.
+  
+_Unrecoverable_ errors are:
+  - actual [`resourceTypesIds`](http://dev.commercetools.com/http-api-projects-types.html#type) list is missing some of
+  expected [resource ids](http://dev.commercetools.com/http-api-projects-custom-fields.html#customizable-resources)
+  - [Field Definition](http://dev.commercetools.com/http-api-projects-types.html#fielddefinition) 
+  with the same name have different 
+  [field definition type](http://dev.commercetools.com/http-api-projects-types.html#fieldtype)
+  - `FieldDefinition#required` property of the actual field definition is not equal to expected value
+  - [`ReferenceType#referenceTypeId`](http://dev.commercetools.com/http-api-projects-types.html#referencetype) of the 
+  actual field is not equal to expected value
+  - [`SetType#elementType`](http://dev.commercetools.com/http-api-projects-types.html#settype) of the actual field 
+  is not equal to expected value
+
+If the projects don't have any unrecoverable errors - try to find and fix _recoverable_ mismatches.
+
+_Recoverable_ mismatches of the types configurations are:
+  - some types are completely missing &mdash; create them from scratch
+  - some field definitions in a Type are missing &mdash; add missing fields to respective Types
+  - [`EnumType`](http://dev.commercetools.com/http-api-projects-types.html#enumtype)/[`LocalizedEnumType`](http://dev.commercetools.com/http-api-projects-types.html#localizedenumtype)
+  fields have some missing values (key names) - add missing enum entries.
+
+All redundant/superfluous Types/Field Definitions/Enum Values are ignored and remain unchanged.
+  
+Also, note, some `Type` and `FieldDefinition` values are not important for the server, 
+so they are never verified/updated 
+(for example, Type _name_, Type _description_; Field Definition _labels_, _input hints_ and so on).
+
+If all the types synced successfully or already up-to-date - the service continues starting up.
+
 ## Prevent shipping (delivery) address change in Paypal Payment Dialog
 
 There is still not clear what is correct/recommended/document way to prevent buyer's address change on the

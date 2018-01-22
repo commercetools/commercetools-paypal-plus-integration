@@ -49,10 +49,7 @@ public class PaymentServiceImpl extends BaseSphereService implements PaymentServ
 
     @Override
     public CompletionStage<Payment> updatePayment(@Nonnull Payment payment, @Nullable List<UpdateAction<Payment>> updateActions) {
-        if (updateActions == null || updateActions.isEmpty()) {
-            return completedFuture(payment);
-        }
-        return sphereClient.execute(PaymentUpdateCommand.of(payment, updateActions));
+        return returnSameInstanceIfEmptyListOrExecuteCommand(payment, updateActions, PaymentUpdateCommand::of);
     }
 
     @Override

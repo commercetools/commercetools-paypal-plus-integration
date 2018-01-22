@@ -7,9 +7,11 @@ import com.commercetools.pspadapter.tenant.TenantProperties;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
 import com.commercetools.service.ctp.PaymentService;
+import com.commercetools.service.ctp.TypeService;
 import com.commercetools.service.ctp.impl.CartServiceImpl;
 import com.commercetools.service.ctp.impl.OrderServiceImpl;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
+import com.commercetools.service.ctp.impl.TypeServiceImpl;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.commercetools.service.paypalPlus.impl.PaypalPlusPaymentServiceImpl;
 import com.commercetools.testUtil.TestConstants;
@@ -45,6 +47,12 @@ public class ServiceConfig {
     @Autowired
     public PaymentService paymentService(SphereClient sphereClient) {
         return new PaymentServiceImpl(sphereClient);
+    }
+
+    @Bean
+    @Autowired
+    public TypeService typeService(SphereClient sphereClient) {
+        return new TypeServiceImpl(sphereClient);
     }
 
     @Bean

@@ -7,6 +7,7 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
 import com.commercetools.service.ctp.PaymentService;
+import com.commercetools.service.ctp.TypeService;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -14,14 +15,12 @@ import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.Transaction;
 import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -102,7 +101,7 @@ public class PaymentSaleCompletedProcessorTest extends BaseNotificationTest {
 
 
         CtpFacade ctpFacade = spy(
-                new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService)
+                new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService, mock(TypeService.class))
         );
 
         Map<String, String> resourceMap = ImmutableMap.of(ID, testInteractionId);

@@ -7,6 +7,7 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
 import com.commercetools.service.ctp.PaymentService;
+import com.commercetools.service.ctp.TypeService;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.GsonBuilder;
@@ -68,7 +69,7 @@ public class PaymentSaleRefundedProcessorTest extends BaseNotificationTest {
         PaymentService paymentService = spy(new PaymentServiceImpl(sphereClient));
 
         CtpFacade ctpFacade = spy(
-                new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService)
+                new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService, mock(TypeService.class))
         );
 
         Map<String, String> amountMap = ImmutableMap.of(TOTAL, REFUNDED_AMOUNT, CURRENCY, REFUNDED_CURRENCY);

@@ -7,25 +7,20 @@ import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.service.ctp.CartService;
 import com.commercetools.service.ctp.OrderService;
 import com.commercetools.service.ctp.PaymentService;
+import com.commercetools.service.ctp.TypeService;
 import com.commercetools.service.ctp.impl.PaymentServiceImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.GsonBuilder;
 import com.paypal.api.payments.Event;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.Payment;
-import io.sphere.sdk.payments.Transaction;
 import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
-import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -68,7 +63,7 @@ public class PaymentSaleReversedProcessorTest extends BaseNotificationTest {
         PaymentService paymentService = spy(new PaymentServiceImpl(sphereClient));
 
         CtpFacade ctpFacade = spy(
-                new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService)
+                new CtpFacade(mock(CartService.class), mock(OrderService.class), paymentService, mock(TypeService.class))
         );
 
         Map<String, String> amountMap = ImmutableMap.of(TOTAL, REVERSED_AMOUNT, CURRENCY, REVERSED_CURRENCY);

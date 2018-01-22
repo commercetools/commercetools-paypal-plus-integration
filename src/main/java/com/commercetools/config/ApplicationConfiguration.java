@@ -1,5 +1,7 @@
 package com.commercetools.config;
 
+import com.commercetools.config.bean.ApplicationKiller;
+import com.commercetools.config.bean.impl.ApplicationKillerImpl;
 import com.commercetools.http.converter.json.PrettyGsonMessageConverter;
 import com.commercetools.pspadapter.paymentHandler.impl.PaymentHandleResponse;
 import com.google.gson.FieldNamingPolicy;
@@ -65,5 +67,10 @@ public class ApplicationConfiguration {
     @Bean
     public GsonHttpMessageConverter gsonMessageConverter() {
         return new PrettyGsonMessageConverter(gson(), prettyGson());
+    }
+
+    @Bean
+    public ApplicationKiller applicationKiller() {
+        return new ApplicationKillerImpl();
     }
 }

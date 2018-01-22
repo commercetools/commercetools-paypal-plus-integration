@@ -1,0 +1,11 @@
+{
+  "key": "payment-paypal",
+  "name": {
+    "en": "payment-paypal"
+  },
+  "resourceTypeIds": [
+    "payment"
+  ],
+  "fieldDefinitions": [
+  ]
+}

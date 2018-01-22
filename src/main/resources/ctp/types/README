@@ -1,0 +1,4 @@
+This directory contains the mock for CTP Types which are expected to be configured on every tenant CTP project.
+
+Keep the directory content consistent with com.commercetools.config.ctpTypes.ExpectedCtpTypes class,
+e.g. if a type removed or a new type added - update ExpectedCtpTypes enums set.

@@ -1,0 +1,6 @@
+Mock for the CTP types which can't be updated:
+
+  payment-paypal                          : #languageCode has required=false; #amount has type=Number
+  paypal-plus-interaction-notification    : resourceTypeIds=payment-interface-interaction is missing
+  paypal-plus-interaction-request         : same as expected (no errors)
+  paypal-plus-interaction-response        : missing (not an error)

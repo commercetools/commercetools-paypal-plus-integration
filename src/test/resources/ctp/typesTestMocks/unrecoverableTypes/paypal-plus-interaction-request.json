@@ -1,0 +1,44 @@
+{
+  "key": "paypal-plus-interaction-request",
+  "name": {
+    "en": "paypal-plus-interaction-request"
+  },
+  "resourceTypeIds": [
+    "payment-interface-interaction"
+  ],
+  "fieldDefinitions": [
+    {
+      "name": "request",
+      "label": {
+        "en": "request"
+      },
+      "required": true,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine"
+    },
+    {
+      "name": "timestamp",
+      "label": {
+        "en": "timestamp"
+      },
+      "required": true,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    },
+    {
+      "name": "transactionId",
+      "label": {
+        "en": "transactionId"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "SingleLine"
+    }
+  ]
+}

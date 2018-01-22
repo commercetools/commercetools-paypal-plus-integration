@@ -9,6 +9,8 @@ import io.sphere.sdk.orders.queries.OrderQuery;
 import io.sphere.sdk.payments.commands.PaymentDeleteCommand;
 import io.sphere.sdk.payments.queries.PaymentQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.types.commands.TypeDeleteCommand;
+import io.sphere.sdk.types.queries.TypeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +45,10 @@ public final class CleanupTableUtil {
         return cleanupTable(sphereClient, CartQuery::of, CartDeleteCommand::of, "Carts");
     }
 
+    public static int cleanupTypes(SphereClient sphereClient) {
+        return cleanupTable(sphereClient, TypeQuery::of, TypeDeleteCommand::of, "Types");
+    }
+
     /**
      * Sequentially execute query from {@code querySupplier} to fetch items and remove them using {@code deleteFunction}
      * while query returns at least one item. Stop execution when the query returns empty result
@@ -52,6 +58,7 @@ public final class CleanupTableUtil {
      * @param querySupplier  supplier of read {@link SphereRequest}
      * @param deleteFunction {@link Function} which accepts {@code EntityType} item and creates delete
      *                       {@link SphereRequest} for this item.
+     * @param resourceName   name of the cleaned CTP resource to display in the debug messages
      * @param <EntityType>   type of items to read/delete
      * @return number of read/deleted items
      */

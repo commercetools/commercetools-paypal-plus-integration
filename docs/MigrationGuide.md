@@ -3,13 +3,14 @@
 **Table of Contents**
 
 - [Migration Guide](#migration-guide)
-- [From v0.1 to v0.2](#from-v01-to-v02)
+  - [To v0.2+](#to-v02)
+  - [To v0.3+](#to-v03)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Migration Guide
 
-# From v0.1 to v0.2
+## To v0.2+
 
   - add new custom field `experienceProfileId` to `payment-paypal` CTP custom type:
       ```json
@@ -56,5 +57,32 @@
       }
       ```
   
-  - See [ctPaymentCustomType.json](/src/main/resources/referenceModels/ctPaymentCustomType.json) for full custom type 
-    description.
+  - See [payment-paypal.json](/src/main/resources/ctp/types/payment-paypal.json) for full custom type description.
+
+## To v0.3+
+
+  - ensure CTP custom Type `payment-paypal` has `successUrl` and `cancelUrl` field definitions as mandatory 
+  (`"required": true`). If the type/fields are missing - just skip this step, because they will by synced automatically.
+  If the fields exist, but are not _required_ - update them. 
+  The easiest way is to remove them right before service start - they will be created automatically 
+  by project types sync feature. 
+  
+    To remove the field execute the next payload (with actual `version` value from your project):
+    ```json
+    {
+      "version": "CURRENT payment-paypal OBJECT VERSION",
+      "actions": [
+        {
+          "action": "removeFieldDefinition",
+          "fieldName": "successUrl"
+        },
+        {
+          "action": "removeFieldDefinition",
+          "fieldName": "cancelUrl"
+        }
+      ]
+    }
+    ```
+    
+    **This approach (remove a field definition before service start) could be applied to any field definition, 
+    which has unexpected _required_ field - the field will be re-created automatically by sync CTP types feature.**

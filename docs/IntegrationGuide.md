@@ -19,6 +19,7 @@
 - [Supported payment types](#supported-payment-types)
   - [Default payments](#default-payments)
   - [Installment (Ratenzahlung) payment](#installment-ratenzahlung-payment)
+- [CTP custom types synchronization on startup](#ctp-custom-types-synchronization-on-startup)
 - [Prevent shipping (delivery) address change in Paypal Payment Dialog](#prevent-shipping-delivery-address-change-in-paypal-payment-dialog)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->

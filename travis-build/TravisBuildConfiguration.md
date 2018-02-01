@@ -10,10 +10,15 @@ Pls, contact Professional Services team to get an access to the encrypted data.
 
 ## How to encrypt/decrypt files
 
+1. Request Professional Services team to add you as an encryptor/decryptor to 
+`ps-keyring#commercetools-paypal-plus-integration` key.
+
 1. [Install/update `gcloud` client (SDK)](https://cloud.google.com/sdk/gcloud/)
 
+1. Navigate to [`/travis-build/configuration/`](/travis-build/configuration/) directory.
+
 1. Run the following commands to:
-    - Encrypt `travis-build-settings.sh` file (must be ignored):
+    - Encrypt `travis-build-settings.sh` file (must be ignored by VCS):
 
         ```bash
         gcloud kms encrypt \
@@ -25,21 +30,23 @@ Pls, contact Professional Services team to get an access to the encrypted data.
             --ciphertext-file=travis-build-settings.sh.enc
         ```
     
-        Add to  git updated encrypted value.
+        Add to VCS encrypted file: `git add -f travis-build-settings.sh.enc`
 
     - Decrypt `travis-build-settings.sh.enc`:
     
       ```bash
       gcloud kms decrypt \
-        --project=professionalserviceslabs \
-        --location=global  \
-        --keyring=ps-keyring \
-        --key=commercetools-paypal-plus-integration \
-        --plaintext-file=travis-build-settings.sh \
-        --ciphertext-file=travis-build-settings.sh.enc
+          --project=professionalserviceslabs \
+          --location=global  \
+          --keyring=ps-keyring \
+          --key=commercetools-paypal-plus-integration \
+          --plaintext-file=travis-build-settings.sh \
+          --ciphertext-file=travis-build-settings.sh.enc
+       ```
 
-1. For convenience [`encrypt.sh`](encrypt.sh) and [`decrypt.sh`](decrypt.sh) script could be used to 
-encrypt/decrypt `travis-build-settings.sh` file
+1. For convenience [`/travis-build/encrypt.sh`](/travis-build/encrypt.sh) and 
+[`/travis-build/decrypt.sh`](/travis-build/decrypt.sh) scripts could be used to 
+encrypt/decrypt `travis-build-settings.sh` file.
 
 ### Known issues
 
@@ -50,4 +57,4 @@ So, it is **strongly recommended** to make these kind of changes atomic (e.g. co
 with explicit message what exactly changed (of course, without any sensitive data in the commit message, 
 just what changed), like:
     
-    update PayPal sandox API token for integration tests
+> update PayPal sandox API token for integration tests

@@ -50,11 +50,14 @@ encrypt/decrypt `travis-build-settings.sh` file.
 
 ### Known issues
 
-Because encryption uses salt every time, 
+1. Because encryption uses salt every time, 
 it's not possible to recognize from indexed encrypted file `travis-build-settings.sh.enc` 
 whether actual content of `travis-build-settings.sh` changed or not.
 So, it is **strongly recommended** to make these kind of changes atomic (e.g. commit only encrypted file)
 with explicit message what exactly changed (of course, without any sensitive data in the commit message, 
 just what changed), like:
     
-> update PayPal sandox API token for integration tests
+    > update PayPal sandox API token for integration tests
+
+2. Encryption/decryption is done over Internet, 
+so you won't be able to encrypt/decrypt files without Google Cloud access.

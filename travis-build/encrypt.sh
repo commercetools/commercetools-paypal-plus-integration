@@ -1,23 +1,18 @@
 #!/bin/sh
 
-# Run it without any arguments to
+# Decrypt travis-build-settings.sh.enc file script.
+# Run the script without any arguments and commit "$CIPHER_FILE" after encryption
 
-PROJECT=professionalserviceslabs
-KEYRING=ps-keyring
-KEY=commercetools-paypal-plus-integration
+COMMON_SCRIPT="$(dirname "$0")/crypt-common.sh"
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CONFIG_DIR="${SCRIPT_DIR}/configuration"
-PLAIN_FILE="${CONFIG_DIR}/travis-build-settings.sh"
-CIPHER_FILE="${CONFIG_DIR}/travis-build-settings.sh.enc"
+if [[ ! -r "$COMMON_SCRIPT" ]] ; then
+    echo "Error: script [${COMMON_SCRIPT}] not found!"
+    exit
+fi
 
-gcloud kms encrypt \
-  --project="$PROJECT"\
-  --location="global" \
-  --keyring="$KEYRING" \
-  --key="$KEY" \
-  --plaintext-file="$PLAIN_FILE" \
-  --ciphertext-file="$CIPHER_FILE" \
+source "$COMMON_SCRIPT"
+
+encryptDecrypt "encrypt" \
   && printf "\nEncrypted successfully:\n\n" \
-  && ls -l "$CIPHER_FILE"
-
+  && ls -l "$CIPHER_FILE" \
+  && printf "\nDon't forget to add/commit the encrypted file\n"

@@ -70,7 +70,7 @@
     To remove the field execute the next payload (with actual `version` value from your project):
     ```json
     {
-      "version": "CURRENT payment-paypal OBJECT VERSION",
+      "version": CURRENT_payment-paypal_OBJECT_VERSION,
       "actions": [
         {
           "action": "removeFieldDefinition",

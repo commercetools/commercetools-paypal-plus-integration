@@ -41,9 +41,9 @@ public class CacheableSphereClientFactoryImpl implements SphereClientFactory {
     /**
      * Self-autowired reference to proxified bean of this class.
      * <p>
-     * To allow re-using caching (inside {@link #createSphereClient(TenantConfig)} method) we have to use
-     * {@link Resource @Resource} annotation, which guarantees to inject Spring proxified self-references (self bean).
-     * Otherwise (with direct method access over <b><code>this</code></b>) Spring caching feature won't work.
+     * To allow re-using caching (inside {@link #createSphereClient(TenantConfig)} method) we have to call
+     * self-autowired instances, otherwise (with direct method access over <b><code>this</code></b>)
+     * Spring caching feature won't work.
      *
      * @see <a href="https://stackoverflow.com/questions/16899604/spring-cache-cacheable-not-working-while-calling-from-another-method-of-the-s">
      * Spring Cache @Cacheable - not working while calling from another method of the same bean</a>

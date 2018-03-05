@@ -5,12 +5,12 @@
 
 COMMON_SCRIPT="$(dirname "$0")/crypt-common.sh"
 
-if [[ ! -r "$COMMON_SCRIPT" ]] ; then
+if [ ! -r "$COMMON_SCRIPT" ] ; then
     echo "Error: script [${COMMON_SCRIPT}] not found!"
     exit
 fi
 
-source "$COMMON_SCRIPT"
+. "$COMMON_SCRIPT"
 
 encryptDecrypt "encrypt" \
   && printf "\nEncrypted successfully:\n\n" \

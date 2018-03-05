@@ -6,12 +6,12 @@ PROJECT=professionalserviceslabs
 KEYRING=ps-keyring
 KEY=commercetools-paypal-plus-integration
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 CONFIG_DIR="${SCRIPT_DIR}/configuration"
 PLAIN_FILE="${CONFIG_DIR}/travis-build-settings.sh"
 CIPHER_FILE="${CONFIG_DIR}/travis-build-settings.sh.enc"
 
-function encryptDecrypt() {
+encryptDecrypt() {
     gcloud kms "$1" \
       --project="$PROJECT"\
       --location="global" \

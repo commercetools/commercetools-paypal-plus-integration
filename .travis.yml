@@ -19,7 +19,7 @@ install: true # skips travis' default installation step which executes gradle as
 
 script:
   - ./gradlew clean build || travis_terminate 1
-  - ./docker-build/travis-docker-publish.sh || travis_terminate 1
+  - ./travis-build/travis-docker-publish.sh || travis_terminate 1
 
 # The before_cache and the cache steps cache the gradle installation on travis.
 before_cache:

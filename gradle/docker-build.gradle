@@ -27,6 +27,8 @@ import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 final dockerContextDir = file('.')
 final dockerfileFile = file('docker-build/Dockerfile')
 final dockerRepository = 'commercetoolsps/commercetools-paypal-plus-integration'
+final dockerUserProperty = 'docker.username'
+final dockerPassProperty = 'docker.password'
 
 task buildDockerImage(type: DockerBuildImage) {
     dependsOn assemble
@@ -42,12 +44,12 @@ task pushDockerImage(type: DockerPushImage) {
     conventionMapping.imageName = { buildDockerImage.getTag() }
 
     // because the push task could be skipped (in local builds) we avoid credentials reading in default configuration setup,
-    // like here: https://github.com/bmuschko/gradle-docker-plugin#extension-examples .
+    // like here: https://github.com/bmuschko/gradle-docker-plugin#extension-examples
     // Instead read/verify them only when the push task is called
     doFirst {
         docker.registryCredentials {
-            username = getConfigurationPropertyOrThrow('docker.username')
-            password = getConfigurationPropertyOrThrow('docker.password')
+            username = getConfigurationPropertyOrThrow(dockerUserProperty)
+            password = getConfigurationPropertyOrThrow(dockerPassProperty)
         }
     }
 }

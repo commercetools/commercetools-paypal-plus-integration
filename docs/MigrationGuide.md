@@ -62,7 +62,7 @@
 
 ## To v0.3+
 <!-- 
-    NOTE: This chapter is references in CtpConfigStartupValidator#DOCUMENTATION_REFERENCE, 
+    NOTE: This chapter is referenced in CtpConfigStartupValidator#DOCUMENTATION_REFERENCE, 
     so update the log message in case of re-factoring the documentation
 -->
 

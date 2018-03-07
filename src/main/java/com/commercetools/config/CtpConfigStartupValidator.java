@@ -27,6 +27,9 @@ import static java.util.stream.Collectors.joining;
  */
 public class CtpConfigStartupValidator {
 
+    private static final String DOCUMENTATION_REFERENCE =
+            "https://github.com/commercetools/commercetools-paypal-plus-integration/blob/master/docs/MigrationGuide.md#to-v03";
+
     private final TenantConfigFactory tenantConfigFactory;
     private final ApplicationKiller applicationKiller;
     private final CtpFacadeFactory ctpFacadeFactory;
@@ -62,7 +65,8 @@ public class CtpConfigStartupValidator {
 
         } catch (Throwable throwable) {
             applicationKiller.killApplication(EXIT_CODE_CTP_TYPE_VALIDATION_EXCEPTION,
-                    "Exception in CTP Types validation", throwable);
+                    format("Exception in CTP Types validation.%nPlease refer to the documentation: %s", DOCUMENTATION_REFERENCE),
+                    throwable);
         }
     }
 
@@ -78,8 +82,9 @@ public class CtpConfigStartupValidator {
     private void processTypesSynchronizationResult(@Nonnull AggregatedCtpTypesValidationResult typesProcessingResult) {
         Logger logger = LoggerFactory.getLogger(this.getClass());
         if (typesProcessingResult.hasErrorMessage()) {
-            String message = format("CTP Types validation failed:%n%s%n%nPlease synchronize types manually and restart the service",
-                    typesProcessingResult.getAggregatedErrorMessage());
+            String message = format("CTP Types validation failed:%n%s%n%nPlease synchronize types manually and restart the service.%n" +
+                            "Refer to the documentation: %s",
+                    typesProcessingResult.getAggregatedErrorMessage(), DOCUMENTATION_REFERENCE);
 
             applicationKiller.killApplication(EXIT_CODE_CTP_TYPE_INCOMPATIBLE, message);
         } else if (typesProcessingResult.hasUpdatedTypes()) {

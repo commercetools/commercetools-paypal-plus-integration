@@ -4,13 +4,12 @@ import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.util.CtpClientConfigurationUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Resource;
 
 /**
  * {@link SphereClient} factory to allow caching sphere clients for {@link TenantConfig}s and {@link SphereClientConfig}.
@@ -36,40 +35,33 @@ import javax.annotation.Nonnull;
  * </ul>
  */
 @Component
+@CacheConfig(cacheNames = "SphereClientFactoryCache")
 public class CacheableSphereClientFactoryImpl implements SphereClientFactory {
 
-    private final SphereFactoryInternalCache sphereFactoryInternalCache;
-
-    @Autowired
-    public CacheableSphereClientFactoryImpl(@Nonnull SphereFactoryInternalCache sphereFactoryInternalCache) {
-        this.sphereFactoryInternalCache = sphereFactoryInternalCache;
-    }
-
-    @Override
-    public SphereClient createSphereClient(@Nonnull TenantConfig tenantConfig) {
-        return sphereFactoryInternalCache.createSphereClient(tenantConfig.getSphereClientConfig());
-    }
-
-    @Override
-    public SphereClient createSphereClient(@Nonnull SphereClientConfig clientConfig) {
-        return sphereFactoryInternalCache.createSphereClient(clientConfig);
-    }
-
     /**
-     * Spring caching feature works over AOP proxies, thus internal calls to cached methods don't work. That's why
-     * this internal bean is created: it "proxifies" overloaded {@code #createSphereClient(...)} methods
-     * to real AOP proxified cacheable bean method {@link #createSphereClient}.
+     * Self-autowired reference to proxified bean of this class.
+     * <p>
+     * To allow re-using caching (inside {@link #createSphereClient(TenantConfig)} method) we have to call
+     * self-autowired instances, otherwise (with direct method access over <b><code>this</code></b>)
+     * Spring caching feature won't work.
      *
-     * @see <a href="https://stackoverflow.com/questions/16899604/spring-cache-cacheable-not-working-while-calling-from-another-method-of-the-s">Spring Cache @Cacheable - not working while calling from another method of the same bean</a>
-     * @see <a href="https://stackoverflow.com/questions/12115996/spring-cache-cacheable-method-ignored-when-called-from-within-the-same-class">Spring cache @Cacheable method ignored when called from within the same class</a>
+     * @see <a href="https://stackoverflow.com/questions/16899604/spring-cache-cacheable-not-working-while-calling-from-another-method-of-the-s">
+     * Spring Cache @Cacheable - not working while calling from another method of the same bean</a>
+     * @see <a href="https://stackoverflow.com/questions/5152686/self-injection-with-spring/5251930#5251930">
+     * Self injection with Spring</a>
      */
-    @EnableCaching
-    @CacheConfig(cacheNames = "SphereClientFactoryCache")
-    static class SphereFactoryInternalCache {
+    @Resource
+    private SphereClientFactory self;
 
-        @Cacheable(sync = true)
-        public SphereClient createSphereClient(@Nonnull SphereClientConfig clientConfig) {
-            return CtpClientConfigurationUtils.createSphereClient(clientConfig);
-        }
+    @Override
+    @Cacheable(sync = true)
+    public SphereClient createSphereClient(@Nonnull TenantConfig tenantConfig) {
+        return self.createSphereClient(tenantConfig.getSphereClientConfig());
+    }
+
+    @Override
+    @Cacheable(sync = true)
+    public SphereClient createSphereClient(@Nonnull SphereClientConfig clientConfig) {
+        return CtpClientConfigurationUtils.createSphereClient(clientConfig);
     }
 }

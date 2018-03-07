@@ -1,0 +1,55 @@
+// script to build/push docker images.
+// The script setup, opposite to most of other gradle plugins, is quite obfuscated,
+// hence requires dedicated `buildscript` block and special classes imports.
+// see https://github.com/bmuschko/gradle-docker-plugin#remote-api-plugin
+// http://bmuschko.com/blog/dockerized-spring-boot-app/
+// Also, we don't use custom createDockerfile task in favor of static `docker-build/Dockerfile`,
+// which could be reused, for instance, for local native docker builds.
+// This could be changed in the future if we really need custom runtime flexible Dockerfile managing
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.bmuschko:gradle-docker-plugin:$dockerPackageVersion"
+    }
+}
+
+apply plugin: com.bmuschko.gradle.docker.DockerRemoteApiPlugin
+
+apply from: "$rootDir/gradle/util.gradle"
+
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+
+// project specific settings:
+final dockerContextDir = file('.')
+final dockerfileFile = file('docker-build/Dockerfile')
+final dockerRepository = 'commercetoolsps/commercetools-paypal-plus-integration'
+final dockerUserProperty = 'docker.username'
+final dockerPassProperty = 'docker.password'
+
+task buildDockerImage(type: DockerBuildImage) {
+    dependsOn assemble
+
+    inputDir = dockerContextDir
+    dockerFile = dockerfileFile
+
+    tag = "$dockerRepository:$project.version"
+}
+
+task pushDockerImage(type: DockerPushImage) {
+    dependsOn buildDockerImage
+    conventionMapping.imageName = { buildDockerImage.getTag() }
+
+    // because the push task could be skipped (in local builds) we avoid credentials reading in default configuration setup,
+    // like here: https://github.com/bmuschko/gradle-docker-plugin#extension-examples
+    // Instead read/verify them only when the push task is called
+    doFirst {
+        docker.registryCredentials {
+            username = getConfigurationPropertyOrThrow(dockerUserProperty)
+            password = getConfigurationPropertyOrThrow(dockerPassProperty)
+        }
+    }
+}

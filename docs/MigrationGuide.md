@@ -59,7 +59,12 @@
   
   - See [payment-paypal.json](/src/main/resources/ctp/types/payment-paypal.json) for full custom type description.
 
+
 ## To v0.3+
+<!-- 
+    NOTE: This chapter is referenced in CtpConfigStartupValidator#DOCUMENTATION_REFERENCE, 
+    so update the log message in case of re-factoring the documentation
+-->
 
   - ensure CTP custom Type `payment-paypal` has `successUrl` and `cancelUrl` field definitions as mandatory 
   (`"required": true`). If the type/fields are missing - just skip this step, because they will by synced automatically.

@@ -1,0 +1,55 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Util functions to resolve configuration values from runtime/gradle/environment properties/variables
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Try to get configuration property {@code propertyName} in the next order (the first found is used):<ol>
+ *     <li>-D${propertyName} Java runtime property in gradle command</li>
+ *     <li>-P${propertyName} gradle runtime property in gradle command</li>
+ *     <li>${propertyName} in ~/.gradle/gradle.properties (user global gradle properties)</li>
+ *     <li>${propertyName} in gradle.properties (project local gradle properties)</li>
+ *     <li>${propToEnvName(propertyName)} as environment variable</li>
+ *     </ol>
+ * @param propertyName in lowercase dotted Java properties format
+ * @return property value, if found, otherwise - <b>null</b>
+ */
+ext.getConfigurationProperty = { String propertyName ->
+    return System.getProperty(propertyName) ?:
+            project.properties.getOrDefault(propertyName, System.getenv(propToEnvName(propertyName)))
+}
+
+/**
+ * Same as {@link #getConfigurationProperty(String)}, but returns {@code defaultValue} if property is not
+ */
+ext.getConfigurationPropertyOrDefault = { String propertyName, String defaultValue ->
+    return getConfigurationProperty(propertyName) ?: defaultValue
+}
+
+/**
+ * Same as {@link #getConfigurationProperty(String)}, but throws {@link IllegalStateException} if property not found
+ */
+ext.getConfigurationPropertyOrThrow = { String propertyName ->
+    final value = getConfigurationProperty(propertyName)
+    if (value == null) {
+        throw new IllegalStateException("Configuration property \"${propertyName}\" is mandatory, but not found. " +
+                "Please specify one of (in order of priority):\n" +
+                "  1) -D${propertyName} Java runtime property in gradle command\n" +
+                "  2) -P${propertyName} gradle runtime property in gradle command\n" +
+                "  3) ${propertyName} in ~/.gradle/gradle.properties (user global gradle properties)\n" +
+                "  4) ${propertyName} in gradle.properties (project local gradle properties)\n" +
+                "  5) ${propToEnvName(propertyName)} as environment variable\n"
+        )
+    }
+
+    return value
+}
+
+/**
+ * Convert Java property name ({@code lower.case.dotted}) to respective environment variable name
+ * ({@code UPPER_CASE_UNDERSCORED})
+ * @param propertyName non-null property name to convert
+ * @return uppercased and underscored {@code propertyName}
+ */
+ext.propToEnvName = { String propertyName ->
+    return propertyName.replaceAll(/\./, '_').toUpperCase()
+}

@@ -7,7 +7,7 @@
   - [Integration tests](#integration-tests)
 - [Docker build](#docker-build)
   - [Configure environment](#configure-environment)
-  - [Run build/push](#run-buildpush)
+  - [Run build/push from gradle task](#run-buildpush-from-gradle-task)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -33,8 +33,25 @@ which is used for local run/debug, because the integration tests will remove all
 
 ## Docker build
 
-<!-- update when https://github.com/commercetools/commercetools-paypal-plus-integration/pull/124 
-is finished -->
+After successful project build/test - assemble and push docker image. 
+This could be done using configured gradle tasks, described below.
+
+For now we build/publish only following docker tags:
+  
+  - `[dev-version]-[git-commit-hash]` for WIP builds, when git tag is not specified. 
+  The _dev-version_ prefix is defined in [`build.gradle`](/build.gradle) file.  
+      
+      Example: `0.3.0-DEV-3b0dfea`
+      
+  - `vX.Y.Z` - stable build tag, performed automatically when new git tag `vX.Y.Z` is pushed. 
+    
+      Example: `v0.3.0`
+      
+The version resolution workflow is defined in [`version-resolver.gradle`](/gradle/version-resolver.gradle) file.
+The docker tagging is applied in [`docker-build.gradle`](/gradle/docker-build.gradle) file
+
+Tags like `latest`, `master`, `WIP-*`, `[branch-name]` and similar are not published any more 
+since they are confusing and often used wrong.
 
 ### Configure environment
 
@@ -47,14 +64,16 @@ For TravisCI build these values could be found in decrypted
 [`travis-build-settings.sh.enc`](/travis-build/configuration/travis-build-settings.sh.enc)
 file. See [`TravisBuildConfiguration`](/travis-build/configuration/TravisBuildConfiguration.md) for more details.
  
-### Run build/push
+### Run build/push from gradle task
 
 Build local docker image:
+
 ```bash 
 ./gradlew buildDockerImage
 ```
 
 Build and push docker image to [Docker hub](https://hub.docker.com/r/commercetoolsps/commercetools-paypal-plus-integration/):
+
 ```bash 
 ./gradlew pushDockerImage 
 ```

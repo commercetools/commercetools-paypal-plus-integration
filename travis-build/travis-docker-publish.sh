@@ -8,7 +8,7 @@ set -e
 if [[ "$TRAVIS_PULL_REQUEST" == "false" ]] ; then
   ./gradlew pushDockerImage
 else
-  echo "Pull request $TRAVIS_PULL_REQUEST identified, docker image build is skipped"
+  echo "Pull request (\$TRAVIS_PULL_REQUEST != \"false\") identified, docker image build is skipped"
   exit 0
 fi
 

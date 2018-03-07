@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Try to get configuration property {@code propertyName} in the next order:<ol>
+ * Try to get configuration property {@code propertyName} in the next order (the first found is used):<ol>
  *     <li>-D${propertyName} Java runtime property in gradle command</li>
  *     <li>-P${propertyName} gradle runtime property in gradle command</li>
  *     <li>${propertyName} in ~/.gradle/gradle.properties (user global gradle properties)</li>

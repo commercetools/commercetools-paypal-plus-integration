@@ -1,8 +1,9 @@
 package com.commercetools.helper.mapper.impl;
 
-import com.commercetools.Application;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.helper.mapper.impl.payment.DefaultPaymentMapperImpl;
+import com.commercetools.helper.mapper.impl.payment.InstallmentPaymentMapperImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,9 @@ import static com.commercetools.payment.constants.ctp.CtpPaymentMethods.INSTALLM
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
+// inject this test case specific classes instead of full application context
+@SpringBootTest(classes = {DefaultPaymentMapperImpl.class, InstallmentPaymentMapperImpl.class,
+        PaymentMapperHelperImpl.class, PaypalPlusFormatterImpl.class, AddressMapperImpl.class})
 public class PaymentMapperHelperImplTest {
 
     @Autowired

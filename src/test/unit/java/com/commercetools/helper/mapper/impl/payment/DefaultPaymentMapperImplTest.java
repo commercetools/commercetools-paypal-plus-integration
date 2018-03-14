@@ -1,6 +1,7 @@
 package com.commercetools.helper.mapper.impl.payment;
 
-import com.commercetools.Application;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
+import com.commercetools.helper.mapper.impl.AddressMapperImpl;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.paypal.api.ApplicationContext;
 import com.paypal.api.payments.*;
@@ -18,7 +19,8 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = Application.class)
+// inject this test case specific classes instead of full application context, which tries to run SphereClient
+@SpringBootTest(classes = {DefaultPaymentMapperImpl.class, PaypalPlusFormatterImpl.class, AddressMapperImpl.class})
 public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
 
     @Autowired

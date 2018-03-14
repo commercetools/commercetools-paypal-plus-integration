@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         OrdersCartsPaymentsCleanupConfiguration.class,
         TaxSetupConfig.class
 })
-public class CartServiceImplTest {
+public class CartServiceImplIntegrationTest {
 
     @Autowired
     private SphereClient sphereClient;

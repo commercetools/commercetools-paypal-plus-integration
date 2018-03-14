@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-public class CommercetoolsGetPaymentsControllerTest extends PaymentIntegrationTest {
+public class CommercetoolsGetPaymentsControllerIT extends PaymentIntegrationTest {
 
     @Before
     public void setUp() throws Exception {

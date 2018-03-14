@@ -91,3 +91,70 @@ testlogger {
     theme 'mocha'
     slowThreshold 20000
 }
+
+// https://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing/
+// https://www.michael-bull.com/blog/2016/06/04/separating-integration-and-unit-tests-with-gradle
+// https://discuss.gradle.org/t/separate-execution-for-java-unit-and-integration-tests/8713
+
+// TODO: integration tests still fail (spring context not loaded)
+
+// TODO: carry out to separate script
+
+final testsRootDir = 'src/test'
+final testsCommonsDir = "${testsRootDir}/common"
+final testsUnitDir = "${testsRootDir}/unit"
+final testsIntegrationDir = "${testsRootDir}/integration"
+
+sourceSets {
+    // TODO: try to use them only as sources, not as test sources
+    testCommon {
+        java.srcDirs = ["$testsCommonsDir/java"]
+        resources.srcDirs = ["$testsCommonsDir/resources"]
+    }
+
+    test {
+        java.srcDirs = ["$testsUnitDir/java"]
+        resources.srcDirs = ["$testsUnitDir/resources"]
+    }
+
+    testIntegration {
+        java {
+            srcDirs = ["$testsIntegrationDir/java"]
+            // TODO: test.output should be excluded - all common parts should be moved to tests common dir
+            // TODO: how to include sources, not output???
+            compileClasspath += main.output + testCommon.output + test.output
+            runtimeClasspath += main.output + testCommon.output + test.output
+        }
+        resources.srcDirs = ["$testsIntegrationDir/resources"]
+    }
+}
+
+configurations {
+    testIntegrationCompile.extendsFrom testCompile
+    testIntegrationRuntime.extendsFrom testRuntime
+}
+
+task testIntegration(type: Test) {
+    testClassesDirs = sourceSets.testIntegration.output.classesDirs
+    classpath = sourceSets.testIntegration.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
+// tasks ordering
+compileTestJava.mustRunAfter compileJava, compileTestCommonJava
+
+// TODO: compileTestJava should be excluded from compileTestIntegrationJava tree: everything should be in compileTestCommonJava
+compileTestIntegrationJava.dependsOn compileTestJava, compileTestCommonJava
+//compileTestIntegrationJava.mustRunAfter compileTestJava, compileTestCommonJava
+testIntegration.mustRunAfter test
+
+// setup test sources/resources in Intellij IDEA
+// https://stackoverflow.com/questions/42064377/mark-gradle-source-folder-as-test-source-in-intellij
+// https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000608270-Gradle-additional-test-source-folders
+// https://youtrack.jetbrains.com/issue/IDEA-151925#comment=27-2355076
+idea {
+    module {
+        testSourceDirs += project.sourceSets.testCommon.java.srcDirs
+        testSourceDirs += project.sourceSets.testIntegration.java.srcDirs
+    }
+}

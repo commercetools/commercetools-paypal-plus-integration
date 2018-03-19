@@ -135,9 +135,14 @@ configurations {
 }
 
 task testIntegration(type: Test) {
+    description "Run only the integration tests from ${sourceSets.testIntegration.java.srcDirs}."
     testClassesDirs = sourceSets.testIntegration.output.classesDirs
     classpath = sourceSets.testIntegration.runtimeClasspath
     outputs.upToDateWhen { false }
+}
+
+task testUnit(dependsOn: test) {
+    description "Run only the unit tests from ${sourceSets.test.java.srcDirs}. This is an alias for :test task"
 }
 
 // tasks ordering

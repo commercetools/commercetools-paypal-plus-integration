@@ -14,7 +14,9 @@ In this directory we keep simple fast unit tests, which:
   
   - mocking/spying/stubbing are preferred ways to test in these tests.
   
+  - unit tests should run successfully without internet connection
+  
 In common build workflow it is recommended to run the unit tests before integration, 
-and fail the entire build skipping integration if unit tests failed (_fail-fast_)
+and fail the entire build skipping integration if unit tests failed (_fail-fast_).
   
 See for more complex [integration tests](/src/test/integration/README.md) workflow.

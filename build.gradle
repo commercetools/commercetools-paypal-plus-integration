@@ -39,6 +39,8 @@ version = '0.3.0-DEV' // this will be replaced by git tag version, if available
 
 apply from: "$rootDir/gradle/version-resolver.gradle"
 apply from: "$rootDir/gradle/docker-build.gradle"
+apply from: "$rootDir/gradle/test-config.gradle"
+apply from: "$rootDir/gradle/idea-config.gradle"
 
 
 jar {
@@ -89,84 +91,4 @@ tasks.withType(JavaCompile) {
 testlogger {
     theme 'mocha'
     slowThreshold 20000
-}
-
-// https://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing/
-// https://www.michael-bull.com/blog/2016/06/04/separating-integration-and-unit-tests-with-gradle
-// https://discuss.gradle.org/t/separate-execution-for-java-unit-and-integration-tests/8713
-
-// TODO: carry out to separate script
-
-final testsRootDir = 'src/test'
-final testsCommonsDir = "${testsRootDir}/common"
-final testsUnitDir = "${testsRootDir}/unit"
-final testsIntegrationDir = "${testsRootDir}/integration"
-
-sourceSets {
-    testCommon {
-        java {
-            srcDirs = ["$testsCommonsDir/java"]
-            compileClasspath += main.output
-            runtimeClasspath += main.output
-        }
-        resources.srcDirs = ["$testsCommonsDir/resources"]
-    }
-
-    test {
-        java {
-            srcDirs = ["$testsUnitDir/java"]
-            compileClasspath += main.output + testCommon.output
-            runtimeClasspath += main.output + testCommon.output
-        }
-        resources.srcDirs = ["$testsUnitDir/resources"]
-    }
-
-    testIntegration {
-        java {
-            srcDirs = ["$testsIntegrationDir/java"]
-            compileClasspath += main.output + testCommon.output
-            runtimeClasspath += main.output + testCommon.output
-        }
-        resources.srcDirs = ["$testsIntegrationDir/resources"]
-    }
-}
-
-configurations {
-    testCommonCompile.extendsFrom compile
-    testCommonRuntime.extendsFrom runtime
-
-    // TODO: make extend compile/runtime, avoid testCompile/Runtime
-    testIntegrationCompile.extendsFrom testCompile
-    testIntegrationRuntime.extendsFrom testRuntime
-}
-
-task testIntegration(type: Test) {
-    description "Run only the integration tests from ${sourceSets.testIntegration.java.srcDirs}."
-    testClassesDirs = sourceSets.testIntegration.output.classesDirs
-    classpath = sourceSets.testIntegration.runtimeClasspath
-    outputs.upToDateWhen { false }
-}
-
-task testUnit(dependsOn: test) {
-    description "Run only the unit tests from ${sourceSets.test.java.srcDirs}. This is an alias for :test task"
-}
-
-// tasks ordering
-// Ensure integration tests are run after unit tests and are part of check/build
-compileTestCommonJava.dependsOn classes
-compileTestJava.dependsOn classes, testCommonClasses
-compileTestIntegrationJava.dependsOn classes, testCommonClasses
-testIntegration.mustRunAfter test
-check.dependsOn test, testIntegration
-build.dependsOn test, testIntegration
-
-// setup test sources/resources in Intellij IDEA
-// https://stackoverflow.com/questions/42064377/mark-gradle-source-folder-as-test-source-in-intellij
-// https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000608270-Gradle-additional-test-source-folders
-// https://youtrack.jetbrains.com/issue/IDEA-151925#comment=27-2355076
-idea {
-    module {
-        testSourceDirs += project.sourceSets.testCommon.java.srcDirs
-        testSourceDirs += project.sourceSets.testIntegration.java.srcDirs
-    }
 }

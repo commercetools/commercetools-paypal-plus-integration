@@ -1,0 +1,10 @@
+// setup test sources/resources in Intellij IDEA
+// https://stackoverflow.com/questions/42064377/mark-gradle-source-folder-as-test-source-in-intellij
+// https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000608270-Gradle-additional-test-source-folders
+// https://youtrack.jetbrains.com/issue/IDEA-151925#comment=27-2355076
+idea {
+    module {
+        testSourceDirs += project.sourceSets.testCommon.java.srcDirs
+        testSourceDirs += project.sourceSets.testIntegration.java.srcDirs
+    }
+}

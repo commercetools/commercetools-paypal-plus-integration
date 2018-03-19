@@ -149,9 +149,10 @@ task testUnit(dependsOn: test) {
 compileTestJava.mustRunAfter compileJava, compileTestCommonJava
 
 // TODO: compileTestJava should be excluded from compileTestIntegrationJava tree: everything should be in compileTestCommonJava
+// Ensure integration tests are run after unit tests and are part of check
 compileTestIntegrationJava.dependsOn compileTestJava, compileTestCommonJava
-//compileTestIntegrationJava.mustRunAfter compileTestJava, compileTestCommonJava
 testIntegration.mustRunAfter test
+check.dependsOn testIntegration
 
 // setup test sources/resources in Intellij IDEA
 // https://stackoverflow.com/questions/42064377/mark-gradle-source-folder-as-test-source-in-intellij

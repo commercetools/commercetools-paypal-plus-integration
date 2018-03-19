@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -36,7 +35,7 @@ public class NotificationValidationInterceptorTest {
     public void whenRequestIsValid_shouldReturnTrue() throws Exception {
         HttpServletRequest spyRequest = new MockHttpServletRequest();
         spyRequest.setAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE,
-                ImmutableMap.of("tenantName", MAIN_TEST_TENANT_NAME));
+                ImmutableMap.of("tenantName", "notification-test-tenant-name"));
 
         TenantConfigFactory configFactory = mock(TenantConfigFactory.class);
 

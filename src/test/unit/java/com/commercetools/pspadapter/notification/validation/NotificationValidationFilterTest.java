@@ -12,22 +12,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NotificationValidationFilterTest {
-    
+
     @Test
     public void whenUrlIsNotification_shouldReturnMultipleReadRequestWrapper()
             throws IOException, ServletException {
         HttpServletRequest mockRequest = mock(HttpServletRequest.class);
         HttpServletResponse mockResponse = mock(HttpServletResponse.class);
         FilterChain mockChain = mock(FilterChain.class);
-        when(mockRequest.getServletPath()).thenReturn("/" + MAIN_TEST_TENANT_NAME + "/paypalplus/notification");
-        
+        when(mockRequest.getServletPath()).thenReturn("/notification-test-tenant-name/paypalplus/notification");
+
         doAnswer(invocation -> {
             ServletRequest request = invocation.getArgumentAt(0, ServletRequest.class);
             assertThat(request).isInstanceOf(MultipleReadServletRequest.class);

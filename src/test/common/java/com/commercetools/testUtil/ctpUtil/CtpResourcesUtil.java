@@ -1,6 +1,10 @@
 package com.commercetools.testUtil.ctpUtil;
 
 import com.commercetools.model.CtpPaymentWithCart;
+import com.commercetools.payment.constants.LocaleConstants;
+import com.commercetools.payment.constants.ctp.CtpPaymentCustomFields;
+import com.commercetools.payment.constants.ctp.CtpPaymentMethods;
+import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
 import com.commercetools.testUtil.ResourcesUtil;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
@@ -121,12 +125,12 @@ public class CtpResourcesUtil extends ResourcesUtil {
 
     public static PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice, @Nullable Locale locale) {
         return PaymentDraftBuilder.of(totalPrice)
-                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(DEFAULT).build())
+                .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PaypalPlusPaymentInterfaceName.PAYPAL_PLUS).method(CtpPaymentMethods.DEFAULT).build())
                 .custom(CustomFieldsDraftBuilder.ofTypeKey("payment-paypal")
-                        .addObject(SUCCESS_URL_FIELD, "http://example.com/success/23456789")
-                        .addObject(CANCEL_URL_FIELD, "http://example.com/cancel/23456789")
-                        .addObject(REFERENCE, "23456789")
-                        .addObject(LANGUAGE_CODE_FIELD, ofNullable(locale).orElse(DEFAULT_LOCALE).getLanguage())
+                        .addObject(CtpPaymentCustomFields.SUCCESS_URL_FIELD, "http://example.com/success/23456789")
+                        .addObject(CtpPaymentCustomFields.CANCEL_URL_FIELD, "http://example.com/cancel/23456789")
+                        .addObject(CtpPaymentCustomFields.REFERENCE, "23456789")
+                        .addObject(CtpPaymentCustomFields.LANGUAGE_CODE_FIELD, ofNullable(locale).orElse(LocaleConstants.DEFAULT_LOCALE).getLanguage())
                         .build());
     }
 

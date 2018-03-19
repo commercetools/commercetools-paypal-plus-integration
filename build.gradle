@@ -73,14 +73,13 @@ dependencies {
     compile "com.google.guava:guava:${depVersions.guava}"
     compile "org.apache.commons:commons-collections4:${depVersions.apacheCollections}"
 
-
+    // TODO: exclude from testCompile -> include to testIntegrationCompile
     testCompile("org.springframework.boot:spring-boot-starter-test:${depVersions.springBoot}") {
         exclude group: 'org.assertj', module: 'assertj-core' // below override the default outdated one with the latest
     }
 
     testCompile "org.assertj:assertj-core:${depVersions.assertJ}"
     testCompile "com.github.stefanbirkner:system-rules:${depVersions.systemRules}"
-
 }
 
 tasks.withType(JavaCompile) {
@@ -96,8 +95,6 @@ testlogger {
 // https://www.michael-bull.com/blog/2016/06/04/separating-integration-and-unit-tests-with-gradle
 // https://discuss.gradle.org/t/separate-execution-for-java-unit-and-integration-tests/8713
 
-// TODO: integration tests still fail (spring context not loaded)
-
 // TODO: carry out to separate script
 
 final testsRootDir = 'src/test'
@@ -106,30 +103,39 @@ final testsUnitDir = "${testsRootDir}/unit"
 final testsIntegrationDir = "${testsRootDir}/integration"
 
 sourceSets {
-    // TODO: try to use them only as sources, not as test sources
     testCommon {
-        java.srcDirs = ["$testsCommonsDir/java"]
+        java {
+            srcDirs = ["$testsCommonsDir/java"]
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+        }
         resources.srcDirs = ["$testsCommonsDir/resources"]
     }
 
     test {
-        java.srcDirs = ["$testsUnitDir/java"]
+        java {
+            srcDirs = ["$testsUnitDir/java"]
+            compileClasspath += main.output + testCommon.output
+            runtimeClasspath += main.output + testCommon.output
+        }
         resources.srcDirs = ["$testsUnitDir/resources"]
     }
 
     testIntegration {
         java {
             srcDirs = ["$testsIntegrationDir/java"]
-            // TODO: test.output should be excluded - all common parts should be moved to tests common dir
-            // TODO: how to include sources, not output???
-            compileClasspath += main.output + testCommon.output + test.output
-            runtimeClasspath += main.output + testCommon.output + test.output
+            compileClasspath += main.output + testCommon.output
+            runtimeClasspath += main.output + testCommon.output
         }
         resources.srcDirs = ["$testsIntegrationDir/resources"]
     }
 }
 
 configurations {
+    testCommonCompile.extendsFrom compile
+    testCommonRuntime.extendsFrom runtime
+
+    // TODO: make extend compile/runtime, avoid testCompile/Runtime
     testIntegrationCompile.extendsFrom testCompile
     testIntegrationRuntime.extendsFrom testRuntime
 }
@@ -146,13 +152,13 @@ task testUnit(dependsOn: test) {
 }
 
 // tasks ordering
-compileTestJava.mustRunAfter compileJava, compileTestCommonJava
-
-// TODO: compileTestJava should be excluded from compileTestIntegrationJava tree: everything should be in compileTestCommonJava
-// Ensure integration tests are run after unit tests and are part of check
-compileTestIntegrationJava.dependsOn compileTestJava, compileTestCommonJava
+// Ensure integration tests are run after unit tests and are part of check/build
+compileTestCommonJava.dependsOn classes
+compileTestJava.dependsOn classes, testCommonClasses
+compileTestIntegrationJava.dependsOn classes, testCommonClasses
 testIntegration.mustRunAfter test
-check.dependsOn testIntegration
+check.dependsOn test, testIntegration
+build.dependsOn test, testIntegration
 
 // setup test sources/resources in Intellij IDEA
 // https://stackoverflow.com/questions/42064377/mark-gradle-source-folder-as-test-source-in-intellij

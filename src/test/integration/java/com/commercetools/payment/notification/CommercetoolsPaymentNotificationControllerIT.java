@@ -45,10 +45,10 @@ public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegra
 
     private static final String INTERACTION_ID = "testInteractionId";
 
-    @Value(value = "mockData/notification/paymentSaleCompletedResponse.json")
+    @Value(value = "classpath:mockData/notification/paymentSaleCompletedResponse.json")
     private Resource paymentSaleCompletedResponseResource;
 
-    @Value(value = "mockData/notification/fakeNotificationResponse.json")
+    @Value(value = "classpath:mockData/notification/fakeNotificationResponse.json")
     private Resource fakeNotificationResponseResource;
 
     @Before

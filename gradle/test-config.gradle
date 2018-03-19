@@ -42,9 +42,11 @@ configurations {
     testCommonCompile.extendsFrom compile
     testCommonRuntime.extendsFrom runtime
 
-    // TODO: make extend compile/runtime, avoid testCompile/Runtime
-    testIntegrationCompile.extendsFrom testCompile
-    testIntegrationRuntime.extendsFrom testRuntime
+    testCompile.extendsFrom testCommonCompile
+    testRuntime.extendsFrom testCommonRuntime
+
+    testIntegrationCompile.extendsFrom testCommonCompile
+    testIntegrationRuntime.extendsFrom testCommonRuntime
 }
 
 task testIntegration(type: Test) {

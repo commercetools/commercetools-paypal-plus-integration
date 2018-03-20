@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 import java.util.Locale;
@@ -28,7 +28,7 @@ import static java.util.Collections.singleton;
 import static java.util.Locale.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @Import(value = {TypesCleanupConfiguration.class})
 public class TypeServiceImplIT {

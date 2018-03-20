@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static com.commercetools.helper.mapper.impl.payment.InstallmentPaymentMapperImpl.CREDIT;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
@@ -18,7 +18,7 @@ import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.*;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 // inject this test case specific classes instead of full application context
 @SpringBootTest(classes = {InstallmentPaymentMapperImpl.class, PaypalPlusFormatterImpl.class, AddressMapperImpl.class})
 public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {

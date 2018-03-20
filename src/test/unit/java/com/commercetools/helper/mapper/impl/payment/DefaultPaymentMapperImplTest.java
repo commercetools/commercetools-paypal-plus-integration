@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
@@ -18,7 +18,7 @@ import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getPaymentWith
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 // inject this test case specific classes instead of full application context, which tries to run SphereClient
 @SpringBootTest(classes = {DefaultPaymentMapperImpl.class, PaypalPlusFormatterImpl.class, AddressMapperImpl.class})
 public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {

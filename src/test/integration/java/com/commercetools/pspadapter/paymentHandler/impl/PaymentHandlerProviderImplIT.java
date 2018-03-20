@@ -50,7 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-public class PaymentHandlerProviderImplTest {
+public class PaymentHandlerProviderImplIT {
 
     @Autowired
     private TenantConfigFactory tenantConfigFactory;

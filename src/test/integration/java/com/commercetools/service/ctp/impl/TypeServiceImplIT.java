@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
 @Import(value = {TypesCleanupConfiguration.class})
-public class TypeServiceImplIntegrationTest {
+public class TypeServiceImplIT {
 
     @Autowired
     private SphereClient sphereClient;

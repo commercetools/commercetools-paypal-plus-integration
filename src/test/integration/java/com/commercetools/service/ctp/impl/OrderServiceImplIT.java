@@ -1,7 +1,7 @@
 package com.commercetools.service.ctp.impl;
 
 import com.commercetools.Application;
-import com.commercetools.service.ctp.CartService;
+import com.commercetools.service.ctp.OrderService;
 import com.commercetools.testUtil.ctpUtil.CtpResourcesUtil;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.commercetools.testUtil.customTestConfigs.TaxSetupConfig;
@@ -11,6 +11,9 @@ import io.sphere.sdk.carts.commands.CartCreateCommand;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
 import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.orders.Order;
+import io.sphere.sdk.orders.OrderFromCartDraft;
+import io.sphere.sdk.orders.commands.OrderFromCartCreateCommand;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentDraftDsl;
@@ -32,26 +35,45 @@ import static com.commercetools.testUtil.customTestConfigs.TaxSetupConfig.TAX_CA
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 
+// TODO: move to separate integration test
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
 @Import(value = {
         OrdersCartsPaymentsCleanupConfiguration.class,
         TaxSetupConfig.class
 })
-public class CartServiceImplIntegrationTest {
+public class OrderServiceImplIT {
 
     @Autowired
     private SphereClient sphereClient;
 
     @Autowired
-    private CartService cartService;
+    private OrderService orderService;
 
     @Test
-    public void createCartManuallyAndGetByPaymentId() {
+    public void createOrderManuallyAndGetByPaymentId() {
         PaymentDraftDsl paymentDraft = PaymentDraftBuilder.of(Money.of(22.33, EUR))
                 .build();
         Payment ctPayment = executeBlocking(sphereClient.execute(PaymentCreateCommand.of(paymentDraft)));
 
+        createOrderWithPayment(ctPayment);
+
+        Optional<Order> orderOpt = executeBlocking(orderService.getByPaymentId(ctPayment.getId()));
+        assertThat(orderOpt).isNotEmpty();
+        String paymentId = orderOpt.get().getPaymentInfo().getPayments().get(0).getId();
+        assertThat(paymentId).isEqualTo(ctPayment.getId());
+    }
+
+    @Test
+    public void getWithWrongPaymentId() {
+        Optional<Order> orderOpt1 = executeBlocking(orderService.getByPaymentId(null));
+        assertThat(orderOpt1).isEmpty();
+
+        Optional<Order> orderOpt2 = executeBlocking(orderService.getByPaymentId(""));
+        assertThat(orderOpt2).isEmpty();
+    }
+
+    private void createOrderWithPayment(Payment ctPayment) {
         TaxCategory taxCategory = executeBlocking(sphereClient.execute(
                 TaxCategoryQuery.of().plusPredicates(m -> m.name().is(TAX_CATEGORY_NAME)))
         ).head().get();
@@ -60,19 +82,9 @@ public class CartServiceImplIntegrationTest {
 
         Cart ctCart = executeBlocking(sphereClient.execute(CartCreateCommand.of(cartDraft)));
 
-        executeBlocking(sphereClient.execute(CartUpdateCommand.of(ctCart, AddPayment.of(ctPayment))));
+        Cart ctCartWithpayment = executeBlocking(sphereClient.execute(CartUpdateCommand.of(ctCart, AddPayment.of(ctPayment))));
 
-        Optional<Cart> cartOpt = executeBlocking(cartService.getByPaymentId(ctPayment.getId()));
-
-        assertThat(cartOpt).isNotEmpty();
-    }
-
-    @Test
-    public void getWithWrongPaymentId() {
-        Optional<Cart> cartOpt1 = executeBlocking(cartService.getByPaymentId(null));
-        assertThat(cartOpt1).isEmpty();
-
-        Optional<Cart> cartOpt2 = executeBlocking(cartService.getByPaymentId(""));
-        assertThat(cartOpt2).isEmpty();
+        OrderFromCartDraft orderFromCartDraft = OrderFromCartDraft.of(ctCartWithpayment);
+        executeBlocking(sphereClient.execute(OrderFromCartCreateCommand.of(orderFromCartDraft)));
     }
 }

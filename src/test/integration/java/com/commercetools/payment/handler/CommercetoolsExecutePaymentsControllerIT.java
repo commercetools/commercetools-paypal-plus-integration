@@ -1,7 +1,7 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
-import com.commercetools.payment.PaymentIntegrationTest;
+import com.commercetools.payment.BasePaymentIT;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
-public class CommercetoolsExecutePaymentsControllerIT extends PaymentIntegrationTest {
+public class CommercetoolsExecutePaymentsControllerIT extends BasePaymentIT {
 
     @Before
     public void setUp() throws Exception {

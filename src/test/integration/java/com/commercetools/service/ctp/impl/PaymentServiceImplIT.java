@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest(classes = Application.class)
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
 // completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
-public class PaymentServiceImplIntegrationTest {
+public class PaymentServiceImplIT {
 
 
     @Autowired

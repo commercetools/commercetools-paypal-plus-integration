@@ -1,7 +1,7 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
-import com.commercetools.payment.PaymentIntegrationTest;
+import com.commercetools.payment.BasePaymentIT;
 import io.sphere.sdk.payments.Payment;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-public class CommercetoolsGetPaymentsControllerIT extends PaymentIntegrationTest {
+public class CommercetoolsGetPaymentsControllerIT extends BasePaymentIT {
 
     @Before
     public void setUp() throws Exception {

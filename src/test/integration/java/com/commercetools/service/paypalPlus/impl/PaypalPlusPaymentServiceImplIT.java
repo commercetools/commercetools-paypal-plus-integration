@@ -26,7 +26,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class)
-public class PaypalPlusPaymentServiceImplIntegrationTest {
+public class PaypalPlusPaymentServiceImplIT {
 
     @Autowired
     private PaypalPlusPaymentService paymentService;

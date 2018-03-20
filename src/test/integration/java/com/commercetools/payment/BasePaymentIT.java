@@ -51,7 +51,7 @@ import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PaymentIntegrationTest {
+public class BasePaymentIT {
 
     @Autowired
     protected MockMvcAsync mockMvcAsync;

@@ -2,7 +2,7 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
-import com.commercetools.payment.PaymentIntegrationTest;
+import com.commercetools.payment.BasePaymentIT;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.paypal.api.payments.Payer;
 import io.sphere.sdk.carts.Cart;
@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
 // completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
-public class CommercetoolsCreatePaymentsControllerIT extends PaymentIntegrationTest {
+public class CommercetoolsCreatePaymentsControllerIT extends BasePaymentIT {
 
     @Before
     public void setUp() throws Exception {

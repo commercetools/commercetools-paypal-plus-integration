@@ -1,7 +1,7 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
-import com.commercetools.payment.PaymentIntegrationTest;
+import com.commercetools.payment.BasePaymentIT;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.SphereClientFactory;
@@ -57,7 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // 1) completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
 // 1) ensure noAddressOverrideWebProfile profile exists
 @Import({OrdersCartsPaymentsCleanupConfiguration.class, WebProfileConfiguration.class})
-public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends PaymentIntegrationTest {
+public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends BasePaymentIT {
 
     @Autowired
     private MockMvcAsync mockMvcAsync;

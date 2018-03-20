@@ -1,7 +1,7 @@
 package com.commercetools.payment.notification;
 
 import com.commercetools.Application;
-import com.commercetools.payment.PaymentIntegrationTest;
+import com.commercetools.payment.BasePaymentIT;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
 import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.commercetools.testUtil.customTestConfigs.ServiceConfig;
@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(OrdersCartsPaymentsCleanupConfiguration.class)
 @ContextConfiguration(classes = ServiceConfig.class)
-public class CommercetoolsPaymentNotificationControllerIT extends PaymentIntegrationTest {
+public class CommercetoolsPaymentNotificationControllerIT extends BasePaymentIT {
 
     private static final String INTERACTION_ID = "testInteractionId";
 

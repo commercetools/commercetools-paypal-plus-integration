@@ -12,7 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ApplicationConfiguration.class)
-public class ApplicationKillerImplIntegrationTest {
+public class ApplicationKillerImplIT {
 
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();

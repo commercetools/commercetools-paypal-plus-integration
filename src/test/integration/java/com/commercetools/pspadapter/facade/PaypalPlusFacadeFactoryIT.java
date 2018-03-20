@@ -12,15 +12,16 @@ import static com.commercetools.testUtil.mockObjects.TenantConfigMockUtil.getMoc
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class CtpFacadeFactoryIntegrationTest {
+public class PaypalPlusFacadeFactoryIT {
 
     @Autowired
-    private CtpFacadeFactory ctpFacadeFactory;
+    private PaypalPlusFacadeFactory paypalPlusFacadeFactory;
 
     @Test
-    public void getCtpFacade_returnsCachedValue() throws Exception {
-        assertFactoryMethodCaching(ctpFacadeFactory,
+    public void getPaypalPlusFacade_returnsCachedValue() throws Exception {
+        assertFactoryMethodCaching(paypalPlusFacadeFactory,
                 TenantConfigMockUtil::getMockTenantConfig, () -> getMockTenantConfig("someOtherTenantName"),
-                ctpFacadeFactory::getCtpFacade);
+                paypalPlusFacadeFactory::getPaypalPlusFacade);
     }
+
 }

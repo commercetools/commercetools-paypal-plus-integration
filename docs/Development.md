@@ -25,8 +25,8 @@ file. If the file exists - it overrides default [`/src/main/resources/applicatio
 
 ### Integration tests
 
-Local integration test setting may be configured in [`/src/test/resources/config/application.yml`](/src/test/resources/config/application.yml)
-file. If the file exists - it overrides main context config and config from  [`/src/test/resources/application.yml`](/src/test/resources/application.yml).
+Local integration test setting may be configured in [`/src/test/integration/resources/config/application.yml`](/src/test/integration/resources/config/application.yml)
+file. If the file exists - it overrides main context config and config from  [`/src/test/integration/resources/application.yml`](/src/test/integration/resources/application.yml).
 
 **Note: keep this settings different from `/src/main/resources/config/application.yml`,
 which is used for local run/debug, because the integration tests will remove all data form the CTP project**

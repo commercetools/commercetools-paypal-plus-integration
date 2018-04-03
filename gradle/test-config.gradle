@@ -62,8 +62,5 @@ task testUnit(dependsOn: test) {
 
 // tasks ordering
 // Ensure integration tests are run after unit tests and are part of check/build
-compileTestCommonJava.dependsOn classes
-compileTestJava.dependsOn classes, testCommonClasses
-compileTestIntegrationJava.dependsOn classes, testCommonClasses
 testIntegration.mustRunAfter test
 check.dependsOn testIntegration

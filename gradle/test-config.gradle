@@ -66,5 +66,4 @@ compileTestCommonJava.dependsOn classes
 compileTestJava.dependsOn classes, testCommonClasses
 compileTestIntegrationJava.dependsOn classes, testCommonClasses
 testIntegration.mustRunAfter test
-check.dependsOn test, testIntegration
-build.dependsOn test, testIntegration
+check.dependsOn testIntegration

@@ -39,6 +39,8 @@ version = '0.3.0-DEV' // this will be replaced by git tag version, if available
 
 apply from: "$rootDir/gradle/version-resolver.gradle"
 apply from: "$rootDir/gradle/docker-build.gradle"
+apply from: "$rootDir/gradle/test-config.gradle"
+apply from: "$rootDir/gradle/idea-config.gradle"
 
 
 jar {
@@ -73,14 +75,12 @@ dependencies {
     compile "com.google.guava:guava:${depVersions.guava}"
     compile "org.apache.commons:commons-collections4:${depVersions.apacheCollections}"
 
-
-    testCompile("org.springframework.boot:spring-boot-starter-test:${depVersions.springBoot}") {
+    testCommonCompile("org.springframework.boot:spring-boot-starter-test:${depVersions.springBoot}") {
         exclude group: 'org.assertj', module: 'assertj-core' // below override the default outdated one with the latest
     }
+    testCommonCompile "org.assertj:assertj-core:${depVersions.assertJ}"
 
-    testCompile "org.assertj:assertj-core:${depVersions.assertJ}"
-    testCompile "com.github.stefanbirkner:system-rules:${depVersions.systemRules}"
-
+    testIntegrationCompile "com.github.stefanbirkner:system-rules:${depVersions.systemRules}"
 }
 
 tasks.withType(JavaCompile) {

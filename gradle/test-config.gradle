@@ -1,0 +1,66 @@
+// unit/integration tests configurations
+//
+// https://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing/
+// https://www.michael-bull.com/blog/2016/06/04/separating-integration-and-unit-tests-with-gradle
+// https://discuss.gradle.org/t/separate-execution-for-java-unit-and-integration-tests/8713
+
+final testsRootDir = 'src/test'
+final testsCommonsDir = "${testsRootDir}/common"
+final testsUnitDir = "${testsRootDir}/unit"
+final testsIntegrationDir = "${testsRootDir}/integration"
+
+sourceSets {
+    testCommon {
+        java {
+            srcDirs = ["$testsCommonsDir/java"]
+            compileClasspath += main.output
+            runtimeClasspath += main.output
+        }
+        resources.srcDirs = ["$testsCommonsDir/resources"]
+    }
+
+    test {
+        java {
+            srcDirs = ["$testsUnitDir/java"]
+            compileClasspath += main.output + testCommon.output
+            runtimeClasspath += main.output + testCommon.output
+        }
+        resources.srcDirs = ["$testsUnitDir/resources"]
+    }
+
+    testIntegration {
+        java {
+            srcDirs = ["$testsIntegrationDir/java"]
+            compileClasspath += main.output + testCommon.output
+            runtimeClasspath += main.output + testCommon.output
+        }
+        resources.srcDirs = ["$testsIntegrationDir/resources"]
+    }
+}
+
+configurations {
+    testCommonCompile.extendsFrom compile
+    testCommonRuntime.extendsFrom runtime
+
+    testCompile.extendsFrom testCommonCompile
+    testRuntime.extendsFrom testCommonRuntime
+
+    testIntegrationCompile.extendsFrom testCommonCompile
+    testIntegrationRuntime.extendsFrom testCommonRuntime
+}
+
+task testIntegration(type: Test) {
+    description "Run only the integration tests from ${sourceSets.testIntegration.java.srcDirs}."
+    testClassesDirs = sourceSets.testIntegration.output.classesDirs
+    classpath = sourceSets.testIntegration.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
+task testUnit(dependsOn: test) {
+    description "Run only the unit tests from ${sourceSets.test.java.srcDirs}. This is an alias for :test task"
+}
+
+// tasks ordering
+// Ensure integration tests are run after unit tests and are part of check/build
+testIntegration.mustRunAfter test
+check.dependsOn testIntegration

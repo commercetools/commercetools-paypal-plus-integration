@@ -82,7 +82,6 @@ dependencies {
     testCommonCompile "org.assertj:assertj-core:${depVersions.assertJ}"
 
     testIntegrationCompile "com.github.stefanbirkner:system-rules:${depVersions.systemRules}"
-
     testIntegrationCompile "org.bitbucket.radistao.test:before-after-spring-test-runner:${depVersions.beforeTestRunner}"
 }
 

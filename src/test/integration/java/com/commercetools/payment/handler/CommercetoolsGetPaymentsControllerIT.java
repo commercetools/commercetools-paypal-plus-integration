@@ -3,6 +3,7 @@ package com.commercetools.payment.handler;
 import com.commercetools.Application;
 import com.commercetools.payment.BasePaymentIT;
 import io.sphere.sdk.payments.Payment;
+import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,8 +29,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class CommercetoolsGetPaymentsControllerIT extends BasePaymentIT {
 
+    @BeforeAllMethods
+    @Override
+    public void setupBeforeAll() {
+        super.setupBeforeAll();
+    }
+
     @Before
-    public void setUp() throws Exception {
+    @Override
+    public void setUp() {
         super.setUp();
     }
 

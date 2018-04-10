@@ -2,25 +2,26 @@ package com.commercetools.service.ctp.impl;
 
 import com.commercetools.Application;
 import com.commercetools.service.ctp.TypeService;
-import com.commercetools.testUtil.customTestConfigs.TypesCleanupConfiguration;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.*;
 import io.sphere.sdk.types.commands.updateactions.ChangeKey;
 import io.sphere.sdk.types.commands.updateactions.ChangeName;
+import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
+import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 import java.util.Locale;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanOrdersCartsPayments;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanOrdersCartsPaymentsTypes;
 import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupTypes;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -28,9 +29,8 @@ import static java.util.Collections.singleton;
 import static java.util.Locale.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@RunWith(BeforeAfterSpringTestRunner.class)
 @SpringBootTest(classes = Application.class)
-@Import(value = {TypesCleanupConfiguration.class})
 public class TypeServiceImplIT {
 
     @Autowired
@@ -38,6 +38,15 @@ public class TypeServiceImplIT {
 
     @Autowired
     private TypeService typeService;
+
+    /**
+     * Since types could be bound to some orders/carts/payments - clean them first.
+     * The actual types cleaning will be performed before/after each test.
+     */
+    @BeforeAllMethods
+    public void setupBeforeAll() {
+        cleanOrdersCartsPayments(sphereClient);
+    }
 
     @Before
     public void setUp() throws Exception {

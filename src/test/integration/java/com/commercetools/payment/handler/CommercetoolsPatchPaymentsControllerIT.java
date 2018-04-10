@@ -1,70 +1,45 @@
 package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
-import com.commercetools.pspadapter.facade.CtpFacade;
-import com.commercetools.pspadapter.facade.CtpFacadeFactory;
-import com.commercetools.pspadapter.facade.SphereClientFactory;
-import com.commercetools.pspadapter.tenant.TenantConfig;
-import com.commercetools.pspadapter.tenant.TenantConfigFactory;
-import com.commercetools.test.web.servlet.MockMvcAsync;
-import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
+import com.commercetools.payment.BasePaymentIT;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
 import io.sphere.sdk.carts.commands.updateactions.SetBillingAddress;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.payments.Payment;
+import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
+import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Locale;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createCartAndPayment;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.createPaymentCS;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@RunWith(BeforeAfterSpringTestRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-@Import(OrdersCartsPaymentsCleanupConfiguration.class)
-public class CommercetoolsPatchPaymentsControllerIT {
+public class CommercetoolsPatchPaymentsControllerIT extends BasePaymentIT {
 
-    @Autowired
-    private MockMvcAsync mockMvcAsync;
-
-    @Autowired
-    private TenantConfigFactory tenantConfigFactory;
-
-    @Autowired
-    private CtpFacadeFactory ctpFacadeFactory;
-
-    @Autowired
-    protected SphereClientFactory sphereClientFactory;
-
-    private TenantConfig tenantConfig;
-    private SphereClient sphereClient;
-    private CtpFacade ctpFacade;
+    @BeforeAllMethods
+    @Override
+    public void setupBeforeAll() {
+        super.setupBeforeAll();
+    }
 
     @Before
-    public void setUp() throws Exception {
-        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
-                .orElseThrow(IllegalStateException::new);
-
-        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
-
-        sphereClient = sphereClientFactory.createSphereClient(tenantConfig);
+    @Override
+    public void setUp() {
+        super.setUp();
     }
 
     @Test
@@ -130,7 +105,7 @@ public class CommercetoolsPatchPaymentsControllerIT {
 
     @Test
     public void whenPaymentHasNoCart_shouldThrow400Error() throws Exception {
-        Payment payment = executeBlocking(createPaymentCS(Money.of(10, USD), Locale.ENGLISH, sphereClient));
+        Payment payment = executeBlocking(createPaymentCS(sphereClient, Money.of(10, USD), Locale.ENGLISH));
         mockMvcAsync.performAsync(post(format("/%s/commercetools/patch/payments/%s",
                 MAIN_TEST_TENANT_NAME, payment.getId())))
                 .andExpect(status().isBadRequest());

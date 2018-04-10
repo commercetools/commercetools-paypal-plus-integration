@@ -27,6 +27,7 @@ import io.sphere.sdk.payments.PaymentDraftDsl;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFields;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -46,6 +47,7 @@ import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APP
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanOrdersCartsPayments;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Optional.of;
@@ -69,15 +71,28 @@ public class BasePaymentIT {
     protected SphereClient sphereClient;
     protected CtpFacade ctpFacade;
 
-    public void setUp() throws Exception {
-        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
-                .orElseThrow(IllegalStateException::new);
-
-        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
-
-        sphereClient = sphereClientFactory.createSphereClient(tenantConfig);
+    /**
+     * Cleanup orders, carts and payments storages.
+     */
+    public void setupBeforeAll() {
+        initTenantConfigs();
+        cleanOrdersCartsPayments(sphereClient);
     }
 
+    @Before
+    public void setUp() {
+        initTenantConfigs();
+    }
+
+    /**
+     * Instantiate request/tenant specific values (configs, facades, factories, clients) before each test.
+     */
+    protected void initTenantConfigs() {
+        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
+                .orElseThrow(IllegalStateException::new);
+        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
+        sphereClient = sphereClientFactory.createSphereClient(tenantConfig);
+    }
 
     protected String createCartAndPayment(@Nonnull SphereClient sphereClient) {
         Cart updatedCart = executeBlocking(createCartCS(sphereClient)

@@ -49,6 +49,17 @@ public final class CleanupTableUtil {
         return cleanupTable(sphereClient, TypeQuery::of, TypeDeleteCommand::of, "Types");
     }
 
+    public static void cleanOrdersCartsPayments(SphereClient sphereClient) {
+        cleanupOrders(sphereClient);
+        cleanupCarts(sphereClient);
+        cleanupPaymentTable(sphereClient);
+    }
+
+    public static void cleanOrdersCartsPaymentsTypes(SphereClient sphereClient) {
+        cleanOrdersCartsPayments(sphereClient);
+        cleanupTypes(sphereClient);
+    }
+
     /**
      * Sequentially execute query from {@code querySupplier} to fetch items and remove them using {@code deleteFunction}
      * while query returns at least one item. Stop execution when the query returns empty result

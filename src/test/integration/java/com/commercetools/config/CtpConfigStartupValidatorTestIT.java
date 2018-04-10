@@ -8,6 +8,7 @@ import com.commercetools.pspadapter.facade.SphereClientFactory;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.service.ctp.TypeService;
 import com.commercetools.testUtil.CompletionStageUtil;
+import com.commercetools.testUtil.ctpUtil.CleanupTableUtil;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
@@ -32,7 +33,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import static com.commercetools.config.constants.ExitCodes.EXIT_CODE_CTP_TYPE_INCOMPATIBLE;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.*;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -151,12 +151,7 @@ public class CtpConfigStartupValidatorTestIT {
     private void wipeOutTypes() {
         tenantConfigFactory.getTenantConfigs().parallelStream()
                 .map(sphereClientFactory::createSphereClient)
-                .forEach(sphereClient -> {
-                    cleanupOrders(sphereClient);
-                    cleanupCarts(sphereClient);
-                    cleanupPaymentTable(sphereClient);
-                    cleanupTypes(sphereClient);
-                });
+                .forEach(CleanupTableUtil::cleanOrdersCartsPaymentsTypes);
     }
 
     /**

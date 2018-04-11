@@ -1,6 +1,7 @@
-package com.commercetools.config;
+package com.commercetools.config.bean.impl;
 
 import com.commercetools.config.bean.ApplicationKiller;
+import com.commercetools.config.bean.CtpConfigStartupValidator;
 import com.commercetools.config.ctpTypes.AggregatedCtpTypesValidationResult;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
@@ -8,9 +9,9 @@ import io.sphere.sdk.types.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
-import javax.annotation.PostConstruct;
 
 import static com.commercetools.config.constants.ExitCodes.EXIT_CODE_CTP_TYPE_INCOMPATIBLE;
 import static com.commercetools.config.constants.ExitCodes.EXIT_CODE_CTP_TYPE_VALIDATION_EXCEPTION;
@@ -19,13 +20,8 @@ import static com.commercetools.config.ctpTypes.TenantCtpTypesValidator.validate
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
-/**
- * Verify CTP project settings are correct for all configured tenants. If the CTP project settings can't be
- * automatically synced/updated - the errors are logged and the service exits.
- *
- * @see #validateTypes()
- */
-public class CtpConfigStartupValidator {
+@Component
+public class CtpConfigStartupValidatorImpl implements CtpConfigStartupValidator {
 
     private static final String DOCUMENTATION_REFERENCE =
             "https://github.com/commercetools/commercetools-paypal-plus-integration/blob/master/docs/MigrationGuide.md#to-v03";
@@ -35,27 +31,15 @@ public class CtpConfigStartupValidator {
     private final CtpFacadeFactory ctpFacadeFactory;
 
     @Autowired
-    public CtpConfigStartupValidator(@Nonnull TenantConfigFactory tenantConfigFactory,
-                                     @Nonnull CtpFacadeFactory ctpFacadeFactory,
-                                     @Nonnull ApplicationKiller applicationKiller) {
+    public CtpConfigStartupValidatorImpl(@Nonnull TenantConfigFactory tenantConfigFactory,
+                                         @Nonnull CtpFacadeFactory ctpFacadeFactory,
+                                         @Nonnull ApplicationKiller applicationKiller) {
         this.tenantConfigFactory = tenantConfigFactory;
         this.ctpFacadeFactory = ctpFacadeFactory;
         this.applicationKiller = applicationKiller;
     }
 
-    /**
-     * Verify the CTP {@link Type}s are configured like expected. The implementation compares actual tenant
-     * {@link Type}s with expected types from the embed resources
-     * (see {@link com.commercetools.config.ctpTypes.ExpectedCtpTypes}). If the types could be updated -
-     * the update actions are performed. Otherwise error message is shown and application is finished with error code.
-     * <p>
-     * If neither errors exist nor update actions required - continue application startup.
-     * <p>
-     * The operation is blocking, e.g. the application startup shall not go further before this
-     * validation/synchronization is done completely.
-     */
-    @PostConstruct
-    void validateTypes() {
+    public void validateTypes() {
         try {
             AggregatedCtpTypesValidationResult typesSynchronizationResult =
                     validateAndSyncCtpTypes(ctpFacadeFactory, tenantConfigFactory.getTenantConfigs(), getExpectedCtpTypesFromResources())

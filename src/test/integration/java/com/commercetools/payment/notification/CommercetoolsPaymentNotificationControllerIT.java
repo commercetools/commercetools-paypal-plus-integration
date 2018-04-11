@@ -8,6 +8,7 @@ import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.PaymentUpdateCommand;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
+import org.bitbucket.radistao.test.annotation.AfterAllMethods;
 import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
 import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.javamoney.moneta.Money;
@@ -53,6 +54,12 @@ public class CommercetoolsPaymentNotificationControllerIT extends BasePaymentIT 
     @Override
     public void setupBeforeAll() {
         super.setupBeforeAll();
+    }
+
+    @AfterAllMethods
+    @Override
+    public void tearDownAfterAll() {
+        super.tearDownAfterAll();
     }
 
     @Before

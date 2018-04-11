@@ -1,6 +1,8 @@
 package com.commercetools.config;
 
 import com.commercetools.config.bean.ApplicationKiller;
+import com.commercetools.config.bean.CtpConfigStartupValidator;
+import com.commercetools.config.bean.impl.CtpConfigStartupValidatorImpl;
 import com.commercetools.config.ctpTypes.ExpectedCtpTypes;
 import com.commercetools.config.ctpTypes.TenantCtpTypesValidator;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
@@ -8,7 +10,6 @@ import com.commercetools.pspadapter.facade.SphereClientFactory;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.service.ctp.TypeService;
 import com.commercetools.testUtil.CompletionStageUtil;
-import com.commercetools.testUtil.ctpUtil.CleanupTableUtil;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -33,6 +35,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import static com.commercetools.config.constants.ExitCodes.EXIT_CODE_CTP_TYPE_INCOMPATIBLE;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupAllTenantsTypes;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,14 +44,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
- * Test {@link CtpConfigStartupValidator} with different initial CTP project config.
+ * Test {@link CtpConfigStartupValidatorImpl} with different initial CTP project config.
  * <p>
- * <b>Note:</b> since {@link CtpConfigStartupValidator} is set by default to {@link com.commercetools.Application}
- * configuration - it will start any on this test class initialization, e.g. it will try to synchronize the types.
- * This causes two issues:<ul>
- * <li>If current CTP integration test projects are "unrecoverable" (e.g. contain types which can not be updated)
- * - the test will always fail. In this case just clean up all they types on the integration test CTP projects.</li>
- * <li>To make actual tests we "mock" CTP types state from the test resources
+ * <b>Note:</b>
+ * <ul>
+ * <li>since {@link CtpConfigStartupValidator} bean is overridden by
+ * {@link com.commercetools.testUtil.customTestConfigs.EmptyCtpConfigStartupValidatorTestImpl EmptyCtpConfigStartupValidatorTestImpl}
+ * for most of the test - we use explicit qualified bean name {@code ctpConfigStartupValidatorImpl} for this test</li>
+ * <li>before and after each test case we clean all the custom types</li>
+ * <li>to make actual tests against different cases we "mock" CTP types state from the test resources
  * (see {@link #setupTypesFromResources(java.lang.String)}) and then try to verify/update them directly calling
  * {@link CtpConfigStartupValidator#validateTypes()}</li>
  * </ul>
@@ -58,6 +62,7 @@ import static org.mockito.Mockito.verify;
 public class CtpConfigStartupValidatorTestIT {
 
     @Autowired
+    @Qualifier("ctpConfigStartupValidatorImpl") // we need to test real CtpConfigStartupValidatorImpl here, not injected mock
     private CtpConfigStartupValidator ctpConfigStartupValidator;
 
     @Autowired
@@ -84,12 +89,12 @@ public class CtpConfigStartupValidatorTestIT {
         assertThat(tenantConfigFactory).isNotNull();
         assertThat(tenantConfigFactory.getTenantConfigs().size()).isGreaterThanOrEqualTo(1); // ensure we test at least some tenants
 
-        wipeOutTypes();
+        cleanupAllTenantsTypes(tenantConfigFactory, sphereClientFactory);
     }
 
     @After
     public void tearDown() throws Exception {
-        wipeOutTypes();
+        cleanupAllTenantsTypes(tenantConfigFactory, sphereClientFactory);
     }
 
     /**
@@ -146,12 +151,6 @@ public class CtpConfigStartupValidatorTestIT {
         ctpConfigStartupValidator.validateTypes();
 
         verifyTenantsTypesAreCreated();
-    }
-
-    private void wipeOutTypes() {
-        tenantConfigFactory.getTenantConfigs().parallelStream()
-                .map(sphereClientFactory::createSphereClient)
-                .forEach(CleanupTableUtil::cleanOrdersCartsPaymentsTypes);
     }
 
     /**

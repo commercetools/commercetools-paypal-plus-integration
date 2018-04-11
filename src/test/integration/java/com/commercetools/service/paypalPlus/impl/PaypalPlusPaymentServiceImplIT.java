@@ -4,6 +4,7 @@ import com.commercetools.Application;
 import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.paypal.api.payments.*;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

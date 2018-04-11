@@ -26,7 +26,7 @@ import static com.commercetools.payment.constants.Psp.NOTIFICATION_PATH_URL;
 
 // don't run PaypalPlusStartupConfiguration configuration (which will start web hooks registration)
 // unless we are sure CTP projects configuration finished successfully
-@DependsOn("com.commercetools.config.CtpConfigStartupValidator")
+@DependsOn("ctpConfigStartupConfiguration")
 
 @Import(ApplicationConfiguration.class)
 @EnableCaching // used for cacheNames = "PaypalPlusConfigurationCache"

@@ -11,6 +11,7 @@ import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftDsl;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
+import org.bitbucket.radistao.test.annotation.AfterAllMethods;
 import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
 import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.javamoney.moneta.Money;
@@ -20,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Locale;
@@ -51,6 +53,12 @@ public class CommercetoolsCreatePaymentsControllerIT extends BasePaymentIT {
     @Override
     public void setupBeforeAll() {
         super.setupBeforeAll();
+    }
+
+    @AfterAllMethods
+    @Override
+    public void tearDownAfterAll() {
+        super.tearDownAfterAll();
     }
 
     @Before

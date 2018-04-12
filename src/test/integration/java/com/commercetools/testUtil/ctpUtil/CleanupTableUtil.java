@@ -33,7 +33,7 @@ public final class CleanupTableUtil {
      * @param sphereClient {@link SphereClient} where to delete Payments.
      * @return number of deleted items.
      */
-    public static int cleanupPaymentTable(SphereClient sphereClient) {
+    public static int cleanupPayments(SphereClient sphereClient) {
         return cleanupTable(sphereClient, PaymentQuery::of, PaymentDeleteCommand::of, "Payments");
     }
 
@@ -47,6 +47,17 @@ public final class CleanupTableUtil {
 
     public static int cleanupTypes(SphereClient sphereClient) {
         return cleanupTable(sphereClient, TypeQuery::of, TypeDeleteCommand::of, "Types");
+    }
+
+    public static void cleanupOrdersCartsPayments(SphereClient sphereClient) {
+        cleanupOrders(sphereClient);
+        cleanupCarts(sphereClient);
+        cleanupPayments(sphereClient);
+    }
+
+    public static void cleanupOrdersCartsPaymentsTypes(SphereClient sphereClient) {
+        cleanupOrdersCartsPayments(sphereClient);
+        cleanupTypes(sphereClient);
     }
 
     /**

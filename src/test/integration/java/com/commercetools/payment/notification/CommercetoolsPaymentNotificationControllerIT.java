@@ -3,12 +3,13 @@ package com.commercetools.payment.notification;
 import com.commercetools.Application;
 import com.commercetools.payment.BasePaymentIT;
 import com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName;
-import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import com.commercetools.testUtil.customTestConfigs.ServiceConfig;
 import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.PaymentUpdateCommand;
 import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
+import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
+import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,11 +17,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,10 +35,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@RunWith(BeforeAfterSpringTestRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-@Import(OrdersCartsPaymentsCleanupConfiguration.class)
 @ContextConfiguration(classes = ServiceConfig.class)
 public class CommercetoolsPaymentNotificationControllerIT extends BasePaymentIT {
 
@@ -51,8 +49,15 @@ public class CommercetoolsPaymentNotificationControllerIT extends BasePaymentIT 
     @Value(value = "classpath:mockData/notification/fakeNotificationResponse.json")
     private Resource fakeNotificationResponseResource;
 
+    @BeforeAllMethods
+    @Override
+    public void setupBeforeAll() {
+        super.setupBeforeAll();
+    }
+
     @Before
-    public void setUp() throws Exception {
+    @Override
+    public void setUp() {
         super.setUp();
     }
 

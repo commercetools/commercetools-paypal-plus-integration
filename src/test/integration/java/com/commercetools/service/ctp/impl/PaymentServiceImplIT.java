@@ -3,20 +3,19 @@ package com.commercetools.service.ctp.impl;
 import com.commercetools.Application;
 import com.commercetools.exception.CtpServiceException;
 import com.commercetools.service.ctp.PaymentService;
-import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.commands.updateactions.ChangeAmountPlanned;
 import io.sphere.sdk.payments.commands.updateactions.SetKey;
+import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
+import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.javamoney.moneta.Money;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,16 +23,15 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
+@RunWith(BeforeAfterSpringTestRunner.class)
 @SpringBootTest(classes = Application.class)
-@Import(OrdersCartsPaymentsCleanupConfiguration.class)
-// completely wipe-out CTP project Payment, Cart, Order endpoints before the test cases
 public class PaymentServiceImplIT {
 
 
@@ -42,6 +40,11 @@ public class PaymentServiceImplIT {
 
     @Autowired
     private PaymentService paymentService;
+
+    @BeforeAllMethods
+    public void setupBeforeAll() {
+        cleanupOrdersCartsPayments(sphereClient);
+    }
 
     @Test
     public void createManuallyAndGetById() throws Exception {

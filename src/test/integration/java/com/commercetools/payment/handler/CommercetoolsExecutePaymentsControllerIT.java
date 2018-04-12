@@ -2,9 +2,10 @@ package com.commercetools.payment.handler;
 
 import com.commercetools.Application;
 import com.commercetools.payment.BasePaymentIT;
-import com.commercetools.testUtil.customTestConfigs.OrdersCartsPaymentsCleanupConfiguration;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
+import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
+import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -12,9 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -29,14 +28,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@RunWith(BeforeAfterSpringTestRunner.class)
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-@Import(OrdersCartsPaymentsCleanupConfiguration.class)
 public class CommercetoolsExecutePaymentsControllerIT extends BasePaymentIT {
 
+    @BeforeAllMethods
+    @Override
+    public void setupBeforeAll() {
+        super.setupBeforeAll();
+    }
+
     @Before
-    public void setUp() throws Exception {
+    @Override
+    public void setUp() {
         super.setUp();
     }
 

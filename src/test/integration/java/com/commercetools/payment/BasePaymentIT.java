@@ -46,6 +46,7 @@ import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APP
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Optional.of;
@@ -69,15 +70,27 @@ public class BasePaymentIT {
     protected SphereClient sphereClient;
     protected CtpFacade ctpFacade;
 
-    public void setUp() throws Exception {
-        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
-                .orElseThrow(IllegalStateException::new);
-
-        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
-
-        sphereClient = sphereClientFactory.createSphereClient(tenantConfig);
+    /**
+     * Cleanup orders, carts and payments storages.
+     */
+    public void setupBeforeAll() {
+        initTenantConfigs();
+        cleanupOrdersCartsPayments(sphereClient);
     }
 
+    public void setUp() {
+        initTenantConfigs();
+    }
+
+    /**
+     * Instantiate request/tenant specific values (configs, facades, factories, clients) before each test.
+     */
+    protected void initTenantConfigs() {
+        tenantConfig = tenantConfigFactory.getTenantConfig(MAIN_TEST_TENANT_NAME)
+                .orElseThrow(IllegalStateException::new);
+        ctpFacade = ctpFacadeFactory.getCtpFacade(tenantConfig);
+        sphereClient = sphereClientFactory.createSphereClient(tenantConfig);
+    }
 
     protected String createCartAndPayment(@Nonnull SphereClient sphereClient) {
         Cart updatedCart = executeBlocking(createCartCS(sphereClient)

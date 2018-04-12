@@ -19,7 +19,7 @@ public final class AssertUtil {
      *     .containsExactly(SetInterfaceId.of("42"));
      * </pre>
      * <p>
-     * causes compilation issue (after applying <a href="https://github.com/tbroyer/gradle-errorprone-plugin">error prone plugin</a>)
+     * causes compilation issue (after applying <a href="https://github.com/tbroyer/gradle-errorprone-javacplugin-plugin">error prone plugin</a>)
      * because {@link io.sphere.sdk.payments.commands.updateactions.SetInterfaceId SetInterfaceId} can't be captured
      * by {@code ? extends UpdateAction<Payment>}
      *

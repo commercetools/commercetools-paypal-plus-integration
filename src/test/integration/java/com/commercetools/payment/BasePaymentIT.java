@@ -46,7 +46,7 @@ import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APP
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanOrdersCartsPayments;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Optional.of;
@@ -75,7 +75,7 @@ public class BasePaymentIT {
      */
     public void setupBeforeAll() {
         initTenantConfigs();
-        cleanOrdersCartsPayments(sphereClient);
+        cleanupOrdersCartsPayments(sphereClient);
     }
 
     public void setUp() {

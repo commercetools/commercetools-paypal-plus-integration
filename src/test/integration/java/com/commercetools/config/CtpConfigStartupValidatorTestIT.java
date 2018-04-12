@@ -151,7 +151,7 @@ public class CtpConfigStartupValidatorTestIT {
     private void wipeOutTypes() {
         tenantConfigFactory.getTenantConfigs().parallelStream()
                 .map(sphereClientFactory::createSphereClient)
-                .forEach(CleanupTableUtil::cleanOrdersCartsPaymentsTypes);
+                .forEach(CleanupTableUtil::cleanupOrdersCartsPaymentsTypes);
     }
 
     /**

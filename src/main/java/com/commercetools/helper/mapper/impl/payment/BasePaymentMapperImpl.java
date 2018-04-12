@@ -63,6 +63,7 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
     }
 
     @Nonnull
+    @Override
     public CtpToPaypalPlusPaymentMethodsMapping getCtpToPpPaymentMethodsMapping() {
         return ctpToPpPaymentMethodsMapping;
     }

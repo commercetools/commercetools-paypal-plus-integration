@@ -24,6 +24,7 @@ public class CtpFacadeFactoryImpl implements CtpFacadeFactory {
         this.sphereClientFactory = sphereClientFactory;
     }
 
+    @Override
     @Cacheable(sync = true)
     public CtpFacade getCtpFacade(@Nonnull TenantConfig tenantConfig) {
         SphereClient sphereClient = sphereClientFactory.createSphereClient(tenantConfig);

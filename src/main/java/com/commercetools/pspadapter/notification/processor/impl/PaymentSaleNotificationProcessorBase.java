@@ -43,6 +43,7 @@ public abstract class PaymentSaleNotificationProcessorBase extends NotificationP
                 .equalsIgnoreCase(event.getEventType());
     }
 
+    @Override
     protected List<UpdateAction<Payment>> createUpdatePaymentActions(@Nonnull Payment ctpPayment, @Nonnull Event event) {
         String resourceId = getResourceId(event);
         return findTransactionByInteractionId(ctpPayment.getTransactions(), resourceId)

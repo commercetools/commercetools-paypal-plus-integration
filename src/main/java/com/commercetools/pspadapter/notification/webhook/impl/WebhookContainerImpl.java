@@ -55,6 +55,7 @@ public class WebhookContainerImpl implements WebhookContainer {
                         .collect(toMap(WebhookWithTenantName::getTenantName, WebhookWithTenantName::getWebhook)));
     }
 
+    @Override
     public CompletionStage<Webhook> getWebhookCompletionStageByTenantName(@Nonnull String tenantName) {
         return this.tenantNameToWebhookCompletionStage
                 .thenApply(webhookMap -> webhookMap.get(tenantName));

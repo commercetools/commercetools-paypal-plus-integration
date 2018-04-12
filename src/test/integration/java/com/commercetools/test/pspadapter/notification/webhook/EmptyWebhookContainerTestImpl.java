@@ -22,6 +22,7 @@ public class EmptyWebhookContainerTestImpl implements WebhookContainer {
         LoggerFactory.getLogger(this.getClass().getSimpleName()).info("Skip WebhookContainer initialization");
     }
 
+    @Override
     public CompletionStage<Webhook> getWebhookCompletionStageByTenantName(@Nonnull String tenantName) {
         throw new NotImplementedException("com.commercetools.test.pspadapter.notification.webhook.WebhookContainerTestImpl.getWebhookCompletionStageByTenantName not implemented");
     }

@@ -26,7 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Optional;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanOrdersCartsPayments;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
 import static com.commercetools.testUtil.ctpUtil.TaxUtil.TAX_CATEGORY_NAME;
 import static com.commercetools.testUtil.ctpUtil.TaxUtil.ensureTestTaxCategory;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -44,7 +44,7 @@ public class CartServiceImplIT {
 
     @BeforeAllMethods
     public void setupBeforeAll() {
-        cleanOrdersCartsPayments(sphereClient);
+        cleanupOrdersCartsPayments(sphereClient);
         ensureTestTaxCategory(sphereClient);
     }
 

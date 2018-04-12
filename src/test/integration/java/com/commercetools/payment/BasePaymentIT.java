@@ -27,7 +27,6 @@ import io.sphere.sdk.payments.PaymentDraftDsl;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFields;
-import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -79,7 +78,6 @@ public class BasePaymentIT {
         cleanOrdersCartsPayments(sphereClient);
     }
 
-    @Before
     public void setUp() {
         initTenantConfigs();
     }

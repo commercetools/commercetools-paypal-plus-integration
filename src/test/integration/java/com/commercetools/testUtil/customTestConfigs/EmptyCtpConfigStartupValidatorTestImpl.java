@@ -1,8 +1,8 @@
 package com.commercetools.testUtil.customTestConfigs;
 
 import com.commercetools.config.bean.CtpConfigStartupValidator;
+import com.commercetools.context.annotation.PrimaryForTest;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  * except those which explicitly depend on CTP custom types.
  */
 @Component
-@Primary // for most of the integration tests - don't actually validate types
+@PrimaryForTest // for most of the integration tests - don't actually validate the types
 public class EmptyCtpConfigStartupValidatorTestImpl implements CtpConfigStartupValidator {
 
     public void validateTypes() {

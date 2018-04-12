@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 @PrimaryForTest // for most of the integration tests - don't actually validate the types
 public class EmptyCtpConfigStartupValidatorTestImpl implements CtpConfigStartupValidator {
 
+    @Override
     public void validateTypes() {
         // do nothing in test mode
         LoggerFactory.getLogger(this.getClass().getSimpleName()).info("Skip CTP types validation");

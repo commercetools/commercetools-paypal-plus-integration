@@ -39,6 +39,7 @@ public class CtpConfigStartupValidatorImpl implements CtpConfigStartupValidator 
         this.applicationKiller = applicationKiller;
     }
 
+    @Override
     public void validateTypes() {
         try {
             AggregatedCtpTypesValidationResult typesSynchronizationResult =

@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanOrdersCartsPayments;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanOrdersCartsPaymentsTypes;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
 import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupTypes;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -45,7 +44,7 @@ public class TypeServiceImplIT {
      */
     @BeforeAllMethods
     public void setupBeforeAll() {
-        cleanOrdersCartsPayments(sphereClient);
+        cleanupOrdersCartsPayments(sphereClient);
     }
 
     @Before

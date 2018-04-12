@@ -29,7 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Optional;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanOrdersCartsPayments;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
 import static com.commercetools.testUtil.ctpUtil.TaxUtil.TAX_CATEGORY_NAME;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +46,7 @@ public class OrderServiceImplIT {
 
     @BeforeAllMethods
     public void setupBeforeAll() {
-        cleanOrdersCartsPayments(sphereClient);
+        cleanupOrdersCartsPayments(sphereClient);
     }
 
     @Test

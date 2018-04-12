@@ -35,7 +35,7 @@ public final class CleanupTableUtil {
      * @param sphereClient {@link SphereClient} where to delete Payments.
      * @return number of deleted items.
      */
-    public static int cleanupPaymentTable(SphereClient sphereClient) {
+    public static int cleanupPayments(SphereClient sphereClient) {
         return cleanupTable(sphereClient, PaymentQuery::of, PaymentDeleteCommand::of, "Payments");
     }
 
@@ -57,17 +57,17 @@ public final class CleanupTableUtil {
     public static void cleanupAllTenantsTypes(TenantConfigFactory tenantConfigFactory, SphereClientFactory sphereClientFactory) {
         tenantConfigFactory.getTenantConfigs().parallelStream()
                 .map(sphereClientFactory::createSphereClient)
-                .forEach(CleanupTableUtil::cleanOrdersCartsPaymentsTypes);
+                .forEach(CleanupTableUtil::cleanupOrdersCartsPaymentsTypes);
     }
 
-    public static void cleanOrdersCartsPayments(SphereClient sphereClient) {
+    public static void cleanupOrdersCartsPayments(SphereClient sphereClient) {
         cleanupOrders(sphereClient);
         cleanupCarts(sphereClient);
-        cleanupPaymentTable(sphereClient);
+        cleanupPayments(sphereClient);
     }
 
-    public static void cleanOrdersCartsPaymentsTypes(SphereClient sphereClient) {
-        cleanOrdersCartsPayments(sphereClient);
+    public static void cleanupOrdersCartsPaymentsTypes(SphereClient sphereClient) {
+        cleanupOrdersCartsPayments(sphereClient);
         cleanupTypes(sphereClient);
     }
 

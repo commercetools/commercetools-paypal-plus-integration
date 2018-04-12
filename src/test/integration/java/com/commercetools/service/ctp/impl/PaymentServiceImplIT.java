@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanOrdersCartsPayments;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +43,7 @@ public class PaymentServiceImplIT {
 
     @BeforeAllMethods
     public void setupBeforeAll() {
-        cleanOrdersCartsPayments(sphereClient);
+        cleanupOrdersCartsPayments(sphereClient);
     }
 
     @Test

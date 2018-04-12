@@ -46,12 +46,6 @@ public class CartServiceImpl extends BaseSphereService implements CartService {
 
     @Override
     public CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface,
-                                                                            @Nullable String interfaceId) {
-        return getByPaymentMethodAndInterfaceId(paymentMethodInterface, interfaceId);
-    }
-
-    @Override
-    public CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface,
                                                                             @Nullable String interfaceId,
                                                                             @Nullable ExpansionPathContainer<Cart> pathContainer) {
         if (isBlank(paymentMethodInterface) || isBlank(interfaceId)) {

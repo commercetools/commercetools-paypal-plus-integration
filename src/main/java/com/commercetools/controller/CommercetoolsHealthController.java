@@ -28,6 +28,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * <li>{@code tenants}: list of tenants this services processes</li>
  * <li>{@code applicationInfo}: {@link ApplicationInfo} about the running application</li>
  * </ul>
+ * <p>
+ * <b>Note:</b> this endpoint is used for
+ * <a href="https://docs.docker.com/engine/reference/builder/#healthcheck">Docker Health check</a>,
+ * see local {@code Dockerfile}.
+ *
+ * @see <a href="https://docs.docker.com/engine/reference/builder/#healthcheck">Docker Health check</a>
  */
 @RestController
 public class CommercetoolsHealthController extends BaseCommercetoolsController {

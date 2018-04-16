@@ -15,6 +15,11 @@ dist: trusty
 jdk:
   - openjdk8
 
+addons:
+  apt:
+    packages:
+      - docker-ce
+
 install: true # skips travis' default installation step which executes gradle assemble.
 
 script:

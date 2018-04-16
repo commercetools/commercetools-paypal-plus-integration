@@ -6,7 +6,7 @@ testUsecases.mustRunAfter test, testIntegration
 check.dependsOn testIntegration, testUsecases
 
 // 2. Ensure docker images are build after the tests, but usecases tests run after the docker image is build
-buildDockerImage.mustRunAfter testCommonClasses, testClasses, testIntegrationClasses
+buildDockerImage.mustRunAfter test, testIntegration
 pushDockerImage.dependsOn buildDockerImage
 
 // note: we don't explicitly wire createContainer and buildDockerImage to simplify local integration tests,

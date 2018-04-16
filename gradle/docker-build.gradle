@@ -84,12 +84,12 @@ task startContainer(type: DockerStartContainer) {
     dependsOn createContainer
     targetContainerId { createContainer.getContainerId() }
 
-    doLast {
-        // temp
-        println("Wait 10 sec")
-        sleep(10000)
-        println("Waited 10 sec")
-    }
+//    doLast {
+//        // temp
+//        println("Wait 10 sec")
+//        sleep(10000)
+//        println("Waited 10 sec")
+//    }
 }
 
 task startAndWaitOnHealthyContainer(type: DockerWaitHealthyContainer) {

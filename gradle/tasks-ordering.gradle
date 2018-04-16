@@ -1,0 +1,15 @@
+// aggregated build tasks ordering
+
+// 1. Ensure integration and usecases tests are run after unit tests and are part of check/build
+testIntegration.mustRunAfter test
+testUsecases.mustRunAfter test, testIntegration
+check.dependsOn testIntegration, testUsecases
+
+// 2. Ensure docker images are build after the tests, but usecases tests run after the docker image is build
+buildDockerImage.mustRunAfter testCommonClasses, testClasses, testIntegrationClasses
+pushDockerImage.dependsOn buildDockerImage
+createContainer.mustRunAfter buildDockerImage, testUsecasesClasses, processTestUsecasesResources // don't create container, if testUsecases compilation fails
+startContainer.dependsOn createContainer
+
+testUsecases.dependsOn startAndWaitOnHealthyContainer
+testUsecases.finalizedBy stopContainer

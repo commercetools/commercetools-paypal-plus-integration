@@ -8,6 +8,12 @@ check.dependsOn testIntegration, testUsecases
 // 2. Ensure docker images are build after the tests, but usecases tests run after the docker image is build
 buildDockerImage.mustRunAfter testCommonClasses, testClasses, testIntegrationClasses
 pushDockerImage.dependsOn buildDockerImage
+
+// note: we don't explicitly wire createContainer and buildDockerImage to simplify local integration tests,
+// when one wants to re-run tests over the same image multiple times without re-building it.
+// Thus buildDockerImage task must be explicitly specified in CI (Travis) workflow, smth like:
+// ./gradlew clean buildDockerImage build
+
 createContainer.mustRunAfter buildDockerImage, testUsecasesClasses, processTestUsecasesResources // don't create container, if testUsecases compilation fails
 startContainer.dependsOn createContainer
 

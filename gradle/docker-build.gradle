@@ -60,6 +60,7 @@ task pushDockerImage(type: DockerPushImage) {
 // task from http://bmuschko.com/blog/docker-integration-testing/ article
 
 final dockerTagVersion = project.version // use the same docker image tag, as current build version
+final testContainerName = "${project.name}-test-container"
 
 task pullImage(type: DockerPullImage) {
     // NOTE: pulling image could be skipped in the local test, just build and run it
@@ -70,6 +71,7 @@ task pullImage(type: DockerPullImage) {
 task createContainer(type: DockerCreateContainer) {
     targetImageId { pullImage.getImageId() }
     portBindings = ['8080:8080'] // default Spring-boot port
+    containerName = testContainerName
 }
 
 task startContainer(type: DockerStartContainer) {

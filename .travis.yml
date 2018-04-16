@@ -25,6 +25,7 @@ install: true # skips travis' default installation step which executes gradle as
 script:
 #  - ./gradlew clean buildDockerImage build --info || travis_terminate 1
 # temp
+  - docker version
   - ./gradlew buildDockerImage || travis_terminate 1
   - docker ps -a
   - ./gradlew startAndWaitOnHealthyContainer

@@ -23,7 +23,7 @@ script:
   - ./gradlew buildDockerImage || travis_terminate 1
   - ./gradlew startContainer || travis_terminate 1
   - docker ps -a
-  - ./gradlew startAndWaitOnHealthyContainer || travis_terminate 1
+  - ./gradlew startAndWaitOnHealthyContainer -x createContainer || travis_terminate 1
   - ./travis-build/travis-docker-publish.sh || travis_terminate 1
 
 # The before_cache and the cache steps cache the gradle installation on travis.

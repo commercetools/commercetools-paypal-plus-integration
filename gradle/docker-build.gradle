@@ -83,8 +83,9 @@ task startContainer(type: DockerStartContainer) {
     targetContainerId { createContainer.getContainerId() }
 
     doLast {
+        // temp
         println("Wait 10 sec")
-        sleep(1000)
+        sleep(10000)
         println("Waited 10 sec")
     }
 }

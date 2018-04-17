@@ -61,6 +61,7 @@ task pushDockerImage(type: DockerPushImage) {
 
 final dockerTagVersion = project.version // use the same docker image tag, as current build version
 final testContainerName = "${project.name}-test-container"
+final SPRING_APPLICATION_JSON = System.env.SPRING_APPLICATION_JSON
 
 task pullImage(type: DockerPullImage) {
     // NOTE: pulling image could be skipped in the local test, just build and run it
@@ -72,6 +73,11 @@ task createContainer(type: DockerCreateContainer) {
     targetImageId { pullImage.getImageId() }
     portBindings = ['8080:8080'] // default Spring-boot port
     containerName = testContainerName
+
+    // if SPRING_APPLICATION_JSON env variable is specified - pass it to the running test container
+    if (SPRING_APPLICATION_JSON?.trim()) {
+        env = [ "SPRING_APPLICATION_JSON=$SPRING_APPLICATION_JSON" ]
+    }
 }
 
 task startContainer(type: DockerStartContainer) {
@@ -79,17 +85,10 @@ task startContainer(type: DockerStartContainer) {
     // > Bind for 0.0.0.0:8080 failed: port is already allocated
     // then kill the local docker container for that port manually:
     // $ docker ps
-    // $ docker kill <container_id>
+    // $ docker kill <container_id> | xargs docker rm
 
     dependsOn createContainer
     targetContainerId { createContainer.getContainerId() }
-
-//    doLast {
-//        // temp
-//        println("Wait 10 sec")
-//        sleep(10000)
-//        println("Waited 10 sec")
-//    }
 }
 
 task startAndWaitOnHealthyContainer(type: DockerWaitHealthyContainer) {

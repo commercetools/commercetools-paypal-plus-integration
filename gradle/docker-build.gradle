@@ -60,7 +60,8 @@ task pushDockerImage(type: DockerPushImage) {
 // task from http://bmuschko.com/blog/docker-integration-testing/ article
 
 final dockerTagVersion = project.version // use the same docker image tag, as current build version
-final testContainerName = "${project.name}-test-container"
+// to avoid container name collisions - suffix the container name with starting date/time
+final testContainerName = "${project.name}-test-container-${new Date().format( 'yyyyMMddHHmmssSSS' )}"
 final SPRING_APPLICATION_JSON = System.env.SPRING_APPLICATION_JSON
 
 task pullImage(type: DockerPullImage) {
@@ -87,7 +88,6 @@ task startContainer(type: DockerStartContainer) {
     // $ docker ps
     // $ docker kill <container_id> | xargs docker rm
 
-    dependsOn createContainer
     targetContainerId { createContainer.getContainerId() }
 }
 

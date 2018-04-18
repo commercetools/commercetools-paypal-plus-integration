@@ -1,9 +1,9 @@
 sudo: requred
 
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
+#addons:
+#  apt:
+#    packages:
+#      - oracle-java8-installer
 
 services:
   - docker

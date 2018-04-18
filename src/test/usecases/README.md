@@ -48,7 +48,7 @@ The solution could be:
   - or when you run from context menu edit newly created _Run/Debug Configuration_ and change the tasks from
   _:clean :test_ to _:cleanTestUsecases :testUsecases_ 
     
-    
+    ![Intellij IDEA Run/Debug Config](ideaRunDebugConfig.png?raw=true "Usecases execution in Run/Debug Configuration")
     
 ## Notes
   

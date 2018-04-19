@@ -11,8 +11,8 @@ pushDockerImage.mustRunAfter buildDockerImage
 
 // note: we don't explicitly wire createContainer and buildDockerImage to simplify local integration tests,
 // when one wants to re-run tests over the same image/container multiple times without re-building it.
-// Thus buildDockerImage task must be explicitly specified in CI (Travis) workflow, smth like:
-// ./gradlew clean buildDockerImage startAndWaitOnHealthyContainer build
+// Thus buildDockerImage or buildAndRunDocker task must be explicitly specified in CI (Travis) workflow, smth like:
+// ./gradlew clean buildAndRunDocker build stopContainer
 
 createContainer.mustRunAfter buildDockerImage, testUsecasesClasses, processTestUsecasesResources // don't create container, if testUsecases compilation fails
 startContainer.dependsOn createContainer
@@ -20,4 +20,5 @@ startContainer.dependsOn createContainer
 buildAndRunDocker.dependsOn buildDockerImage, startAndWaitOnHealthyContainer
 
 testUsecases.mustRunAfter startAndWaitOnHealthyContainer, buildAndRunDocker
-testUsecases.finalizedBy stopContainer
+// by default we don't explicitly  stop the container for the sake of local integration tests multiple run
+stopContainer.mustRunAfter startContainer, startAndWaitOnHealthyContainer, testUsecases

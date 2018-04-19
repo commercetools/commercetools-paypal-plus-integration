@@ -107,7 +107,7 @@ task stopContainer(type: DockerStopContainer) {
 }
 
 task buildAndRunDocker(type: Task) {
-    description "Build and run docker image for local usecase tests purpose. " +
+    description "Build and run docker image for usecase tests purpose. " +
             "This task won't interrupt the container at the end, " +
             "so the local usecase tests could be executed multiple times over the same running container " +
             "without restarting and waiting for health every time."

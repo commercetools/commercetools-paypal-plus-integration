@@ -13,7 +13,7 @@ jdk:
 install: true # skips travis' default installation step which executes gradle assemble.
 
 script:
-  - ./gradlew clean buildDockerImage build || travis_terminate 1
+  - ./gradlew clean buildAndRunDocker build || travis_terminate 1
   - ./travis-build/travis-docker-publish.sh || travis_terminate 1
 
 # The before_cache and the cache steps cache the gradle installation on travis.

@@ -23,7 +23,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @Component
-@Profile("default") // skip from integration tests
+@Profile("default") // skip this bean creating (and init() method call) in the integration tests
 public class WebhookContainerImpl implements WebhookContainer {
 
     private CompletableFuture<Map<String, Webhook>> tenantNameToWebhookCompletionStage;

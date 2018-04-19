@@ -7,6 +7,8 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static com.commercetools.testUtil.JsonAssertUtil.assertJsonPath;
+import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static testUtil.HttpTestUtil.*;
@@ -37,9 +39,9 @@ public class CommercetoolsHealthControllerUT {
     }
 
     private void assertResponseJson(HttpResponse response) throws IOException {
-        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
         assertThat(response.getEntity().getContentType().getValue())
-                .startsWith(ContentType.APPLICATION_JSON.getMimeType());
+                .startsWith(APPLICATION_JSON);
 
         String content = getContent(response);
 

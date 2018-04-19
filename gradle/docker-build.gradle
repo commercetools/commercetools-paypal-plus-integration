@@ -62,7 +62,9 @@ task pushDockerImage(type: DockerPushImage) {
 final dockerTagVersion = project.version // use the same docker image tag, as current build version
 // to avoid container name collisions - suffix the container name with starting date/time
 final testContainerName = "${project.name}-test-container-${new Date().format( 'yyyyMMddHHmmssSSS' )}"
-final SPRING_APPLICATION_JSON = System.env.SPRING_APPLICATION_JSON
+
+final SPRING_APPLICATION_JSON_NAME = 'SPRING_APPLICATION_JSON'
+final SPRING_APPLICATION_JSON_VALUE = System.env.get(SPRING_APPLICATION_JSON_NAME)
 
 task pullImage(type: DockerPullImage) {
     // NOTE: pulling image could be skipped in the local test, just build and run it
@@ -76,8 +78,11 @@ task createContainer(type: DockerCreateContainer) {
     containerName = testContainerName
 
     // if SPRING_APPLICATION_JSON env variable is specified - pass it to the running test container
-    if (SPRING_APPLICATION_JSON?.trim()) {
-        env = [ "SPRING_APPLICATION_JSON=$SPRING_APPLICATION_JSON" ]
+    if (SPRING_APPLICATION_JSON_VALUE?.trim()) {
+        logger.lifecycle("$SPRING_APPLICATION_JSON_NAME env variable found: pass it to the container")
+        env = [ "$SPRING_APPLICATION_JSON_NAME=$SPRING_APPLICATION_JSON_VALUE" ]
+    } else {
+        logger.warn("$SPRING_APPLICATION_JSON_NAME env variable NOT found: if the image doesn't contain application.yml - the container will fail!")
     }
 }
 
@@ -99,4 +104,11 @@ task startAndWaitOnHealthyContainer(type: DockerWaitHealthyContainer) {
 
 task stopContainer(type: DockerStopContainer) {
     targetContainerId { createContainer.getContainerId() }
+}
+
+task buildAndRunDocker(type: Task) {
+    description "Build and run docker image for local usecase tests purpose. " +
+            "This task won't interrupt the container at the end, " +
+            "so the local usecase tests could be executed multiple times over the same running container " +
+            "without restarting and waiting for health every time."
 }

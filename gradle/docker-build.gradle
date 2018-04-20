@@ -77,12 +77,14 @@ task createContainer(type: DockerCreateContainer) {
     portBindings = ['8080:8080'] // default Spring-boot port
     containerName = testContainerName
 
-    // if SPRING_APPLICATION_JSON env variable is specified - pass it to the running test container
-    if (SPRING_APPLICATION_JSON_VALUE?.trim()) {
-        logger.lifecycle("$SPRING_APPLICATION_JSON_NAME env variable found: pass it to the container")
-        env = [ "$SPRING_APPLICATION_JSON_NAME=$SPRING_APPLICATION_JSON_VALUE" ]
-    } else {
-        logger.warn("$SPRING_APPLICATION_JSON_NAME env variable NOT found: if the image doesn't contain application.yml - the container will fail!")
+    doFirst {
+        // if SPRING_APPLICATION_JSON env variable is specified - pass it to the running test container
+        if (SPRING_APPLICATION_JSON_VALUE?.trim()) {
+            logger.lifecycle("$SPRING_APPLICATION_JSON_NAME env variable found: pass it to the container")
+            env = [ "$SPRING_APPLICATION_JSON_NAME=$SPRING_APPLICATION_JSON_VALUE" ]
+        } else {
+            logger.warn("$SPRING_APPLICATION_JSON_NAME env variable NOT found: if the image doesn't contain application.yml - the container will fail!")
+        }
     }
 }
 

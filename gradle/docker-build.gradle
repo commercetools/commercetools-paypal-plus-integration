@@ -65,6 +65,7 @@ final testContainerName = "${project.name}-test-container-${new Date().format( '
 
 final SPRING_APPLICATION_JSON_NAME = 'SPRING_APPLICATION_JSON'
 final SPRING_APPLICATION_JSON_VALUE = System.env.get(SPRING_APPLICATION_JSON_NAME)
+final PORT = '8080'
 
 task pullImage(type: DockerPullImage) {
     // NOTE: pulling image could be skipped in the local test, just build and run it
@@ -74,7 +75,7 @@ task pullImage(type: DockerPullImage) {
 
 task createContainer(type: DockerCreateContainer) {
     targetImageId { pullImage.getImageId() }
-    portBindings = ['8080:8080'] // default Spring-boot port
+    portBindings = ["$PORT:$PORT"] // default Spring-boot port
     containerName = testContainerName
 
     doFirst {
@@ -102,6 +103,17 @@ task startAndWaitOnHealthyContainer(type: DockerWaitHealthyContainer) {
     dependsOn startContainer
     timeout = 75 // Dockerfile has "--interval=30s", so we give here a chance to check twice +15 sec overlap
     targetContainerId { createContainer.getContainerId() }
+
+    // print to output health status of the running service
+    doLast {
+        logger.lifecycle("\nVerify running service (one could verify running tenants list from this output):\n" +
+                "curl -v http://localhost:$PORT/health\n")
+
+        exec {
+            executable 'curl'
+            args '-v', "http://localhost:$PORT/health"
+        }
+    }
 }
 
 task stopContainer(type: DockerStopContainer) {

@@ -7,6 +7,7 @@ import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.paypal.api.payments.Webhook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -22,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @Component
+@Profile("default") // skip this bean creating (and init() method call) in the integration tests
 public class WebhookContainerImpl implements WebhookContainer {
 
     private CompletableFuture<Map<String, Webhook>> tenantNameToWebhookCompletionStage;
@@ -53,6 +55,7 @@ public class WebhookContainerImpl implements WebhookContainer {
                         .collect(toMap(WebhookWithTenantName::getTenantName, WebhookWithTenantName::getWebhook)));
     }
 
+    @Override
     public CompletionStage<Webhook> getWebhookCompletionStageByTenantName(@Nonnull String tenantName) {
         return this.tenantNameToWebhookCompletionStage
                 .thenApply(webhookMap -> webhookMap.get(tenantName));

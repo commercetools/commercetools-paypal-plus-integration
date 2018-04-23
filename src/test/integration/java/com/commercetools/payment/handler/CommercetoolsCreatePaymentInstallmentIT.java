@@ -8,6 +8,7 @@ import com.paypal.api.payments.PayerInfo;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
+import org.bitbucket.radistao.test.annotation.AfterAllMethods;
 import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
 import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.junit.Before;
@@ -51,6 +52,12 @@ public class CommercetoolsCreatePaymentInstallmentIT extends BasePaymentIT {
     @Override
     public void setupBeforeAll() {
         super.setupBeforeAll();
+    }
+
+    @AfterAllMethods
+    @Override
+    public void tearDownAfterAll() {
+        super.tearDownAfterAll();
     }
 
     @Before

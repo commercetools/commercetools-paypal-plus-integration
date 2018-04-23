@@ -1,6 +1,7 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.Application;
+import com.commercetools.config.bean.CtpConfigStartupValidator;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.model.CtpPaymentWithCart;
@@ -22,15 +23,18 @@ import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
+import org.bitbucket.radistao.test.annotation.AfterAllMethods;
+import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
+import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.javamoney.moneta.Money;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
 
@@ -40,6 +44,7 @@ import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYME
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentInterfaceName.PAYPAL_PLUS;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupAllTenantsTypes;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static io.sphere.sdk.payments.TransactionState.SUCCESS;
@@ -48,7 +53,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@RunWith(BeforeAfterSpringTestRunner.class)
 @SpringBootTest(classes = Application.class)
 public class PaymentHandlerProviderImplIT {
 
@@ -70,11 +75,28 @@ public class PaymentHandlerProviderImplIT {
     @Autowired
     protected SphereClientFactory sphereClientFactory;
 
+    @Autowired
+    @Qualifier("ctpConfigStartupValidatorImpl") // we need to test real CtpConfigStartupValidatorImpl here, not injected mock
+    private CtpConfigStartupValidator ctpConfigStartupValidator;
+
     private SphereClient sphereClient;
 
     private PaypalPlusFacade paypalPlusFacade;
 
     private CtpFacade ctpFacade;
+
+    @BeforeAllMethods
+    public void setupBeforeAll() {
+        ctpConfigStartupValidator.validateTypes();
+    }
+
+    /**
+     * Cleanup CTP payment custom types crated in {@link #setupBeforeAll()}
+     */
+    @AfterAllMethods
+    public void tearDownAfterAll() {
+        cleanupAllTenantsTypes(tenantConfigFactory, sphereClientFactory);
+    }
 
     @Before
     public void setUp() {

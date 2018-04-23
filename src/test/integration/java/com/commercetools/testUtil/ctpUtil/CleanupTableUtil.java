@@ -1,5 +1,7 @@
 package com.commercetools.testUtil.ctpUtil;
 
+import com.commercetools.pspadapter.facade.SphereClientFactory;
+import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import io.sphere.sdk.carts.commands.CartDeleteCommand;
 import io.sphere.sdk.carts.queries.CartQuery;
 import io.sphere.sdk.client.SphereClient;
@@ -47,6 +49,15 @@ public final class CleanupTableUtil {
 
     public static int cleanupTypes(SphereClient sphereClient) {
         return cleanupTable(sphereClient, TypeQuery::of, TypeDeleteCommand::of, "Types");
+    }
+
+    /**
+     * Wipe out all types from all tenants.
+     */
+    public static void cleanupAllTenantsTypes(TenantConfigFactory tenantConfigFactory, SphereClientFactory sphereClientFactory) {
+        tenantConfigFactory.getTenantConfigs().parallelStream()
+                .map(sphereClientFactory::createSphereClient)
+                .forEach(CleanupTableUtil::cleanupOrdersCartsPaymentsTypes);
     }
 
     public static void cleanupOrdersCartsPayments(SphereClient sphereClient) {

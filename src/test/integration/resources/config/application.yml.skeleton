@@ -1,6 +1,8 @@
 # settings from test/config/application.yml re-write settings from main/application.yml and test/application.yml
 # rename to application.yml and fill-in to use it in local run/debug mode
 
+spring.profiles.active: testIntegrationProfile
+
 # NOTE: THE INTEGRATION TESTS WILL CLEAN-UP THE CTP PROJECT TABLES
 tenantConfig:
   tenants:

@@ -13,6 +13,8 @@ In this directory we keep complex slow integration tests, which:
   - mocking/spying/stubbing should be used as less as possible, only in cases where some real calls can't be performed
   (for example, when sandbox environment doesn't allow some actions).
   
+  - default testing profile is: **`testIntegrationProfile`** (configured in `application.yml` by default)
+  
 In the build workflow these tests should be executed only in case the unit tests were success.
   
 See [unit tests](/src/test/unit/README.md)

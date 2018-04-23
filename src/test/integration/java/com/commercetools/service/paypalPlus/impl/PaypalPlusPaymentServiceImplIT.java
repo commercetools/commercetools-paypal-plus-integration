@@ -4,6 +4,7 @@ import com.commercetools.Application;
 import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.paypal.api.payments.*;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ public class PaypalPlusPaymentServiceImplIT {
     }
 
     @Test
+    @Ignore("The payment method " + CREDIT_CARD + " is not used in Europe and false-fails often, thus ignored so far")
     public void createPseudoCreditCardPayment() throws Exception {
         CreditCard dummyCreditCard = dummyCreditCard();
         final CreditCard storedCreditCard = dummyCreditCard.create(apiContextFactory.createAPIContext());
@@ -64,6 +66,7 @@ public class PaypalPlusPaymentServiceImplIT {
 
 
     @Test
+    @Ignore("The payment method " + CREDIT_CARD + " is not used in Europe and false-fails often, thus ignored so far")
     public void createCreditCardPayment() throws Exception {
         Payment mockPayment = dummyCreditCardSimplePayment();
 

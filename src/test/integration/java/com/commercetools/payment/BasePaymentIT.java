@@ -1,5 +1,6 @@
 package com.commercetools.payment;
 
+import com.commercetools.config.bean.CtpConfigStartupValidator;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.pspadapter.APIContextFactory;
 import com.commercetools.pspadapter.facade.CtpFacade;
@@ -28,6 +29,7 @@ import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFields;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.web.servlet.MvcResult;
 
 import javax.annotation.Nonnull;
@@ -46,7 +48,8 @@ import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APP
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupAllTenantsTypes;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPaymentsTypes;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Optional.of;
@@ -66,16 +69,31 @@ public class BasePaymentIT {
     @Autowired
     protected SphereClientFactory sphereClientFactory;
 
+    @Autowired
+    @Qualifier("ctpConfigStartupValidatorImpl") // for payment tests real types must be created, thus real validator is injected
+    protected CtpConfigStartupValidator ctpConfigStartupValidator;
+
     protected TenantConfig tenantConfig;
     protected SphereClient sphereClient;
     protected CtpFacade ctpFacade;
 
     /**
-     * Cleanup orders, carts and payments storages.
+     * <ol>
+     * <li>Cleanup orders, carts and payments storages.</li>
+     * <li>Create CTP payment custom types</li>
+     * </ol>
      */
     public void setupBeforeAll() {
         initTenantConfigs();
-        cleanupOrdersCartsPayments(sphereClient);
+        cleanupOrdersCartsPaymentsTypes(sphereClient);
+        ctpConfigStartupValidator.validateTypes();
+    }
+
+    /**
+     * Cleanup CTP payment custom types crated in {@link #setupBeforeAll()}
+     */
+    public void tearDownAfterAll() {
+        cleanupAllTenantsTypes(tenantConfigFactory, sphereClientFactory);
     }
 
     public void setUp() {

@@ -1,7 +1,6 @@
 package com.commercetools.controller;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.entity.ContentType;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -11,7 +10,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
-import static testUtil.HttpTestUtil.*;
+import static com.commercetools.testUtil.HttpTestUtil.*;
 
 /**
  * Similar to {@code CommercetoolsHealthControllerIT}, but simplified and runs over running service making real URL

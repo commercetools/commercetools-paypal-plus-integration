@@ -1,11 +1,12 @@
-package testUtil;
+package com.commercetools.testUtil;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 
 import static com.commercetools.util.IOUtil.DEFAULT_CHARSET;
@@ -53,12 +54,27 @@ public final class HttpTestUtil {
         return executeRequest(Request.Post(BASE_URI + relativePath));
     }
 
-    @Nullable
-    public static String getContent(@Nullable HttpResponse response)  {
+    @Nonnull
+    public static HttpResponse executePostRequest(@Nonnull String relativePathFormat, @Nonnull Object ...args) {
+        return executePostRequest(format(relativePathFormat, args));
+    }
+
+    @Nonnull
+    public static String getContent(@Nonnull HttpResponse response)  {
         try {
-            return response != null ? new String(EntityUtils.toByteArray(response.getEntity()), DEFAULT_CHARSET) : null;
+            return new String(EntityUtils.toByteArray(response.getEntity()), DEFAULT_CHARSET);
         } catch (IOException e) {
             throw new RuntimeException("Exception parsing HTTP response:\n", e);
+        }
+    }
+
+    @Nonnull
+    public static JSONObject getContentAsJsonObject(@Nonnull HttpResponse response) {
+        String content = getContent(response);
+        try {
+            return new JSONObject(content);
+        } catch (JSONException e) {
+            throw new RuntimeException(format("Exception parsing JSON object:\n%s\nException:\n", content), e);
         }
     }
 

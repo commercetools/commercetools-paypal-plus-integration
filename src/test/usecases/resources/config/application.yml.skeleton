@@ -1,0 +1,19 @@
+# settings from test/usecases/config/application.yml re-write settings from main/application.yml and test/usecases/application.yml
+# rename to application.yml and fill-in to use it in local run/debug mode
+
+spring.profiles.active: testUsecasesProfile
+
+# NOTE: THE USECASES TESTS WILL CLEAN-UP THE CTP PROJECT TABLES
+tenantConfig:
+  tenants:
+    paypalplus-integration-test: # Must be the same, as in the running service (docker container)
+      ctp:
+        projectKey: paypalplus-integration-test # Must be the same, as in the running service (docker container)
+        clientId:
+        clientSecret:
+      paypalPlus:
+        id: # Must be the same, as in the running service (docker container)
+        secret:
+        mode: sandbox
+
+ctp.paypal.plus.integration.server.url: https://test-integration-server-url.test

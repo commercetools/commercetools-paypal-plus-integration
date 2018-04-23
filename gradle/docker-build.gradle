@@ -100,7 +100,6 @@ task startContainer(type: DockerStartContainer) {
 }
 
 task startAndWaitOnHealthyContainer(type: DockerWaitHealthyContainer) {
-    dependsOn startContainer
     timeout = 75 // Dockerfile has "--interval=30s", so we give here a chance to check twice +15 sec overlap
     targetContainerId { createContainer.getContainerId() }
 

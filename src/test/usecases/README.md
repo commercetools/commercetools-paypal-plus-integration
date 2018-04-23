@@ -1,14 +1,25 @@
-# Usecases tests
-
 Complex tests which demonstrate the main service workflow. These tests should be run after the 
 [unit](/src/test/unit/README.md) and [integration](/src/test/integration/README.md) tests are finished successfully.
 
-The tests these tests are executed over running HTTP service (docker container) and perform real URL requests. 
+These tests are executed over running HTTP service (docker container) and perform real URL requests. 
 It is generally recommended to use as least as possible mocking and stubbing here, but the real data. 
 
 **NOTE**: _Work In Progress_, e.g. we will be migrating step-by-step the payment integration tests from 
 [integration](/src/test/integration/) sources here. In general at the end we should move all (or most of them) 
 the tests which depend on CTP projects and PayPal sandbox to this tests set.
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Documentation](#documentation)
+- [How to start usecases tests locally](#how-to-start-usecases-tests-locally)
+  - [From command line](#from-command-line)
+  - [From IDE](#from-ide)
+  - [Local tests development](#local-tests-development)
+- [Notes](#notes)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Documentation
 
@@ -50,6 +61,34 @@ The solution could be:
     
     ![Intellij IDEA Run/Debug Config](ideaRunDebugConfig.png?raw=true "Usecases execution in Run/Debug Configuration")
     
+### Local tests development
+
+Sometimes when you refactor local usecase tests it is not necessary to create/destroy the container on every test run
+(and it is quite slow). So, during development phase it is recommended to create/start a container 
+and just the tests over existing container.
+
+  1. Create and run the container:
+  
+      ```bash
+      export SPRING_APPLICATION_JSON='PUT_UT_ENVIRONMENT_CREDENTIALS_HERE'
+      ./gradlew buildAndRunDocker
+      # verify running service
+      docker ps --filter="name=commercetools-paypalplus-integration-test-container"
+      curl -v http://localhost:8080/health
+      ```
+  
+  2. Run specific tests (likely from IDE):
+      ```bash
+      ./gradlew :cleanTestUsecases :testUsecases --tests com.commercetools.payment.handler.CommercetoolsCreatePaymentsControllerUT
+      ``` 
+      
+  3. Stop/remove the container (after all tests are done, of testing image should be rebuilt):
+      ```bash
+      docker kill $(docker ps -q --filter="name=commercetools-paypalplus-integration-test-container")
+      # optionally clean-up the garbage of stopped containers
+      docker rm $(docker ps -a -q --filter="name=commercetools-paypalplus-integration-test-container")
+      ```
+  
 ## Notes
   
 - don't forget to pass `SPRING_APPLICATION_JSON` or explicitly specify `application.yml`

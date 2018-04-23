@@ -17,6 +17,7 @@ pushDockerImage.mustRunAfter buildDockerImage
 createContainer.mustRunAfter buildDockerImage, testUsecasesClasses, processTestUsecasesResources // don't create container, if testUsecases compilation fails
 startContainer.dependsOn createContainer
 
+startAndWaitOnHealthyContainer.dependsOn startContainer
 buildAndRunDocker.dependsOn buildDockerImage, startAndWaitOnHealthyContainer
 
 testUsecases.mustRunAfter startAndWaitOnHealthyContainer, buildAndRunDocker

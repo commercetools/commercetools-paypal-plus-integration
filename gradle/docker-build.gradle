@@ -112,6 +112,8 @@ task startAndWaitOnHealthyContainer(type: DockerWaitHealthyContainer) {
             executable 'curl'
             args '-v', "http://localhost:$PORT/health"
         }
+
+        println "" // because curl doesn't make carriage return
     }
 }
 

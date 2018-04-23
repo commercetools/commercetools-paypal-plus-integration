@@ -2,7 +2,6 @@ package com.commercetools.service.ctp.impl;
 
 import com.commercetools.Application;
 import com.commercetools.service.ctp.CartService;
-import com.commercetools.testUtil.ctpUtil.CtpResourcesUtil;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
 import io.sphere.sdk.carts.commands.CartCreateCommand;
@@ -27,6 +26,7 @@ import java.util.Optional;
 
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
+import static com.commercetools.testUtil.ctpUtil.IntegrationCtpResourcesUtil.getCartDraftWithCustomLineItems;
 import static com.commercetools.testUtil.ctpUtil.TaxUtil.TAX_CATEGORY_NAME;
 import static com.commercetools.testUtil.ctpUtil.TaxUtil.ensureTestTaxCategory;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -58,7 +58,7 @@ public class CartServiceImplIT {
                 TaxCategoryQuery.of().plusPredicates(m -> m.name().is(TAX_CATEGORY_NAME)))
         ).head().get();
 
-        CartDraft cartDraft = CtpResourcesUtil.getCartDraftWithCustomLineItems(taxCategory);
+        CartDraft cartDraft = getCartDraftWithCustomLineItems(taxCategory);
 
         Cart ctCart = executeBlocking(sphereClient.execute(CartCreateCommand.of(cartDraft)));
 

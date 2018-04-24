@@ -103,3 +103,13 @@ stops immediately because of empty mandatory configuration (tenants).
   
     But in the same time such approach (including local secrets) could be useful to run container locally 
     without `SPRING_APPLICATION_JSON` evn variable.
+    
+## TODO:
+
+**The tests are not completed. Things to be done:**
+  
+  - move more specific usecases from [_integration (payment)_](/src/test/integration/java/com/commercetools/payment)
+  to these sources
+  
+  - implement full workflow simulating customer's payment approval 
+  (likely using Selenium test or something similar to navigate to PayPal page and approve the payment)

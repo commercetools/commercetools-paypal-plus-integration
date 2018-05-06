@@ -76,7 +76,7 @@ public class CommercetoolsCreatePaymentInstallmentIT extends BasePaymentIT {
     }
 
     /**
-     * Similar to {@link CommercetoolsCreatePaymentsControllerIT#shouldReturnNewPaypalPaymentId()},
+     * Similar to {@link CommercetoolsCreatePaymentsControllerIT#shouldReturnApprovalUrlOfCreatedPayment()},
      * but for {@link CtpPaymentMethods#INSTALLMENT} payments.
      */
     @Test

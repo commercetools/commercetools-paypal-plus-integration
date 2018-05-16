@@ -97,10 +97,10 @@ public class CtpPaymentWithCart {
     }
 
     /**
-     * Get transaction description for the payment from {@link CtpPaymentCustomFields#DESCRIPTION}
-     * or {@link CtpPaymentCustomFields#REFERENCE} custom fields.
-     * The value is fetched in built the following order:<ol>
-     * <li><code>{@link #payment}#custom#description}</code> string value, if not <code><b>null</b></code></li>
+     * Get transaction description for the payment from {@link CtpPaymentCustomFields#DESCRIPTION description}
+     * or {@link CtpPaymentCustomFields#REFERENCE reference} custom fields.
+     * The value is built the following order:<ol>
+     * <li>entirely <code>{@link #payment}#custom#description</code> string value, if not <code><b>null</b></code></li>
      * <li>otherwise: String "<i>Reference: <code>${{@link #payment}#custom#reference}</code></i>"
      * (the reference is a mandatory custom field of the payment object)</li>
      * </ol>

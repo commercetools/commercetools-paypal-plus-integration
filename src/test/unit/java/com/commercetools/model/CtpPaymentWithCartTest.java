@@ -101,6 +101,22 @@ public class CtpPaymentWithCartTest {
     }
 
     @Test
+    public void getTransactionDescription() throws Exception {
+        assertThat(paymentWithCart.getTransactionDescription()).isEqualTo("Reference: ");
+        CustomFields customFields = mock(CustomFields.class);
+
+        when(payment.getCustom()).thenReturn(customFields);
+        assertThat(paymentWithCart.getTransactionDescription()).isEqualTo("Reference: ");
+
+        when(customFields.getFieldAsString(REFERENCE)).thenReturn("XXX-999");
+        assertThat(paymentWithCart.getTransactionDescription()).isEqualTo("Reference: XXX-999");
+
+        // ".description" has priority over ".reference"
+        when(customFields.getFieldAsString(DESCRIPTION)).thenReturn("Custom description");
+        assertThat(paymentWithCart.getTransactionDescription()).isEqualTo("Custom description");
+    }
+
+    @Test
     public void getLocalesWithDefault() throws Exception {
         assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(DEFAULT_LOCALE);
 
@@ -168,4 +184,5 @@ public class CtpPaymentWithCartTest {
         when(cart.getLocale()).thenReturn(forLanguageTag("xx"));
         assertThat(paymentWithCart.getLocalesWithDefault()).containsExactly(CHINESE, forLanguageTag("xx"), DEFAULT_LOCALE);
     }
+
 }

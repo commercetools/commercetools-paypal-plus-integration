@@ -54,7 +54,7 @@ public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
         assertThat(ppPayment.getApplicationContext()).isEqualTo(new ApplicationContext());
 
         Transaction transaction = ppPayment.getTransactions().get(0);
-        assertThat(transaction.getDescription()).isEqualTo("Payment from commercetools Paypal Plus integration service");
+        assertThat(transaction.getDescription()).isEqualTo("Coffee beans for order 12333456");
 
         Amount amount = transaction.getAmount();
 
@@ -109,7 +109,7 @@ public class DefaultPaymentMapperImplTest extends BasePaymentMapperTest {
         assertThat(ppPayment.getApplicationContext()).isEqualTo(new ApplicationContext().setShippingPreference("GET_FROM_FILE"));
 
         Transaction transaction = ppPayment.getTransactions().get(0);
-        assertThat(transaction.getDescription()).isEqualTo("Payment from commercetools Paypal Plus integration service");
+        assertThat(transaction.getDescription()).isEqualTo("Reference: 556677884433");
 
         Amount amount = transaction.getAmount();
         assertThat(amount.getCurrency()).isEqualTo("EUR");

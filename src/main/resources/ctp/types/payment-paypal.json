@@ -41,6 +41,17 @@
       "inputHint": "MultiLine"
     },
     {
+      "name": "description",
+      "label": {
+        "en": "description"
+      },
+      "required": false,
+      "type": {
+        "name": "String"
+      },
+      "inputHint": "MultiLine"
+    },
+    {
       "name": "redirectUrl",
       "label": {
         "en": "redirectUrl"

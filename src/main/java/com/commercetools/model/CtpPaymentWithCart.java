@@ -14,6 +14,7 @@ import java.util.*;
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.util.CustomFieldUtil.*;
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -93,6 +94,23 @@ public class CtpPaymentWithCart {
     @Nullable
     public String getShippingPreference() {
         return getCustomFieldEnumKeyOrNull(payment, SHIPPING_PREFERENCE);
+    }
+
+    /**
+     * Get transaction description for the payment from {@link CtpPaymentCustomFields#DESCRIPTION}
+     * or {@link CtpPaymentCustomFields#REFERENCE} custom fields.
+     * The value is fetched in built the following order:<ol>
+     * <li><code>{@link #payment}#custom#description}</code> string value, if not <code><b>null</b></code></li>
+     * <li>otherwise: String "<i>Reference: <code>${{@link #payment}#custom#reference}</code></i>"
+     * (the reference is a mandatory custom field of the payment object)</li>
+     * </ol>
+     *
+     * @return description of the payment/transaction.
+     */
+    @Nonnull
+    public String getTransactionDescription() {
+        return getCustomFieldString(payment, DESCRIPTION)
+                .orElseGet(() -> format("Reference: %s", getCustomFieldStringOrEmpty(payment, REFERENCE)));
     }
 
     /**

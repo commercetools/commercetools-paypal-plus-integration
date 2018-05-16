@@ -162,7 +162,7 @@ which is used for local run/debug, because the integration tests will remove all
         },
         "fields": {
           "reference": "6KF07542JV235932C",
-          "description": "Jersey Herren Blau L SKU-119982930",
+          "description": "Thank you for your order. Order number: 12345",
           "paymentDueDate": "2017-09-27",
           "amount": {
             "centAmount": 200,

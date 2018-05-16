@@ -88,11 +88,9 @@ which is used for local run/debug, because the integration tests will remove all
                 - [Payment application_context is not documented](https://github.com/paypal/PayPal-REST-API-issues/issues/179)
                 
             - `description` (custom field): if specified - [`Payment#transaction#description`](https://developer.paypal.com/docs/api/payments/#definition-transaction)
-            field is set to this value. Otherwise the description fallback to the string:
-               
-               _Reference: `${payment#custom#reference}`_
-               
-               where `${payment#custom#reference}` - value of _reference_ custom fields
+            field is set to this value. Otherwise the description falls back to the following string: 
+            
+              `Reference: ${payment.custom.fields.reference}`
                
                **Note**: Maximum allowed length according to PayPal Plus API: `127` 
                (including <code>Reference:&nbsp;</code> prefix in case of fallback, so the `reference` custom field

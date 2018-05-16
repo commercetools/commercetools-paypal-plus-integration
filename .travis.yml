@@ -30,6 +30,7 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+    - $HOME/.m2
 
 # Please note that if you use a depth of 1 and have a queue of jobs, Travis CI won’t build commits that are in the queue when you push a new commit.
 git:

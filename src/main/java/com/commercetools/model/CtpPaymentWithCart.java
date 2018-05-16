@@ -104,8 +104,14 @@ public class CtpPaymentWithCart {
      * <li>otherwise: String "<i>Reference: <code>${{@link #payment}#custom#reference}</code></i>"
      * (the reference is a mandatory custom field of the payment object)</li>
      * </ol>
+     * <p>
+     * The value is set to <a href="https://developer.paypal.com/docs/api/payments/#definition-transaction">Payment#transaction#description</a>
+     * field.
+     * <p>
+     * <b>Note:</b> {@code Maximum length: 127} (according to PayPal Plus documentation.
      *
      * @return description of the payment/transaction.
+     * @see <a href="https://developer.paypal.com/docs/api/payments/#definition-transaction">PayPal Plus Payment#transaction</a>
      */
     @Nonnull
     public String getTransactionDescription() {

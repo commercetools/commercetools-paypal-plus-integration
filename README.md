@@ -56,6 +56,8 @@ which is used for local run/debug, because the integration tests will remove all
             - `amountPlanned`
             - `cancelUrl` (custom field)
             - `successUrl` (custom field)
+            - `reference` (custom field, up to 116 characters)
+            - `languageCode` (custom field)
             - `paymentMethodInfo` needs to be set like this:
             
             ```json
@@ -84,6 +86,17 @@ which is used for local run/debug, because the integration tests will remove all
               Respective issues are created: 
                 - [Payment/Order#applicationContext property is not available](https://github.com/paypal/PayPal-Java-SDK/issues/330#issuecomment-356008914)
                 - [Payment application_context is not documented](https://github.com/paypal/PayPal-REST-API-issues/issues/179)
+                
+            - `description` (custom field): if specified - [`Payment#transaction#description`](https://developer.paypal.com/docs/api/payments/#definition-transaction)
+            field is set to this value. Otherwise the description fallback to the string:
+               
+               _Reference: `${payment#custom#reference}`_
+               
+               where `${payment#custom#reference}` - value of _reference_ custom fields
+               
+               **Note**: Maximum allowed length according to PayPal Plus API: `127` 
+               (including <code>Reference:&nbsp;</code> prefix in case of fallback, so the `reference` custom field
+               must be up to 116 characters long)
             
     1. Backend POSTs CTP payment ID created in the previous step to Paypal-integration. Example: 
         ```
@@ -151,6 +164,7 @@ which is used for local run/debug, because the integration tests will remove all
         },
         "fields": {
           "reference": "6KF07542JV235932C",
+          "description": "Jersey Herren Blau L SKU-119982930",
           "paymentDueDate": "2017-09-27",
           "amount": {
             "centAmount": 200,

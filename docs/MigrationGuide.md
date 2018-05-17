@@ -5,7 +5,7 @@
 - [Migration Guide](#migration-guide)
   - [To v0.2+](#to-v02)
   - [To v0.3+](#to-v03)
-    - [To v0.3.1](#to-v031)
+    - [To v0.4.0](#to-v040)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -93,7 +93,7 @@
     **This approach (remove a field definition before service start) could be applied to any field definition, 
     which has unexpected _required_ field - the field will be re-created automatically by sync CTP types feature.**
 
-### To v0.3.1
+### To v0.4.0
 
 After new service version deployment new custom field will be added automatically to `payment-paypal`
 custom type. After that just specify `description` custom field on payment creation if you want to have

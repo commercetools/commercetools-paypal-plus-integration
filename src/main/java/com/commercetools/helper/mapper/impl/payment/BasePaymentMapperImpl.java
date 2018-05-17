@@ -136,7 +136,7 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
 
     @Nonnull
     protected String getTransactionDescription(@Nonnull CtpPaymentWithCart paymentWithCartLike) {
-        return "Payment from commercetools Paypal Plus integration service";
+        return paymentWithCartLike.getTransactionDescription();
     }
 
     @Nonnull

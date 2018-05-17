@@ -10,6 +10,7 @@ public final class CtpPaymentCustomFields {
     public static final String SHIPPING_PREFERENCE = "shippingPreference";
 
     public static final String LANGUAGE_CODE_FIELD = "languageCode";
+    public static final String DESCRIPTION = "description";
 
     // payment by invoice
     public static final String REFERENCE = "reference";

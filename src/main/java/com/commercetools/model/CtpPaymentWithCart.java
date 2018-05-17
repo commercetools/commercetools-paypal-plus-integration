@@ -14,6 +14,7 @@ import java.util.*;
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.util.CustomFieldUtil.*;
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -93,6 +94,29 @@ public class CtpPaymentWithCart {
     @Nullable
     public String getShippingPreference() {
         return getCustomFieldEnumKeyOrNull(payment, SHIPPING_PREFERENCE);
+    }
+
+    /**
+     * Get transaction description for the payment from {@link CtpPaymentCustomFields#DESCRIPTION description}
+     * or {@link CtpPaymentCustomFields#REFERENCE reference} custom fields.
+     * The value is built the following order:<ol>
+     * <li>entirely <code>{@link #payment}#custom#description</code> string value, if not <code><b>null</b></code></li>
+     * <li>otherwise: String "<i>Reference: <code>${{@link #payment}#custom#reference}</code></i>"
+     * (the reference is a mandatory custom field of the payment object)</li>
+     * </ol>
+     * <p>
+     * The value is set to <a href="https://developer.paypal.com/docs/api/payments/#definition-transaction">Payment#transaction#description</a>
+     * field.
+     * <p>
+     * <b>Note:</b> {@code Maximum length: 127} (according to PayPal Plus documentation.
+     *
+     * @return description of the payment/transaction.
+     * @see <a href="https://developer.paypal.com/docs/api/payments/#definition-transaction">PayPal Plus Payment#transaction</a>
+     */
+    @Nonnull
+    public String getTransactionDescription() {
+        return getCustomFieldString(payment, DESCRIPTION)
+                .orElseGet(() -> format("Reference: %s", getCustomFieldStringOrEmpty(payment, REFERENCE)));
     }
 
     /**

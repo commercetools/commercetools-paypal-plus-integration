@@ -16,6 +16,7 @@
     },
     "fields": {
       "reference": "12333456",
+      "description": "Coffee beans for order 12333456",
       "languageCode": "de",
       "cancelUrl": "https://www.sparta.de/cancel/12333456",
       "successUrl": "https://www.sparta.de/success/12333456"

@@ -15,6 +15,8 @@ import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.commands.ProductTypeDeleteCommand;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.shippingmethods.commands.ShippingMethodDeleteCommand;
+import io.sphere.sdk.shippingmethods.queries.ShippingMethodQuery;
 import io.sphere.sdk.taxcategories.commands.TaxCategoryDeleteCommand;
 import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
 import io.sphere.sdk.types.commands.TypeDeleteCommand;
@@ -61,6 +63,10 @@ public final class CleanupTableUtil {
         return cleanupTable(sphereClient, TaxCategoryQuery::of, TaxCategoryDeleteCommand::of, "TaxCategories");
     }
 
+    public static int cleanupShippingMethods(SphereClient sphereClient) {
+        return cleanupTable(sphereClient, ShippingMethodQuery::of, ShippingMethodDeleteCommand::of, "ShippingMethods");
+    }
+
     public static int cleanupProducts(SphereClient sphereClient) {
         return cleanupTable(sphereClient, ProductQuery::of, ProductDeleteCommand::of, "Products");
     }
@@ -91,6 +97,7 @@ public final class CleanupTableUtil {
     public static void cleanupProductsProductTypesTaxCategories(SphereClient sphereClient){
         cleanupProducts(sphereClient);
         cleanupProductTypes(sphereClient);
+        cleanupShippingMethods(sphereClient);
         cleanupTaxCategories(sphereClient);
     }
 

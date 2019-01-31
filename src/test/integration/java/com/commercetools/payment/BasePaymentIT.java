@@ -167,7 +167,7 @@ public class BasePaymentIT {
 
         ProductDraftDsl productDraftDsl = ProductDraftBuilder
                 .of(productType, LocalizedString.ofEnglish("TestProd1"), LocalizedString.ofEnglish(UUID.randomUUID().toString()), Collections.emptyList())
-                .taxCategory(taxCategory).masterVariant(variantDraftDsl).build();
+                .taxCategory(taxCategory).masterVariant(variantDraftDsl).publish(false).build();
         return sphereClient.execute(ProductCreateCommand.of(productDraftDsl));
     }
 

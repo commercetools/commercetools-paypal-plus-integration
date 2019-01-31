@@ -40,6 +40,7 @@ file. If the file exists - it overrides default [`/src/main/resources/applicatio
 
 Local integration test setting may be configured in [`/src/test/resources/config/application.yml`](/src/test/resources/config/application.yml) 
 file. If the file exists - it overrides main context config and config from  [`/src/test/resources/application.yml`](/src/test/resources/application.yml).
+You must include 2 different CT client credentials and paypal_plus client credentials in order to make the integration tests pass successfully.
 
 **Note: keep this settings different from `/src/main/resources/config/application.yml`, 
 which is used for local run/debug, because the integration tests will remove all data form the CTP project**

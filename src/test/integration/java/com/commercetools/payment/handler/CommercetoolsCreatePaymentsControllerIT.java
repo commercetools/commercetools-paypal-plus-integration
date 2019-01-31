@@ -15,13 +15,13 @@ import org.bitbucket.radistao.test.annotation.AfterAllMethods;
 import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
 import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.javamoney.moneta.Money;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Locale;
@@ -67,6 +67,11 @@ public class CommercetoolsCreatePaymentsControllerIT extends BasePaymentIT {
         super.setUp();
     }
 
+    @After
+    @Override
+    public void tearDown() {
+        super.tearDown();
+    }
     @Test
     public void finalSlashIsProcessedToo() throws Exception {
         final String paymentId = createCartAndPayment(sphereClient);

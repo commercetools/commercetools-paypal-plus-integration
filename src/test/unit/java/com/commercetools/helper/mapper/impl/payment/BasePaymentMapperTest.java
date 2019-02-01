@@ -4,10 +4,8 @@ import com.paypal.api.payments.Details;
 import com.paypal.api.payments.Item;
 import com.paypal.api.payments.ItemList;
 import com.paypal.api.payments.Transaction;
-import io.sphere.sdk.carts.LineItem;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,12 +19,12 @@ public class BasePaymentMapperTest {
 
     /**
      * Some items with the same SKU may be duplicated, because they have complex discounted price, thus one line item
-     * is split to several. See
-     * {@link DefaultPaymentMapperImpl#mapLineItemToPaypalPlusItem(LineItem, List)}
+     * is split to several.
      */
-    protected static Item getItemBySkuQuantityPrice(ItemList itemList, String sku, String quantity, String price) {
+    protected static Item getItemBySkuQuantityPrice(ItemList itemList, String sku, String name, String quantity, String price) {
         return itemList.getItems().stream()
                 .filter(item -> sku.equals(item.getSku()))
+                .filter(item -> name.equals(item.getName()))
                 .filter(item -> quantity.equals(item.getQuantity()))
                 .filter(item -> price.equals(item.getPrice()))
                 .findFirst()

@@ -220,7 +220,7 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
 
         MonetaryAmount actualLineItemPrice = lineItem.getPrice().getValue();
         return Stream.of(createPaypalPlusItem(lineItem.getName(), locales, lineItem.getQuantity(), actualLineItemPrice))
-                .map(item -> this.plusSkuProductName(lineItem, locales, item));
+                .map(paypalItem -> this.plusSkuProductName(lineItem, locales, paypalItem));
     }
 
     /**
@@ -253,8 +253,8 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
         return createPaypalPlusItem(itemName, locales, dlipfq.getQuantity(), dlipfq.getDiscountedPrice().getValue());
     }
 
-    private Item plusSkuProductName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales, @Nonnull Item targetItem) {
-        return targetItem.setSku(lineItem.getVariant().getSku())
+    private Item plusSkuProductName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales, @Nonnull Item paypalItem) {
+        return paypalItem.setSku(lineItem.getVariant().getSku())
                 .setName(lineItem.getName().get(locales));
     }
 

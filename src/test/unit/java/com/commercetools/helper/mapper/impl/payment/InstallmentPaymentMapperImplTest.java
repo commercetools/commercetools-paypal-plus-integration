@@ -91,11 +91,11 @@ public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {
         assertThat(shippingAddress.getCountryCode()).isEqualTo("DE");
 
         assertThat(itemList.getItems().size()).isEqualTo(5);
-        assertItem(getItemBySkuQuantityPrice(itemList, "123454323454667", "1", "115.24"), "Halskette", "1", "115.24", "USD");
-        assertItem(getItemBySkuQuantityPrice(itemList, "123454323454667", "3", "115.24"), "Halskette", "3", "115.24", "USD");
+        assertItem(getItemBySkuQuantityPrice(itemList, "123454323454667", "Halskette", "1", "115.24"), "Halskette", "1", "115.24", "USD");
+        assertItem(getItemBySkuQuantityPrice(itemList, "123454323454667", "Halskette", "3", "115.24"), "Halskette", "3", "115.24", "USD");
         assertItem(getItemBySku(itemList, "2345234523"), "Kasten", "1", "0.00", "USD");
-        assertItem(getItemBySkuQuantityPrice(itemList, "456786468866578", "2", "43.65"), "Ringe", "USD");
-        assertItem(getItemBySkuQuantityPrice(itemList, "456786468866578", "1", "43.64"), "Ringe", "USD");
+        assertItem(getItemBySkuQuantityPrice(itemList, "456786468866578", "Ringe", "2", "43.65"), "Ringe", "USD");
+        assertItem(getItemBySkuQuantityPrice(itemList, "456786468866578", "Ringe", "1", "43.64"), "Ringe", "USD");
 
         assertTransactionAmounts(transaction);
     }

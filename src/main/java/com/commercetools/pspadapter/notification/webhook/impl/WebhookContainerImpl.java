@@ -61,11 +61,11 @@ public class WebhookContainerImpl implements WebhookContainer {
                 .thenApply(webhookMap -> webhookMap.get(tenantName));
     }
 
-    class WebhookWithTenantName {
+    private static class WebhookWithTenantName {
         private Webhook webhook;
         private String tenantName;
 
-        public WebhookWithTenantName(@Nonnull Webhook webhook,
+        private WebhookWithTenantName(@Nonnull Webhook webhook,
                                      @Nonnull String tenantName) {
             this.webhook = webhook;
             this.tenantName = tenantName;

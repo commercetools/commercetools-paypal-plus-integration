@@ -20,7 +20,11 @@ apply plugin: com.bmuschko.gradle.docker.DockerRemoteApiPlugin
 
 apply from: "$rootDir/gradle/util.gradle"
 
+
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.container.extras.DockerWaitHealthyContainer
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPullImage
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 
 // project specific settings:
@@ -40,7 +44,6 @@ task buildDockerImage(type: DockerBuildImage) {
 }
 
 task pushDockerImage(type: DockerPushImage) {
-    dependsOn buildDockerImage
     conventionMapping.imageName = { buildDockerImage.getTag() }
 
     // because the push task could be skipped (in local builds) we avoid credentials reading in default configuration setup,
@@ -52,4 +55,75 @@ task pushDockerImage(type: DockerPushImage) {
             password = getConfigurationPropertyOrThrow(dockerPassProperty)
         }
     }
+}
+
+// task from http://bmuschko.com/blog/docker-integration-testing/ article
+
+final dockerTagVersion = project.version // use the same docker image tag, as current build version
+// to avoid container name collisions - suffix the container name with starting date/time
+final testContainerName = "${project.name}-test-container-${new Date().format( 'yyyyMMddHHmmssSSS' )}"
+
+final SPRING_APPLICATION_JSON_NAME = 'SPRING_APPLICATION_JSON'
+final SPRING_APPLICATION_JSON_VALUE = System.env.get(SPRING_APPLICATION_JSON_NAME)
+final PORT = '8080'
+
+task pullImage(type: DockerPullImage) {
+    // NOTE: pulling image could be skipped in the local test, just build and run it
+    repository = dockerRepository
+    tag = dockerTagVersion
+}
+
+task createContainer(type: DockerCreateContainer) {
+    targetImageId { pullImage.getImageId() }
+    portBindings = ["$PORT:$PORT"] // default Spring-boot port
+    containerName = testContainerName
+
+    doFirst {
+        // if SPRING_APPLICATION_JSON env variable is specified - pass it to the running test container
+        if (SPRING_APPLICATION_JSON_VALUE?.trim()) {
+            logger.lifecycle("$SPRING_APPLICATION_JSON_NAME env variable found: pass it to the container")
+            env = [ "$SPRING_APPLICATION_JSON_NAME=$SPRING_APPLICATION_JSON_VALUE" ]
+        } else {
+            logger.warn("$SPRING_APPLICATION_JSON_NAME env variable NOT found: if the image doesn't contain application.yml - the container will fail!")
+        }
+    }
+}
+
+task startContainer(type: DockerStartContainer) {
+    // if this task fails when containers is already started  or the port is already binded
+    // > Bind for 0.0.0.0:8080 failed: port is already allocated
+    // then kill the local docker container for that port manually:
+    // $ docker ps
+    // $ docker kill <container_id> | xargs docker rm
+
+    targetContainerId { createContainer.getContainerId() }
+}
+
+task startAndWaitOnHealthyContainer(type: DockerWaitHealthyContainer) {
+    timeout = 75 // Dockerfile has "--interval=30s", so we give here a chance to check twice +15 sec overlap
+    targetContainerId { createContainer.getContainerId() }
+
+    // print to output health status of the running service
+    doLast {
+        logger.lifecycle("\nVerify running service (one could verify running tenants list from this output):\n" +
+                "curl -v http://localhost:$PORT/health\n")
+
+        exec {
+            executable 'curl'
+            args '-v', "http://localhost:$PORT/health"
+        }
+
+        println "" // because curl doesn't make carriage return
+    }
+}
+
+task stopContainer(type: DockerStopContainer) {
+    targetContainerId { createContainer.getContainerId() }
+}
+
+task buildAndRunDocker(type: Task) {
+    description "Build and run docker image for usecase tests purpose. " +
+            "This task won't interrupt the container at the end, " +
+            "so the local usecase tests could be executed multiple times over the same running container " +
+            "without restarting and waiting for health every time."
 }

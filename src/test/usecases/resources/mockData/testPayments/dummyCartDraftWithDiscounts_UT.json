@@ -1,0 +1,96 @@
+{
+  "type": "CartDraft",
+  "currency": "EUR",
+  "country": "DE",
+  "locale": "de",
+  "customerEmail": "cartDraft@test.com",
+  "lineItems": [
+    {
+      "productId": "82666d86-1350-4be1-8d59-37f396213810",
+      "variantId": "1",
+      "quantity": 1
+    },
+    {
+      "productId": "2abcb845-75bd-420b-ac4f-c35155f5cdd2",
+      "variantId": "1",
+      "quantity": 2
+    },
+    {
+      "productId": "77cb1b26-d225-4cc4-9208-8d56bf0bfe5c",
+      "variantId": "1",
+      "quantity": 3
+    }
+  ],
+  "shippingAddress": {
+    "title": "Mr.",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm",
+    "streetNumber": "100",
+    "additionalStreetInfo": "",
+    "postalCode": "10709",
+    "city": "Berlin",
+    "country": "DE",
+    "phone": "+491234567890",
+    "email": "max.mustermann@gmail.com"
+  },
+  "billingAddress": {
+    "title": "Mr.",
+    "firstName": "Max",
+    "lastName": "Mustermann",
+    "streetName": "Kurfürstendamm",
+    "streetNumber": "100",
+    "additionalStreetInfo": "",
+    "postalCode": "10709",
+    "city": "Berlin",
+    "country": "DE",
+    "phone": "+491234567890",
+    "email": "max.mustermann@gmail.com"
+  },
+  "shippingInfo": {
+    "shippingMethodName": "DHL",
+    "price": {
+      "currencyCode": "EUR",
+      "centAmount": 0
+    },
+    "shippingRate": {
+      "price": {
+        "currencyCode": "EUR",
+        "centAmount": 495
+      },
+      "freeAbove": {
+        "currencyCode": "EUR",
+        "centAmount": 15000
+      }
+    },
+    "taxRate": {
+      "name": "DE",
+      "amount": 0.19,
+      "includedInPrice": true,
+      "country": "DE",
+      "id": "cp110K8t",
+      "subRates": []
+    },
+    "taxCategory": {
+      "typeId": "tax-category",
+      "id": "d33d1a20-159f-40f7-8d54-e01edd026345"
+    },
+    "deliveries": [],
+    "shippingMethod": {
+      "typeId": "shipping-method"
+    },
+    "taxedPrice": {
+      "totalNet": {
+        "currencyCode": "EUR",
+        "centAmount": 0
+      },
+      "totalGross": {
+        "currencyCode": "EUR",
+        "centAmount": 0
+      }
+    }
+  },
+  "inventoryMode": "None",
+  "taxMode": "Platform",
+  "taxRoundingMode": "HalfEven"
+}

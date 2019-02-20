@@ -25,8 +25,14 @@ It is recommended in the future to split these tests into two different levels:
   
   - ***spring-integration-tests***, where tested Spring service specific cases, 
   e.g. just verify beans injection/interaction, application configuration, start-up workflow, controllers and so on.
+  In general these tests should contain as least as possible tests which use:
+    - `MockMvc` and `MockMvcAsync`
+    - `TestRestTemplate`
+    - web environment and `@LocalServerPort`
+    
+      Most of such cases should go to **usecase-tests**
   
-  - ***usecase-integration-tests***, where real payments use-cases are tested, 
+  - ***usecase-tests***, where real payments use-cases are tested, 
   e.g. payment is create/handled/notification processed and so on. These tests should contain cases which our customers
   use. Also, these tests could be referred in the future for new customers who just want to apply the payment system
-  to theirs shops and want to investigate how it works. 
+  to theirs shops and want to investigate how it works.

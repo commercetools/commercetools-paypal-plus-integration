@@ -13,8 +13,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getPaymentWithCart_complexAndDiscount;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getPaymentWithCart_complexWithoutDiscount;
+import static com.commercetools.testUtil.ctpUtil.UnitCtpResourcesUtil.getPaymentWithCart_complexAndDiscount;
+import static com.commercetools.testUtil.ctpUtil.UnitCtpResourcesUtil.getPaymentWithCart_complexWithoutDiscount;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 

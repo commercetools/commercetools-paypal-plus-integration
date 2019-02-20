@@ -1,0 +1,25 @@
+// aggregated build tasks ordering
+
+// 1. Ensure integration and usecases tests are run after unit tests and are part of check/build
+testIntegration.mustRunAfter test
+testUsecases.mustRunAfter test, testIntegration
+check.dependsOn testIntegration, testUsecases
+
+// 2. Ensure docker images are build after the unit/IT tests, but usecases tests run after the docker image is build
+buildDockerImage.mustRunAfter test, testIntegration
+pushDockerImage.mustRunAfter buildDockerImage
+
+// note: we don't explicitly wire createContainer and buildDockerImage to simplify local integration tests,
+// when one wants to re-run tests over the same image/container multiple times without re-building it.
+// Thus buildDockerImage or buildAndRunDocker task must be explicitly specified in CI (Travis) workflow, smth like:
+// ./gradlew clean buildAndRunDocker build stopContainer
+
+createContainer.mustRunAfter buildDockerImage, testUsecasesClasses, processTestUsecasesResources // don't create container, if testUsecases compilation fails
+startContainer.dependsOn createContainer
+
+startAndWaitOnHealthyContainer.dependsOn startContainer
+buildAndRunDocker.dependsOn buildDockerImage, startAndWaitOnHealthyContainer
+
+testUsecases.mustRunAfter startAndWaitOnHealthyContainer, buildAndRunDocker
+// by default we don't explicitly  stop the container for the sake of local integration tests multiple run
+stopContainer.mustRunAfter startContainer, startAndWaitOnHealthyContainer, testUsecases

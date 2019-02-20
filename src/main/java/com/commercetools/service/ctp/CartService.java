@@ -18,9 +18,6 @@ public interface CartService {
                                                    @Nullable ExpansionPathContainer<Cart> pathContainer);
 
     CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface,
-                                                                     @Nullable String interfaceId);
-
-    CompletionStage<Optional<Cart>> getByPaymentMethodAndInterfaceId(@Nullable String paymentMethodInterface,
                                                                      @Nullable String interfaceId,
                                                                      @Nullable ExpansionPathContainer<Cart> pathContainer);
 }

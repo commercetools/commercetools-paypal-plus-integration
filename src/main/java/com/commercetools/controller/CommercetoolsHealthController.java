@@ -28,6 +28,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * <li>{@code tenants}: list of tenants this services processes</li>
  * <li>{@code applicationInfo}: {@link ApplicationInfo} about the running application</li>
  * </ul>
+ * <p>
+ * <b>Note:</b> this endpoint is used for
+ * <a href="https://docs.docker.com/engine/reference/builder/#healthcheck">Docker Health check</a>,
+ * see local {@code Dockerfile}.
+ *
+ * @see <a href="https://docs.docker.com/engine/reference/builder/#healthcheck">Docker Health check</a>
  */
 @RestController
 public class CommercetoolsHealthController extends BaseCommercetoolsController {
@@ -41,16 +47,21 @@ public class CommercetoolsHealthController extends BaseCommercetoolsController {
         this.tenantProperties = tenantProperties;
     }
 
+    private Map<String, Object> responseCache = null;
+
     @RequestMapping(
             value = {"/health", "/"},
             produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<?> checkHealth(@RequestParam(required = false) String pretty,
                                          @Autowired ApplicationInfo applicationInfo) {
-        Map<String, Object> tenantResponse = new HashMap<>();
-        tenantResponse.put("tenants", this.tenantProperties.getTenants().keySet());
-        tenantResponse.put(APP_INFO_KEY, applicationInfo);
+        if (responseCache == null) {
+            responseCache = new HashMap<>();
+            responseCache.put("tenants", this.tenantProperties.getTenants().keySet());
+            responseCache.put(APP_INFO_KEY, applicationInfo);
 
-        return new ResponseEntity<>(PrettyFormattedBody.of(tenantResponse, pretty != null),
+        }
+
+        return new ResponseEntity<>(PrettyFormattedBody.of(responseCache, pretty != null),
                 HttpStatus.OK);
     }
 }

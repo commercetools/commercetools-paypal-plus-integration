@@ -10,7 +10,7 @@ import com.commercetools.pspadapter.paymentHandler.impl.InterfaceInteractionType
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.test.web.servlet.MockMvcAsync;
-import com.commercetools.testUtil.ctpUtil.CtpResourcesUtil;
+import com.commercetools.testUtil.ctpUtil.IntegrationCtpResourcesUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.paypal.base.rest.PayPalRESTException;
 import io.sphere.sdk.carts.Cart;
@@ -49,8 +49,8 @@ import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIM
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupAllTenantsTypes;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPaymentsTypes;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
+import static com.commercetools.testUtil.ctpUtil.IntegrationCtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,7 +85,7 @@ public class BasePaymentIT {
      */
     public void setupBeforeAll() {
         initTenantConfigs();
-        cleanupOrdersCartsPaymentsTypes(sphereClient);
+        cleanupOrdersCartsPayments(sphereClient);
         ctpConfigStartupValidator.validateTypes();
     }
 
@@ -134,9 +134,12 @@ public class BasePaymentIT {
         return sphereClient.execute(PaymentCreateCommand.of(dsl));
     }
 
+    /**
+     * This method is overridden in some tests adding extra payment properties to the create payment.
+     */
     protected PaymentDraftBuilder createPaymentDraftBuilder(@Nonnull MonetaryAmount totalPrice,
                                                             @Nullable Locale locale) {
-        return CtpResourcesUtil.createPaymentDraftBuilder(totalPrice, locale);
+        return IntegrationCtpResourcesUtil.createPaymentDraftBuilder(totalPrice, locale);
     }
 
     protected static String verifyApprovalUrl(MvcResult mvcResult) throws IOException {

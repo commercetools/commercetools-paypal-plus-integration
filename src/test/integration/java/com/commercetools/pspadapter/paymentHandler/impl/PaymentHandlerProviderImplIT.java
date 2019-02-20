@@ -45,7 +45,7 @@ import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIn
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupAllTenantsTypes;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
+import static com.commercetools.testUtil.ctpUtil.IntegrationCtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static io.sphere.sdk.payments.TransactionState.SUCCESS;
 import static io.sphere.sdk.payments.TransactionType.CHARGE;

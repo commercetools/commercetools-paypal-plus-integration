@@ -8,6 +8,7 @@ final testsRootDir = 'src/test'
 final testsCommonsDir = "${testsRootDir}/common"
 final testsUnitDir = "${testsRootDir}/unit"
 final testsIntegrationDir = "${testsRootDir}/integration"
+final testsUsecasesDir = "${testsRootDir}/usecases"
 
 sourceSets {
     testCommon {
@@ -36,6 +37,15 @@ sourceSets {
         }
         resources.srcDirs = ["$testsIntegrationDir/resources"]
     }
+
+    testUsecases {
+        java {
+            srcDirs = ["$testsUsecasesDir/java"]
+            compileClasspath += main.output + testCommon.output
+            runtimeClasspath += main.output + testCommon.output
+        }
+        resources.srcDirs = ["$testsUsecasesDir/resources"]
+    }
 }
 
 configurations {
@@ -47,6 +57,9 @@ configurations {
 
     testIntegrationCompile.extendsFrom testCommonCompile
     testIntegrationRuntime.extendsFrom testCommonRuntime
+
+    testUsecasesCompile.extendsFrom testCommonCompile
+    testUsecasesRuntime.extendsFrom testCommonRuntime
 }
 
 task testIntegration(type: Test) {
@@ -56,11 +69,16 @@ task testIntegration(type: Test) {
     outputs.upToDateWhen { false }
 }
 
+task testUsecases(type: Test) {
+    description 'More complex than just Integration Tests: ' +
+            'these cases are executed over running local REST service (docker containers).' +
+            "The test sources are located in ${sourceSets.testUsecases.java.srcDirs}"
+
+    testClassesDirs = sourceSets.testUsecases.output.classesDirs
+    classpath = sourceSets.testUsecases.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
 task testUnit(dependsOn: test) {
     description "Run only the unit tests from ${sourceSets.test.java.srcDirs}. This is an alias for :test task"
 }
-
-// tasks ordering
-// Ensure integration tests are run after unit tests and are part of check/build
-testIntegration.mustRunAfter test
-check.dependsOn testIntegration

@@ -7,6 +7,7 @@ buildscript {
     ext.grgitVersion = '2.1.1'
     ext.testLoggerVersion = '1.1.2'
     ext.dockerPackageVersion = '3.2.5'
+    ext.errorPronePlugin = '0.0.13'
 
     repositories {
         jcenter()
@@ -19,6 +20,7 @@ buildscript {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBoot")
         classpath("org.ajoberstar:grgit:$grgitVersion")
         classpath("com.adarshr:gradle-test-logger-plugin:$testLoggerVersion")
+        classpath("net.ltgt.gradle:gradle-errorprone-plugin:$errorPronePlugin")
     }
 }
 
@@ -31,6 +33,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'com.adarshr.test-logger'
+apply plugin: 'net.ltgt.errorprone'
 
 targetCompatibility = 1.8
 sourceCompatibility = 1.8
@@ -40,8 +43,14 @@ version = '0.4.0-DEV' // this will be replaced by git tag version, if available
 apply from: "$rootDir/gradle/version-resolver.gradle"
 apply from: "$rootDir/gradle/docker-build.gradle"
 apply from: "$rootDir/gradle/test-config.gradle"
+apply from: "$rootDir/gradle/tasks-ordering.gradle"
 apply from: "$rootDir/gradle/idea-config.gradle"
 
+
+compileJava {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
 
 jar {
     version = project.version
@@ -59,10 +68,14 @@ final depVersions = [
         guava              : '23.6-jre',
         apacheCollections  : '4.1',
 
+        // error prone
+        errorProneGoogle   : '2.2.0',
+
         // tests
         assertJ            : '3.8.0',
         systemRules        : '1.17.1',
-        beforeTestRunner   : '0.1.0'
+        beforeTestRunner   : '0.1.0',
+        apacheFluentHc     : '4.5.5',
 ]
 
 dependencies {
@@ -80,9 +93,13 @@ dependencies {
         exclude group: 'org.assertj', module: 'assertj-core' // below override the default outdated one with the latest
     }
     testCommonCompile "org.assertj:assertj-core:${depVersions.assertJ}"
+    testCommonCompile "org.bitbucket.radistao.test:before-after-spring-test-runner:${depVersions.beforeTestRunner}"
 
     testIntegrationCompile "com.github.stefanbirkner:system-rules:${depVersions.systemRules}"
-    testIntegrationCompile "org.bitbucket.radistao.test:before-after-spring-test-runner:${depVersions.beforeTestRunner}"
+
+    testUsecasesCompile "org.apache.httpcomponents:fluent-hc:${depVersions.apacheFluentHc}"
+
+    errorprone "com.google.errorprone:error_prone_core:${depVersions.errorProneGoogle}"
 }
 
 tasks.withType(JavaCompile) {

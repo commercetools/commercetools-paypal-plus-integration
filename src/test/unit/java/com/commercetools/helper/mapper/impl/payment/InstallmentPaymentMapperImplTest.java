@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import static com.commercetools.helper.mapper.impl.payment.InstallmentPaymentMapperImpl.CREDIT;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentIntent.SALE;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.PAYPAL;
-import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.*;
+import static com.commercetools.testUtil.ctpUtil.UnitCtpResourcesUtil.*;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 

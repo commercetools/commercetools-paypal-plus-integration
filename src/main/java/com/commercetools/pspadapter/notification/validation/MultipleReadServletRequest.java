@@ -102,6 +102,16 @@ public class MultipleReadServletRequest extends ContentCachingRequestWrapper {
                         return -1;
                     }
                 }
+
+                /**
+                 * Error Prone complains about this method overriding, but we don't need it in our implementation
+                 * (so far).
+                 */
+                @Override
+                @SuppressWarnings("InputStreamSlowMultibyteRead")
+                public int read(@Nonnull byte[] b, int off, int len) throws IOException {
+                    return super.read(b, off, len);
+                }
             };
         }
     }

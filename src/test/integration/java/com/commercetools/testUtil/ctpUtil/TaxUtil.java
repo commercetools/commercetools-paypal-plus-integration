@@ -31,9 +31,7 @@ public final class TaxUtil {
                         );
                         return sphereClient.execute(TaxCategoryCreateCommand.of(draft)).toCompletableFuture().join();
                     }
-                    return sphereClient.execute(
-                            TaxCategoryQuery.of().plusPredicates(m -> m.name().is(TAX_CATEGORY_NAME)))
-                            .toCompletableFuture().join().head().get();
+                    return r.getResults().get(0);
                 }));
     }
 

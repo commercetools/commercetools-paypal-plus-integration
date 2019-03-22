@@ -7,6 +7,7 @@ import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
 import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -14,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -44,6 +44,12 @@ public class CommercetoolsExecutePaymentsControllerIT extends BasePaymentIT {
     @Override
     public void setUp() {
         super.setUp();
+    }
+
+    @After
+    @Override
+    public void tearDown() {
+        super.tearDown();
     }
 
     @Test

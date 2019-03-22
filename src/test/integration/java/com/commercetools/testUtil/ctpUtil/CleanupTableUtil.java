@@ -10,7 +10,15 @@ import io.sphere.sdk.orders.commands.OrderDeleteCommand;
 import io.sphere.sdk.orders.queries.OrderQuery;
 import io.sphere.sdk.payments.commands.PaymentDeleteCommand;
 import io.sphere.sdk.payments.queries.PaymentQuery;
+import io.sphere.sdk.products.commands.ProductDeleteCommand;
+import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.producttypes.commands.ProductTypeDeleteCommand;
+import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.shippingmethods.commands.ShippingMethodDeleteCommand;
+import io.sphere.sdk.shippingmethods.queries.ShippingMethodQuery;
+import io.sphere.sdk.taxcategories.commands.TaxCategoryDeleteCommand;
+import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
 import io.sphere.sdk.types.commands.TypeDeleteCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
 import org.slf4j.Logger;
@@ -51,6 +59,21 @@ public final class CleanupTableUtil {
         return cleanupTable(sphereClient, TypeQuery::of, TypeDeleteCommand::of, "Types");
     }
 
+    public static int cleanupTaxCategories(SphereClient sphereClient) {
+        return cleanupTable(sphereClient, TaxCategoryQuery::of, TaxCategoryDeleteCommand::of, "TaxCategories");
+    }
+
+    public static int cleanupShippingMethods(SphereClient sphereClient) {
+        return cleanupTable(sphereClient, ShippingMethodQuery::of, ShippingMethodDeleteCommand::of, "ShippingMethods");
+    }
+
+    public static int cleanupProducts(SphereClient sphereClient) {
+        return cleanupTable(sphereClient, ProductQuery::of, ProductDeleteCommand::of, "Products");
+    }
+
+    public static int cleanupProductTypes(SphereClient sphereClient) {
+        return cleanupTable(sphereClient, ProductTypeQuery::of, ProductTypeDeleteCommand::of, "ProductTypes");
+    }
     /**
      * Wipe out all types from all tenants.
      */
@@ -69,6 +92,13 @@ public final class CleanupTableUtil {
     public static void cleanupOrdersCartsPaymentsTypes(SphereClient sphereClient) {
         cleanupOrdersCartsPayments(sphereClient);
         cleanupTypes(sphereClient);
+    }
+
+    public static void cleanupProductsProductTypesTaxCategories(SphereClient sphereClient){
+        cleanupProducts(sphereClient);
+        cleanupProductTypes(sphereClient);
+        cleanupShippingMethods(sphereClient);
+        cleanupTaxCategories(sphereClient);
     }
 
     /**

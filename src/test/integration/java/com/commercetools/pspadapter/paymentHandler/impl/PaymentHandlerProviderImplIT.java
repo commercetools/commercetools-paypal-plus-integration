@@ -38,6 +38,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.Optional;
 
+import static com.commercetools.payment.BasePaymentIT.getProductsInjectedCartDraft;
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.*;
 import static com.commercetools.payment.constants.ctp.ExpansionExpressions.PAYMENT_INFO_EXPANSION;
@@ -234,7 +235,9 @@ public class PaymentHandlerProviderImplIT {
                 .currency(EUR)
                 .build();
 
-        CtpPaymentWithCart ctpPaymentWithCart = executeBlocking(sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts))
+        CartDraft cartDraft = getProductsInjectedCartDraft(sphereClient, dummyComplexCartWithDiscounts);
+
+        CtpPaymentWithCart ctpPaymentWithCart = executeBlocking(sphereClient.execute(CartCreateCommand.of(cartDraft))
                 .thenCompose(cart -> sphereClient.execute(PaymentCreateCommand.of(
                         PaymentDraftBuilder.of(cart.getTotalPrice())
                                 .paymentMethodInfo(PaymentMethodInfoBuilder.of().paymentInterface(PAYPAL_PLUS).method(CtpPaymentMethods.DEFAULT).build())

@@ -15,7 +15,7 @@ tenantConfig:
         id:
         secret:
         mode: sandbox
-    paypalplus-dev2:
+    paypalplus-integration-test-tenant2:
       ctp:
         projectKey: paypalplus-integration-test-tenant2
         clientId:

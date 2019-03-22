@@ -31,6 +31,7 @@ import java.util.Optional;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPayments;
 import static com.commercetools.testUtil.ctpUtil.TaxUtil.TAX_CATEGORY_NAME;
+import static com.commercetools.testUtil.ctpUtil.TaxUtil.ensureTestTaxCategory;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -73,9 +74,8 @@ public class OrderServiceImplIT {
     }
 
     private void createOrderWithPayment(Payment ctPayment) {
-        TaxCategory taxCategory = executeBlocking(sphereClient.execute(
-                TaxCategoryQuery.of().plusPredicates(m -> m.name().is(TAX_CATEGORY_NAME)))
-        ).head().get();
+
+        TaxCategory taxCategory = ensureTestTaxCategory(sphereClient);
 
         CartDraft cartDraft = CtpResourcesUtil.getCartDraftWithCustomLineItems(taxCategory);
 

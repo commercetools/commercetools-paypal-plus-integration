@@ -11,6 +11,7 @@ import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
 import org.bitbucket.radistao.test.annotation.AfterAllMethods;
 import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
 import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -64,6 +65,12 @@ public class CommercetoolsCreatePaymentInstallmentIT extends BasePaymentIT {
     @Override
     public void setUp() {
         super.setUp();
+    }
+
+    @After
+    @Override
+    public void tearDown() {
+        super.tearDown();
     }
 
     @Override

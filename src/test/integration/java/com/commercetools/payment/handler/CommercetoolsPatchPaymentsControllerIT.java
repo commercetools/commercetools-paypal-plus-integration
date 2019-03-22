@@ -10,6 +10,7 @@ import org.bitbucket.radistao.test.annotation.AfterAllMethods;
 import org.bitbucket.radistao.test.annotation.BeforeAllMethods;
 import org.bitbucket.radistao.test.runner.BeforeAfterSpringTestRunner;
 import org.javamoney.moneta.Money;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +48,12 @@ public class CommercetoolsPatchPaymentsControllerIT extends BasePaymentIT {
     @Override
     public void setUp() {
         super.setUp();
+    }
+
+    @After
+    @Override
+    public void tearDown() {
+        super.tearDown();
     }
 
     @Test

@@ -12,21 +12,32 @@ import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.test.web.servlet.MockMvcAsync;
 import com.commercetools.testUtil.ctpUtil.CtpResourcesUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.neovisionaries.i18n.CountryCode;
 import com.paypal.base.rest.PayPalRESTException;
-import io.sphere.sdk.carts.Cart;
-import io.sphere.sdk.carts.CartDraft;
-import io.sphere.sdk.carts.CartDraftBuilder;
+import io.sphere.sdk.carts.*;
 import io.sphere.sdk.carts.commands.CartCreateCommand;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
 import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.json.SphereJsonUtils;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
 import io.sphere.sdk.payments.PaymentDraftDsl;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
+import io.sphere.sdk.products.*;
+import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
+import io.sphere.sdk.producttypes.ProductTypeDraftDsl;
+import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
+import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
+import io.sphere.sdk.taxcategories.TaxCategoryDraftDsl;
+import io.sphere.sdk.taxcategories.TaxRateDraft;
+import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
 import io.sphere.sdk.types.CustomFields;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,9 +47,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.MonetaryAmount;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,8 +59,7 @@ import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APP
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.TIMESTAMP_FIELD;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupAllTenantsTypes;
-import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.cleanupOrdersCartsPaymentsTypes;
+import static com.commercetools.testUtil.ctpUtil.CleanupTableUtil.*;
 import static com.commercetools.testUtil.ctpUtil.CtpResourcesUtil.getDummyComplexCartDraftWithDiscounts;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.util.Optional.of;
@@ -98,6 +108,11 @@ public class BasePaymentIT {
 
     public void setUp() {
         initTenantConfigs();
+        cleanupProductsProductTypesTaxCategories(sphereClient);
+    }
+
+    public void tearDown() {
+        cleanupProductsProductTypesTaxCategories(sphereClient);
     }
 
     /**
@@ -124,9 +139,49 @@ public class BasePaymentIT {
         CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
                 .currency(EUR)
                 .build();
-        return sphereClient.execute(CartCreateCommand.of(dummyComplexCartWithDiscounts));
+        CartDraft cartDraft = getProductsInjectedCartDraft(sphereClient, dummyComplexCartWithDiscounts);
+
+        return sphereClient.execute(CartCreateCommand.of(cartDraft));
     }
 
+    public static CartDraft getProductsInjectedCartDraft(@Nonnull SphereClient sphereClient, CartDraft dummyComplexCartWithDiscounts) {
+        //Create the product
+        ProductTypeDraftDsl typeDraftDsl = ProductTypeDraftBuilder.of(UUID.randomUUID().toString(), "testProd01", "testProd01", null).build();
+        ProductTypeCreateCommand productTypeCreateCommand = ProductTypeCreateCommand.of(typeDraftDsl);
+        CompletionStage<Product> productCompletionStage = sphereClient.execute(productTypeCreateCommand)
+                .thenCompose(productType -> createDummyProduct(sphereClient, productType));
+
+        //Inject to the CartDraft
+        return injectDummyProductsTaxCategory(productCompletionStage, dummyComplexCartWithDiscounts);
+    }
+
+    private static CompletionStage<Product> createDummyProduct(@Nonnull SphereClient sphereClient, ProductType productType){
+        //Create the tax category
+        TaxRateDraft taxRateDraft = TaxRateDraft.of("sample", 0.5, true, CountryCode.DE);
+        TaxCategoryDraftDsl test_taxCategory = TaxCategoryDraftBuilder.of(UUID.randomUUID().toString(), Collections.emptyList(), null)
+                .taxRates(Arrays.asList(taxRateDraft)).build();
+        CompletionStage<TaxCategory> taxCategoryCompletionStage = sphereClient.execute(TaxCategoryCreateCommand.of(test_taxCategory));
+        TaxCategory taxCategory = taxCategoryCompletionStage.toCompletableFuture().join();
+
+        ProductVariantDraftDsl variantDraftDsl = ProductVariantDraftBuilder.of().price(PriceDraft.of(BigDecimal.valueOf(100), EUR)).build();
+
+        ProductDraftDsl productDraftDsl = ProductDraftBuilder
+                .of(productType, LocalizedString.ofEnglish("TestProd1"), LocalizedString.ofEnglish(UUID.randomUUID().toString()), Collections.emptyList())
+                .taxCategory(taxCategory).masterVariant(variantDraftDsl).publish(false).build();
+        return sphereClient.execute(ProductCreateCommand.of(productDraftDsl));
+    }
+
+    private static CartDraft injectDummyProductsTaxCategory(CompletionStage<Product> productCompletionStage,
+                                                            CartDraft dummyComplexCartWithDiscounts){
+
+        Product product = productCompletionStage.toCompletableFuture().join();
+
+
+        LineItemDraftDsl lineItemDraftDsl = LineItemDraft.of(product, 1, 2);
+        return CartDraftBuilder.of(EUR).plusLineItems(lineItemDraftDsl).shippingMethod(dummyComplexCartWithDiscounts.getShippingMethod())
+                .shippingAddress(dummyComplexCartWithDiscounts.getShippingAddress()).taxMode(dummyComplexCartWithDiscounts.getTaxMode())
+                .customerId(dummyComplexCartWithDiscounts.getCustomerId()).build();
+    }
     protected CompletionStage<Payment> createPaymentCS(@Nonnull SphereClient sphereClient,
                                                        @Nonnull MonetaryAmount totalPrice,
                                                        @Nonnull Locale locale) {

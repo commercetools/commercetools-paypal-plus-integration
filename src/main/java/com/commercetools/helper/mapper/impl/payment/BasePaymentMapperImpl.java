@@ -211,7 +211,7 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
      * @return stream of single item, if discounts are not applied, or multiple items, if discounts are applied.
      * @see #mapCustomLineItemToPaypalPlusItem(CustomLineItem, List)
      */
-    protected Stream<Item> mapLineItemToPaypalPlusItem(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
+    private Stream<Item> mapLineItemToPaypalPlusItem(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
         if (lineItem.getDiscountedPricePerQuantity().size() > 0) {
             return lineItem.getDiscountedPricePerQuantity().stream()
                     .map(dlipfq -> createPaypalPlusItem(lineItem.getName(), locales, dlipfq))
@@ -220,7 +220,7 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
 
         MonetaryAmount actualLineItemPrice = lineItem.getPrice().getValue();
         return Stream.of(createPaypalPlusItem(lineItem.getName(), locales, lineItem.getQuantity(), actualLineItemPrice))
-                .map(item -> item.setSku(lineItem.getVariant().getSku()));
+                .map(paypalItem -> this.plusSkuProductName(lineItem, locales, paypalItem));
     }
 
     /**
@@ -251,6 +251,11 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
     protected Item createPaypalPlusItem(@Nonnull LocalizedString itemName, @Nonnull List<Locale> locales,
                                         @Nonnull DiscountedLineItemPriceForQuantity dlipfq) {
         return createPaypalPlusItem(itemName, locales, dlipfq.getQuantity(), dlipfq.getDiscountedPrice().getValue());
+    }
+
+    private Item plusSkuProductName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales, @Nonnull Item paypalItem) {
+        return paypalItem.setSku(lineItem.getVariant().getSku())
+                .setName(lineItem.getName().get(locales));
     }
 
     protected Item createPaypalPlusItem(@Nonnull LocalizedString itemName, @Nonnull List<Locale> locales,

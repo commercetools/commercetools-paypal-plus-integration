@@ -75,7 +75,7 @@ public class ServiceConfig {
     @Bean
     public APIContextFactory apiContextFactory() {
         TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().get(MAIN_TEST_TENANT_NAME).getPaypalPlus();
-        return new APIContextFactory(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode());
+        return new APIContextFactory(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode(), MAIN_TEST_TENANT_NAME);
     }
 
     @Bean

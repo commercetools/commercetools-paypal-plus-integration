@@ -1,5 +1,6 @@
 package com.commercetools.pspadapter;
 
+import com.commercetools.pspadapter.util.ExtendedAPIContext;
 import com.paypal.base.rest.APIContext;
 import io.sphere.sdk.models.Base;
 
@@ -17,19 +18,22 @@ public class APIContextFactory extends Base {
     private final String pPlusClientId;
     private final String pPlusClientSecret;
     private final String pPlusClientMode;
+    private final String tenantName;
 
     public APIContextFactory(String pPlusClientId,
                              String pPlusClientSecret,
-                             String pPlusClientMode) {
+                             String pPlusClientMode,
+                             String tenantName) {
         this.pPlusClientId = pPlusClientId;
         this.pPlusClientSecret = pPlusClientSecret;
         this.pPlusClientMode = pPlusClientMode;
+        this.tenantName = tenantName;
     }
 
     /**
      * @return new instance of {@link APIContext} with respective Paypal Plus clientId, clientSecret and mode.
      */
-    public APIContext createAPIContext() {
-        return new APIContext(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
+    public ExtendedAPIContext createAPIContext() {
+        return new ExtendedAPIContext(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode, this.tenantName);
     }
 }

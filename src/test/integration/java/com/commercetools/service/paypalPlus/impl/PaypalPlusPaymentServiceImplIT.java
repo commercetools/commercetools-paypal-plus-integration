@@ -45,7 +45,7 @@ public class PaypalPlusPaymentServiceImplIT {
     @Ignore("The payment method " + CREDIT_CARD + " is not used in Europe and false-fails often, thus ignored so far")
     public void createPseudoCreditCardPayment() throws Exception {
         CreditCard dummyCreditCard = dummyCreditCard();
-        final CreditCard storedCreditCard = dummyCreditCard.create(apiContextFactory.createAPIContext());
+        final CreditCard storedCreditCard = dummyCreditCard.create(apiContextFactory.createAPIContext().getApiContext());
 
         Payment mockPayment = dummyCreditCardSecurePayment(storedCreditCard.getId());
 

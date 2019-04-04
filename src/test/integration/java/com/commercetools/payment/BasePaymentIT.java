@@ -244,7 +244,7 @@ public class BasePaymentIT {
 
     protected static com.paypal.api.payments.Payment getPpPayment(TenantConfig tenantConfig, String ppPaymentId) throws PayPalRESTException {
         APIContextFactory apiContextFactory = tenantConfig.getAPIContextFactory();
-        return com.paypal.api.payments.Payment.get(apiContextFactory.createAPIContext(), ppPaymentId);
+        return com.paypal.api.payments.Payment.get(apiContextFactory.createAPIContext().getApiContext(), ppPaymentId);
     }
 
     protected static void assertCustomFields(com.paypal.api.payments.Payment createdPpPayment, String returnedApprovalUrl, String ppPaymentId) throws PayPalRESTException {

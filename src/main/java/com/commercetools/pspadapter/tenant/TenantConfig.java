@@ -43,7 +43,7 @@ public class TenantConfig extends Base {
         this.pPlusClientId = pPlusClientId;
         this.pPlusClientSecret = pPlusClientSecret;
         this.pPlusClientMode = pPlusClientMode;
-        this.pPlusApiContextFactory = new APIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode);
+        this.pPlusApiContextFactory = new APIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode, this.tenantName);
     }
 
     public String getTenantName() {

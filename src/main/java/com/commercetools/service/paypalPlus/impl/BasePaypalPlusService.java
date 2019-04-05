@@ -62,7 +62,7 @@ abstract class BasePaypalPlusService {
             } catch (PayPalRESTException e) {
                 throw new PaypalPlusServiceException("Paypal Plus REST service exception for tenant: " + tenantName, e);
             } catch (Throwable e) {
-                throw new IntegrationServiceException("Paypal Plus REST service unexpected exception. For tenant: "  + tenantName, e);
+                throw new IntegrationServiceException("Paypal Plus REST service unexpected exception. Tenant: "  + tenantName, e);
             }
         });
     }

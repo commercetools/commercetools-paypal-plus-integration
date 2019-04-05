@@ -13,17 +13,17 @@ import io.sphere.sdk.models.Base;
  *     Github issue</a>
  *
  */
-public class APIContextFactory extends Base {
+public class ExtendedAPIContextFactory extends Base {
 
     private final String pPlusClientId;
     private final String pPlusClientSecret;
     private final String pPlusClientMode;
     private final String tenantName;
 
-    public APIContextFactory(String pPlusClientId,
-                             String pPlusClientSecret,
-                             String pPlusClientMode,
-                             String tenantName) {
+    public ExtendedAPIContextFactory(String pPlusClientId,
+                                     String pPlusClientSecret,
+                                     String pPlusClientMode,
+                                     String tenantName) {
         this.pPlusClientId = pPlusClientId;
         this.pPlusClientSecret = pPlusClientSecret;
         this.pPlusClientMode = pPlusClientMode;

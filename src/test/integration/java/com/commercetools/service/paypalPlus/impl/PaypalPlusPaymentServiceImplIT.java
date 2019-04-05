@@ -1,7 +1,7 @@
 package com.commercetools.service.paypalPlus.impl;
 
 import com.commercetools.Application;
-import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.ExtendedAPIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.paypal.api.payments.*;
 import org.junit.Ignore;
@@ -34,7 +34,7 @@ public class PaypalPlusPaymentServiceImplIT {
      * It is used to supply store credit card.
      */
     @Autowired
-    private APIContextFactory apiContextFactory;
+    private ExtendedAPIContextFactory extendedApiContextFactory;
 
     @Test
     public void validatePaymentServiceContextInjection() {
@@ -45,7 +45,7 @@ public class PaypalPlusPaymentServiceImplIT {
     @Ignore("The payment method " + CREDIT_CARD + " is not used in Europe and false-fails often, thus ignored so far")
     public void createPseudoCreditCardPayment() throws Exception {
         CreditCard dummyCreditCard = dummyCreditCard();
-        final CreditCard storedCreditCard = dummyCreditCard.create(apiContextFactory.createAPIContext().getApiContext());
+        final CreditCard storedCreditCard = dummyCreditCard.create(extendedApiContextFactory.createAPIContext().getApiContext());
 
         Payment mockPayment = dummyCreditCardSecurePayment(storedCreditCard.getId());
 

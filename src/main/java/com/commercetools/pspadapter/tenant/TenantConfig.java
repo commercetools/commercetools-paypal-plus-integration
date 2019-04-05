@@ -1,6 +1,6 @@
 package com.commercetools.pspadapter.tenant;
 
-import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.ExtendedAPIContextFactory;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.models.Base;
 import io.sphere.sdk.models.SdkDefaults;
@@ -25,7 +25,7 @@ public class TenantConfig extends Base {
     private final String pPlusClientId;
     private final String pPlusClientSecret;
     private final String pPlusClientMode;
-    private final APIContextFactory pPlusApiContextFactory;
+    private final ExtendedAPIContextFactory pPlusExtendedApiContextFactory;
 
     public TenantConfig(@Nonnull String tenantName,
                         @Nonnull String ctpProjectKey,
@@ -43,7 +43,7 @@ public class TenantConfig extends Base {
         this.pPlusClientId = pPlusClientId;
         this.pPlusClientSecret = pPlusClientSecret;
         this.pPlusClientMode = pPlusClientMode;
-        this.pPlusApiContextFactory = new APIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode, this.tenantName);
+        this.pPlusExtendedApiContextFactory = new ExtendedAPIContextFactory(this.pPlusClientId, this.pPlusClientSecret, this.pPlusClientMode, this.tenantName);
     }
 
     public String getTenantName() {
@@ -78,11 +78,11 @@ public class TenantConfig extends Base {
         return sphereClientConfig;
     }
 
-    public APIContextFactory getAPIContextFactory() {
-        return pPlusApiContextFactory;
+    public ExtendedAPIContextFactory getAPIContextFactory() {
+        return pPlusExtendedApiContextFactory;
     }
 
-    static final String[] EXCLUDE_FIELD_NAMES = {"ctpClientSecret", "sphereClientConfig", "pPlusClientSecret", "pPlusApiContextFactory"};
+    static final String[] EXCLUDE_FIELD_NAMES = {"ctpClientSecret", "sphereClientConfig", "pPlusClientSecret", "pPlusExtendedApiContextFactory"};
 
     /**
      * @return String representation of the instance <b>excluding</b> secret values, like {@link #ctpClientSecret}

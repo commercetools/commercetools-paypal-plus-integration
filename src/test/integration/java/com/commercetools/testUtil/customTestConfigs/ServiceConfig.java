@@ -1,6 +1,6 @@
 package com.commercetools.testUtil.customTestConfigs;
 
-import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.ExtendedAPIContextFactory;
 import com.commercetools.pspadapter.notification.validation.NotificationValidationInterceptor;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.pspadapter.tenant.TenantProperties;
@@ -57,8 +57,8 @@ public class ServiceConfig {
 
     @Bean
     @Autowired
-    public PaypalPlusPaymentService paypalPlusPaymentService(APIContextFactory apiContextFactory) {
-        return new PaypalPlusPaymentServiceImpl(apiContextFactory);
+    public PaypalPlusPaymentService paypalPlusPaymentService(ExtendedAPIContextFactory extendedApiContextFactory) {
+        return new PaypalPlusPaymentServiceImpl(extendedApiContextFactory);
     }
 
     /**
@@ -73,9 +73,9 @@ public class ServiceConfig {
     }
 
     @Bean
-    public APIContextFactory apiContextFactory() {
+    public ExtendedAPIContextFactory apiContextFactory() {
         TenantProperties.Tenant.PaypalPlus paypalPlus = tenantProperties.getTenants().get(MAIN_TEST_TENANT_NAME).getPaypalPlus();
-        return new APIContextFactory(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode(), MAIN_TEST_TENANT_NAME);
+        return new ExtendedAPIContextFactory(paypalPlus.getId(), paypalPlus.getSecret(), paypalPlus.getMode(), MAIN_TEST_TENANT_NAME);
     }
 
     @Bean

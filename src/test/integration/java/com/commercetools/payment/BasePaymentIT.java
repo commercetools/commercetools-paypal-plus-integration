@@ -2,7 +2,7 @@ package com.commercetools.payment;
 
 import com.commercetools.config.bean.CtpConfigStartupValidator;
 import com.commercetools.model.CtpPaymentWithCart;
-import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.ExtendedAPIContextFactory;
 import com.commercetools.pspadapter.facade.CtpFacade;
 import com.commercetools.pspadapter.facade.CtpFacadeFactory;
 import com.commercetools.pspadapter.facade.SphereClientFactory;
@@ -243,8 +243,8 @@ public class BasePaymentIT {
     }
 
     protected static com.paypal.api.payments.Payment getPpPayment(TenantConfig tenantConfig, String ppPaymentId) throws PayPalRESTException {
-        APIContextFactory apiContextFactory = tenantConfig.getAPIContextFactory();
-        return com.paypal.api.payments.Payment.get(apiContextFactory.createAPIContext().getApiContext(), ppPaymentId);
+        ExtendedAPIContextFactory extendedApiContextFactory = tenantConfig.getAPIContextFactory();
+        return com.paypal.api.payments.Payment.get(extendedApiContextFactory.createAPIContext().getApiContext(), ppPaymentId);
     }
 
     protected static void assertCustomFields(com.paypal.api.payments.Payment createdPpPayment, String returnedApprovalUrl, String ppPaymentId) throws PayPalRESTException {

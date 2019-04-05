@@ -1,6 +1,6 @@
 package com.commercetools.pspadapter.util;
 
-import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.ExtendedAPIContextFactory;
 import com.paypal.base.Constants;
 import com.paypal.base.rest.APIContext;
 import org.junit.Test;
@@ -12,8 +12,8 @@ public class ExtendedAPIContextTest {
 
     @Test
     public void createApiContext_isNotCached() throws Exception {
-        APIContextFactory apiContextFactory = new APIContextFactory("a", "b", SANDBOX, "testTenant");
-        ExtendedAPIContext extendedAPIContext = apiContextFactory.createAPIContext();
+        ExtendedAPIContextFactory extendedApiContextFactory = new ExtendedAPIContextFactory("a", "b", SANDBOX, "testTenant");
+        ExtendedAPIContext extendedAPIContext = extendedApiContextFactory.createAPIContext();
         APIContext apiContext = extendedAPIContext.getApiContext();
 
         assertThat(apiContext).isNotNull();
@@ -22,7 +22,7 @@ public class ExtendedAPIContextTest {
         assertThat(apiContext.getConfiguration(Constants.MODE)).isEqualTo(SANDBOX);
         assertThat(extendedAPIContext.getTenantName()).isEqualTo("testTenant");
 
-        APIContext apiContext2 = apiContextFactory.createAPIContext().getApiContext();
+        APIContext apiContext2 = extendedApiContextFactory.createAPIContext().getApiContext();
         assertThat(apiContext).isNotSameAs(apiContext2);
     }
 

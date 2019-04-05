@@ -60,7 +60,7 @@ abstract class BasePaypalPlusService {
             try {
                 return supplier.apply(extendedAPIContext.getApiContext());
             } catch (PayPalRESTException e) {
-                throw new PaypalPlusServiceException("Paypal Plus REST service exception for tenant: " + tenantName, e);
+                throw new PaypalPlusServiceException("Paypal Plus REST service exception. Tenant: " + tenantName, e);
             } catch (Throwable e) {
                 throw new IntegrationServiceException("Paypal Plus REST service unexpected exception. Tenant: "  + tenantName, e);
             }

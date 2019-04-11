@@ -1,17 +1,23 @@
 package com.commercetools.service.paypalPlus.impl;
 
 import com.commercetools.Application;
+import com.commercetools.exception.IntegrationServiceException;
+import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.pspadapter.ExtendedAPIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.paypal.api.payments.*;
+import com.paypal.base.rest.APIContext;
+import com.paypal.base.rest.PayPalRESTException;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.concurrent.CompletionException;
 
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentLinkRel.APPROVAL_URL;
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentMethods.CREDIT_CARD;
@@ -20,8 +26,10 @@ import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentSt
 import static com.commercetools.payment.constants.paypalPlus.PaypalPlusPaymentStates.CREATED;
 import static com.commercetools.service.paypalPlus.PaypalPlusPaymentTestUtil.*;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
+import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
@@ -108,6 +116,34 @@ public class PaypalPlusPaymentServiceImplIT {
                 .orElse("");
 
         assertThat(approvalUrl).startsWith("https://www.sandbox.paypal.com/");
+    }
+
+    @Test
+    public void createPaypalPaymentWithIntegrationServiceException() throws Exception {
+        Payment savedPayment = null;
+        try {
+            Payment dummyPayment = Mockito.mock(Payment.class);
+            Mockito.when(dummyPayment.create(Mockito.any(APIContext.class))).thenThrow(new RuntimeException("Unknown exception"));
+            savedPayment = executeBlocking(paymentService.create(dummyPayment));
+        } catch (CompletionException ex) {
+            IntegrationServiceException e = (IntegrationServiceException) ex.getCause();
+            assertThat(e.getMessage()).isNotEmpty();
+            assertTrue(e.getMessage().contains(MAIN_TEST_TENANT_NAME));
+        }
+    }
+
+    @Test
+    public void createPaypalPaymentWithPayPalRESTException() throws Exception {
+        Payment savedPayment = null;
+        try {
+            Payment dummyPayment = Mockito.mock(Payment.class);
+            Mockito.when(dummyPayment.create(Mockito.any(APIContext.class))).thenThrow(new PayPalRESTException("known paypal exception"));
+            savedPayment = executeBlocking(paymentService.create(dummyPayment));
+        } catch (CompletionException ex) {
+            PaypalPlusServiceException e = (PaypalPlusServiceException) ex.getCause();
+            assertThat(e.getMessage()).isNotEmpty();
+            assertTrue(e.getMessage().contains(MAIN_TEST_TENANT_NAME));
+        }
     }
 
 }

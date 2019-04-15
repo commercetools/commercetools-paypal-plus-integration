@@ -1,5 +1,7 @@
 package com.commercetools.exception;
 
+import com.paypal.api.payments.Error;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -29,5 +31,13 @@ public class IntegrationServiceException extends RuntimeException {
     @Nullable
     public Throwable getCause() {
         return cause;
+    }
+
+    public Error getDetails(){
+        Error error = new Error();
+        error.setName(this.getClass().getName());
+        error.setMessage(this.cause.getMessage());
+
+        return error;
     }
 }

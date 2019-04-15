@@ -399,21 +399,21 @@ public class PaymentHandler {
             PayPalRESTException restException = ((PaypalPlusServiceException) throwable).getCause();
             AddInterfaceInteraction action = createAddInterfaceInteractionAction(restException.getDetails(), RESPONSE);
 
-            return writeToResponse(paymentId, paymentIdType, ctpPaymentId, restException.getMessage(), restException.getResponsecode(), action);
+            return createResponse(paymentId, paymentIdType, ctpPaymentId, restException.getMessage(), restException.getResponsecode(), action);
         } else if (throwable instanceof IntegrationServiceException) {
             IntegrationServiceException serviceException = (IntegrationServiceException) throwable;
             AddInterfaceInteraction action = createAddInterfaceInteractionAction(serviceException.getDetails(), RESPONSE);
 
-            return writeToResponse(paymentId, paymentIdType, ctpPaymentId, serviceException.getMessage(), -1, action);
+            return createResponse(paymentId, paymentIdType, ctpPaymentId, serviceException.getMessage(), -1, action);
         }
         // not identifiable error
         return completedFuture(PaymentHandleResponse.of500InternalServerError(
                 format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, throwable.getMessage())));
     }
 
-    private CompletionStage<PaymentHandleResponse> writeToResponse(@Nullable String paymentId, @Nullable String paymentIdType,
-                                                                   String ctpPaymentId, String exceptionMessage, int responseCode,
-                                                                   AddInterfaceInteraction action) {
+    private CompletionStage<PaymentHandleResponse> createResponse(@Nullable String paymentId, @Nullable String paymentIdType,
+                                                                  String ctpPaymentId, String exceptionMessage, int responseCode,
+                                                                  AddInterfaceInteraction action) {
         return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, Collections.singletonList(action))
                 .thenApply(ignore -> PaymentHandleResponse.ofHttpStatusAndErrorMessage(responseCode != -1 ? HttpStatus.valueOf(responseCode) : HttpStatus.INTERNAL_SERVER_ERROR,
                         format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, exceptionMessage)));

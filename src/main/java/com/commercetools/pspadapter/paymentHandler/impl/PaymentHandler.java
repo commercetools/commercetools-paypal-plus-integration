@@ -383,11 +383,13 @@ public class PaymentHandler {
 
         CompletionStage<PaymentHandleResponse> paymentHandleResponseStage = ctpPaymentIdOptStage
                 .thenCompose(ctpPaymentIdOpt ->
-                        ctpPaymentIdOpt.map(ctpPaymentId -> {
-                            return updatePaymentResponse(paymentId, paymentIdType, throwable, ctpPaymentId);
-                        }).orElseGet(() -> CompletableFuture.completedFuture(
-                                PaymentHandleResponse.of404NotFound(format("%s=[%s] is not found.", paymentIdType, paymentId))
-                        ))
+                        ctpPaymentIdOpt
+                                .map(ctpPaymentId -> updatePaymentResponse(paymentId, paymentIdType, throwable, ctpPaymentId))
+                                .orElseGet(() -> {
+                                    return CompletableFuture.completedFuture(
+                                            PaymentHandleResponse.of404NotFound(format("%s=[%s] is not found.", paymentIdType, paymentId))
+                                    );
+                                })
                 );
         return paymentHandleResponseStage;
     }
@@ -396,10 +398,10 @@ public class PaymentHandler {
                                                                          @Nonnull Throwable throwable, String ctpPaymentId) {
 
         if (throwable instanceof PaypalPlusServiceException) {
-            PayPalRESTException restException = ((PaypalPlusServiceException) throwable).getCause();
-            AddInterfaceInteraction action = createAddInterfaceInteractionAction(restException.getDetails(), RESPONSE);
+            PayPalRESTException paypalException = ((PaypalPlusServiceException) throwable).getCause();
+            AddInterfaceInteraction action = createAddInterfaceInteractionAction(paypalException.getDetails(), RESPONSE);
 
-            return createResponse(paymentId, paymentIdType, ctpPaymentId, restException.getMessage(), restException.getResponsecode(), action);
+            return createResponse(paymentId, paymentIdType, ctpPaymentId, paypalException.getMessage(), paypalException.getResponsecode(), action);
         } else if (throwable instanceof IntegrationServiceException) {
             IntegrationServiceException serviceException = (IntegrationServiceException) throwable;
             AddInterfaceInteraction action = createAddInterfaceInteractionAction(serviceException.getDetails(), RESPONSE);

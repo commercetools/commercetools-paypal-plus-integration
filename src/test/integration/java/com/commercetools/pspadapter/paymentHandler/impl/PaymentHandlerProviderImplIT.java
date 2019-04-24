@@ -252,6 +252,9 @@ public class PaymentHandlerProviderImplIT {
 
         // assertion
         assertThat(paymentHandleResponse.getStatusCode()).isEqualTo(400); //400 is thrown by Paypal Plus sandbox env
+        final io.sphere.sdk.payments.Payment ctpPaymentAfterInteraction = executeBlocking(sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
+        assertThat(ctpPaymentAfterInteraction.getInterfaceInteractions()
+                .stream().anyMatch(e->e.toString().contains("Value exceeds max length of 20")));
     }
 
 
@@ -274,6 +277,9 @@ public class PaymentHandlerProviderImplIT {
 
         // assertion
         assertThat(paymentHandleResponse.getStatusCode()).isEqualTo(500);
+        final io.sphere.sdk.payments.Payment ctpPaymentAfterInteraction = executeBlocking(sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
+        assertThat(ctpPaymentAfterInteraction.getInterfaceInteractions()
+                .stream().anyMatch(e->e.toString().contains("com.commercetools.exception.IntegrationServiceException")));
     }
 
 

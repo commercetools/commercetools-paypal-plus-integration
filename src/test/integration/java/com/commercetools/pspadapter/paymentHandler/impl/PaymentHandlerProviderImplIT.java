@@ -2,6 +2,8 @@ package com.commercetools.pspadapter.paymentHandler.impl;
 
 import com.commercetools.Application;
 import com.commercetools.config.bean.CtpConfigStartupValidator;
+import com.commercetools.exception.IntegrationServiceException;
+import com.commercetools.helper.formatter.impl.PaypalPlusFormatterImpl;
 import com.commercetools.helper.mapper.PaymentMapper;
 import com.commercetools.helper.mapper.PaymentMapperHelper;
 import com.commercetools.model.CtpPaymentWithCart;
@@ -10,6 +12,8 @@ import com.commercetools.pspadapter.facade.*;
 import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
+import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
+import com.google.gson.Gson;
 import com.paypal.api.payments.*;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
@@ -36,7 +40,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 
+import javax.annotation.Nonnull;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.payment.BasePaymentIT.getProductsInjectedCartDraft;
 import static com.commercetools.payment.constants.LocaleConstants.DEFAULT_LOCALE;
@@ -53,6 +59,7 @@ import static io.sphere.sdk.payments.TransactionType.CHARGE;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(BeforeAfterSpringTestRunner.class)
 @SpringBootTest(classes = Application.class)
@@ -225,6 +232,101 @@ public class PaymentHandlerProviderImplIT {
                 ctpPayment.getInterfaceId()));
 
         assertThat(paymentHandleResponse.getStatusCode()).isEqualTo(500);
+    }
+
+    @Test
+    public void executePaymentPaypalPlus_withPaypalPlusServiceException() {
+        // preparation
+        final CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
+        final PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
+
+        final String ctpPaymentId = ctpPaymentWithCart.getPayment().getId();
+        executeBlocking(paymentHandler.createPayment(ctpPaymentId));
+
+        final io.sphere.sdk.payments.Payment ctpPayment = executeBlocking(sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
+
+        // test
+        final PaymentHandleResponse paymentHandleResponse =
+                executeBlocking(
+                        paymentHandler.executePayment(ctpPayment.getInterfaceId(), ctpPayment.getInterfaceId()));
+
+        // assertion
+        assertThat(paymentHandleResponse.getStatusCode()).isEqualTo(400); //400 is thrown by Paypal Plus sandbox env
+        final io.sphere.sdk.payments.Payment ctpPaymentAfterInteraction = executeBlocking(sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
+        assertThat(ctpPaymentAfterInteraction.getInterfaceInteractions()
+                .stream().anyMatch(e->e.toString().contains("Value exceeds max length of 20")));
+    }
+
+
+    @Test
+    public void executePaymentPaypalPlus_withIntegrationServiceException() {
+        // preparation
+        final CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
+        final String ctpPaymentId = ctpPaymentWithCart.getPayment().getId();
+
+        final PaymentHandler paymentHandler = getPaymentHandlerProviderMock(ctpPaymentId)
+                .getPaymentHandler(MAIN_TEST_TENANT_NAME)
+                .get();
+        executeBlocking(paymentHandler.createPayment(ctpPaymentId));
+
+        final io.sphere.sdk.payments.Payment ctpPayment = executeBlocking(sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
+
+        // test
+        final PaymentHandleResponse paymentHandleResponse =
+                executeBlocking(paymentHandler.executePayment(ctpPayment.getInterfaceId(), "test"));
+
+        // assertion
+        assertThat(paymentHandleResponse.getStatusCode()).isEqualTo(500);
+        final io.sphere.sdk.payments.Payment ctpPaymentAfterInteraction = executeBlocking(sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
+        assertThat(ctpPaymentAfterInteraction.getInterfaceInteractions()
+                .stream().anyMatch(e->e.toString().contains("com.commercetools.exception.IntegrationServiceException")));
+    }
+
+
+    @Nonnull
+    private PaymentHandlerProvider getPaymentHandlerProviderMock(String ctpPaymentId) {
+        return new PaymentHandlerProviderImpl(
+                tenantConfigFactory,
+                new PaypalPlusFacadeFactoryMock(ctpPaymentId),
+                paymentMapperHelper,
+                new Gson(),
+                new PaypalPlusFormatterImpl(),
+                ctpFacadeFactory);
+    }
+
+    /**
+     * Private class to mock PaypalPlus behavior only for executePaymentPaypalPlus_withIntegrationServiceException
+     */
+    private class PaypalPlusFacadeFactoryMock extends PaypalPlusFacadeFactory{
+        private String ctpPaymentId;
+
+        public PaypalPlusFacadeFactoryMock(String ctpPaymentId) {
+            this.ctpPaymentId = ctpPaymentId;
+        }
+
+        @Override
+        public PaypalPlusFacade getPaypalPlusFacade(TenantConfig tenantConfig) {
+            final PaypalPlusFacade paypalPlusFacade = mock(PaypalPlusFacade.class);
+            final PaypalPlusPaymentService paymentService = getPaypalPlusPaymentServiceMock(this.ctpPaymentId);
+            when(paypalPlusFacade.getPaymentService()).thenReturn(paymentService);
+
+            return paypalPlusFacade;
+        }
+    }
+
+    @Nonnull
+    private PaypalPlusPaymentService getPaypalPlusPaymentServiceMock(String ctpPaymentId) {
+        final PaypalPlusPaymentService paymentService = mock(PaypalPlusPaymentService.class);
+
+        Throwable integrationServiceException = new IntegrationServiceException("Paypal Plus REST service unexpected exception.");
+        when(paymentService.execute(any(Payment.class), any(PaymentExecution.class)))
+                .thenThrow(new IntegrationServiceException("testing message", integrationServiceException));
+
+        Payment testPayment = new Payment();
+        testPayment.setId(ctpPaymentId);
+        when(paymentService.create(any(Payment.class)))
+                .thenReturn(CompletableFuture.completedFuture(testPayment));
+        return paymentService;
     }
 
     /**

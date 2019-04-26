@@ -1,7 +1,9 @@
 package com.commercetools.service.paypalPlus.impl;
 
+import com.commercetools.exception.IntegrationServiceException;
 import com.commercetools.exception.PaypalPlusServiceException;
-import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.ExtendedAPIContextFactory;
+import com.commercetools.pspadapter.util.ExtendedAPIContext;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.WebProfile;
 import com.paypal.base.rest.APIContext;
@@ -18,12 +20,12 @@ import java.util.concurrent.CompletionStage;
 
 abstract class BasePaypalPlusService {
 
-    final APIContextFactory paypalPlusApiContextFactory;
+    final ExtendedAPIContextFactory paypalPlusExtendedApiContextFactory;
 
     private final Logger logger;
 
-    BasePaypalPlusService(@Nonnull APIContextFactory paypalPlusApiContextFactory) {
-        this.paypalPlusApiContextFactory = paypalPlusApiContextFactory;
+    BasePaypalPlusService(@Nonnull ExtendedAPIContextFactory paypalPlusExtendedApiContextFactory) {
+        this.paypalPlusExtendedApiContextFactory = paypalPlusExtendedApiContextFactory;
         this.logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -51,15 +53,16 @@ abstract class BasePaypalPlusService {
     protected final <R> CompletionStage<R> paypalPlusStageWrapper(
             @Nonnull PayPalRESTExceptionSupplier<APIContext, R> supplier)
             throws PaypalPlusServiceException {
+        ExtendedAPIContext extendedAPIContext = paypalPlusExtendedApiContextFactory.createAPIContext();
+        String tenantName = extendedAPIContext.getTenantName();
+
         return CompletableFuture.supplyAsync(() -> {
             try {
-                APIContext context = paypalPlusApiContextFactory.createAPIContext();
-                return supplier.apply(context);
+                return supplier.apply(extendedAPIContext.getApiContext());
             } catch (PayPalRESTException e) {
-                throw new PaypalPlusServiceException("Paypal Plus REST service exception", e);
+                throw new PaypalPlusServiceException("Paypal Plus REST service exception. Tenant: " + tenantName, e);
             } catch (Throwable e) {
-                logger.error("Paypal Plus REST service unexpected exception. ", e);
-                throw new PaypalPlusServiceException("Paypal Plus REST service unexpected exception, see the logs");
+                throw new IntegrationServiceException("Paypal Plus REST service unexpected exception. Tenant: "  + tenantName, e);
             }
         });
     }

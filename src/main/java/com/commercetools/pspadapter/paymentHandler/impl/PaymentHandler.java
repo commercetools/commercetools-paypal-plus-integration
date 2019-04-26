@@ -1,5 +1,6 @@
 package com.commercetools.pspadapter.paymentHandler.impl;
 
+import com.commercetools.exception.IntegrationServiceException;
 import com.commercetools.exception.PaypalPlusException;
 import com.commercetools.exception.PaypalPlusServiceException;
 import com.commercetools.helper.formatter.PaypalPlusFormatter;
@@ -359,11 +360,8 @@ public class PaymentHandler {
                         // the real exception is wrapped inside
                         throwable = throwable.getCause();
                     }
-                    if (throwable instanceof PaypalPlusServiceException) {
-                        PayPalRESTException restException = ((PaypalPlusServiceException) throwable).getCause();
-                        if (restException != null) {
-                            return saveResponseToInterfaceInteraction(paymentId, paymentIdType, restException);
-                        }
+                    if (throwable instanceof PaypalPlusServiceException || throwable instanceof IntegrationServiceException) {
+                        return saveResponseToInterfaceInteraction(paymentId, paymentIdType, throwable);
                     }
                     return completedFuture(PaymentHandleResponse.of400BadRequest(
                             format("%s [%s] can't be processed, details: [%s]", paymentIdType, paymentId, throwable.getMessage())));
@@ -373,7 +371,7 @@ public class PaymentHandler {
 
     private CompletionStage<PaymentHandleResponse> saveResponseToInterfaceInteraction(@Nullable String paymentId,
                                                                                       @Nullable String paymentIdType,
-                                                                                      @Nonnull PayPalRESTException restException) {
+                                                                                      @Nonnull Throwable throwable) {
         CompletionStage<Optional<String>> ctpPaymentIdOptStage = CompletableFuture.completedFuture(Optional.ofNullable(paymentId));
         if (PAYPAL_PLUS_PAYMENT_ID.equals(paymentIdType)) {
             // if it's paypal plus payment id and not ctp payment id,
@@ -385,16 +383,42 @@ public class PaymentHandler {
 
         CompletionStage<PaymentHandleResponse> paymentHandleResponseStage = ctpPaymentIdOptStage
                 .thenCompose(ctpPaymentIdOpt ->
-                        ctpPaymentIdOpt.map(ctpPaymentId -> {
-                            AddInterfaceInteraction action = createAddInterfaceInteractionAction(restException.getDetails(), RESPONSE);
-                            return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, Collections.singletonList(action))
-                                    .thenApply(ignore -> PaymentHandleResponse.ofHttpStatusAndErrorMessage(HttpStatus.valueOf(restException.getResponsecode()),
-                                            format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, restException.getMessage())));
-                        }).orElseGet(() -> CompletableFuture.completedFuture(
-                                PaymentHandleResponse.of404NotFound(format("%s=[%s] is not found.", paymentIdType, paymentId))
-                        ))
+                        ctpPaymentIdOpt
+                                .map(ctpPaymentId -> updatePaymentResponse(paymentId, paymentIdType, throwable, ctpPaymentId))
+                                .orElseGet(() -> {
+                                    return CompletableFuture.completedFuture(
+                                            PaymentHandleResponse.of404NotFound(format("%s=[%s] is not found.", paymentIdType, paymentId))
+                                    );
+                                })
                 );
         return paymentHandleResponseStage;
+    }
+
+    private CompletionStage<PaymentHandleResponse> updatePaymentResponse(@Nullable String paymentId, @Nullable String paymentIdType,
+                                                                         @Nonnull Throwable throwable, String ctpPaymentId) {
+
+        if (throwable instanceof PaypalPlusServiceException) {
+            PayPalRESTException paypalException = ((PaypalPlusServiceException) throwable).getCause();
+            AddInterfaceInteraction action = createAddInterfaceInteractionAction(paypalException.getDetails(), RESPONSE);
+
+            return createResponse(paymentId, paymentIdType, ctpPaymentId, paypalException.getMessage(), paypalException.getResponsecode(), action);
+        } else if (throwable instanceof IntegrationServiceException) {
+            IntegrationServiceException serviceException = (IntegrationServiceException) throwable;
+            AddInterfaceInteraction action = createAddInterfaceInteractionAction(serviceException.getDetails(), RESPONSE);
+
+            return createResponse(paymentId, paymentIdType, ctpPaymentId, serviceException.getMessage(), -1, action);
+        }
+        // not identifiable error
+        return completedFuture(PaymentHandleResponse.of500InternalServerError(
+                format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, throwable.getMessage())));
+    }
+
+    private CompletionStage<PaymentHandleResponse> createResponse(@Nullable String paymentId, @Nullable String paymentIdType,
+                                                                  String ctpPaymentId, String exceptionMessage, int responseCode,
+                                                                  AddInterfaceInteraction action) {
+        return ctpFacade.getPaymentService().updatePayment(ctpPaymentId, Collections.singletonList(action))
+                .thenApply(ignore -> PaymentHandleResponse.ofHttpStatusAndErrorMessage(responseCode != -1 ? HttpStatus.valueOf(responseCode) : HttpStatus.INTERNAL_SERVER_ERROR,
+                        format("%s=[%s] can't be processed, details: [%s]", paymentIdType, paymentId, exceptionMessage)));
     }
 
     /**

@@ -1,6 +1,6 @@
 package com.commercetools.testUtil.customTestConfigs;
 
-import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.ExtendedAPIContextFactory;
 import com.paypal.api.payments.InputFields;
 import com.paypal.api.payments.WebProfile;
 import com.paypal.base.rest.PayPalRESTException;
@@ -27,7 +27,7 @@ import static java.util.Optional.ofNullable;
 public class WebProfileConfiguration {
 
     @Autowired
-    private APIContextFactory paypalPlusApiContextFactory;
+    private ExtendedAPIContextFactory paypalPlusExtendedApiContextFactory;
 
     private WebProfile _noAddressOverrideWebProfile;
 
@@ -51,7 +51,7 @@ public class WebProfileConfiguration {
      */
     @PostConstruct
     void init() throws PayPalRESTException {
-        List<WebProfile> list = WebProfile.getList(paypalPlusApiContextFactory.createAPIContext());
+        List<WebProfile> list = WebProfile.getList(paypalPlusExtendedApiContextFactory.createAPIContext().getApiContext());
         _noAddressOverrideWebProfile = ofNullable(list)
                 .map(List::stream)
                 .flatMap(stream -> stream
@@ -63,7 +63,7 @@ public class WebProfileConfiguration {
             InputFields inputFields = new InputFields();
             inputFields.setAddressOverride(1); // no address override allowed
             webProfile.setInputFields(inputFields);
-            _noAddressOverrideWebProfile = webProfile.create(paypalPlusApiContextFactory.createAPIContext());
+            _noAddressOverrideWebProfile = webProfile.create(paypalPlusExtendedApiContextFactory.createAPIContext().getApiContext());
         }
     }
 

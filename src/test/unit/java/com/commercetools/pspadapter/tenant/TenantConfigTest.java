@@ -29,7 +29,7 @@ public class TenantConfigTest {
     public void shouldCreateApiContext() {
         TenantConfig tenantConfig = new TenantConfig("testTenant2", "ctpProjectKey", "ctpClientId", "ctpClientSecret",
                 "pPlusClientId", "pPlusClientSecret", SANDBOX);
-        APIContext apiContext = tenantConfig.getAPIContextFactory().createAPIContext();
+        APIContext apiContext = tenantConfig.getAPIContextFactory().createAPIContext().getApiContext();
         assertThat(apiContext).isNotNull();
     }
 
@@ -37,7 +37,7 @@ public class TenantConfigTest {
     public void whenPPlusClientModeIsEmpty_shouldThrowException() {
         TenantConfig tenantConfig = new TenantConfig("testTenant3", "ctpProjectKey", "ctpClientId", "ctpClientSecret",
                 "pPlusClientId", "pPlusClientSecret", "");
-        tenantConfig.getAPIContextFactory().createAPIContext();
+        tenantConfig.getAPIContextFactory().createAPIContext().getApiContext();
     }
 
     @Test

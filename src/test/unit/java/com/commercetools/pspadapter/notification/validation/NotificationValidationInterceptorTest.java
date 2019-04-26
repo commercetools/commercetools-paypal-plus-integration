@@ -1,6 +1,6 @@
 package com.commercetools.pspadapter.notification.validation;
 
-import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.ExtendedAPIContextFactory;
 import com.commercetools.pspadapter.facade.PaypalPlusFacade;
 import com.commercetools.pspadapter.facade.PaypalPlusFacadeFactory;
 import com.commercetools.pspadapter.notification.webhook.WebhookContainer;
@@ -41,7 +41,7 @@ public class NotificationValidationInterceptorTest {
 
         TenantConfig tenantConfig = mock(TenantConfig.class);
         when(configFactory.getTenantConfig(anyString())).thenReturn(Optional.of(tenantConfig));
-        when(tenantConfig.getAPIContextFactory()).thenReturn(mock(APIContextFactory.class));
+        when(tenantConfig.getAPIContextFactory()).thenReturn(mock(ExtendedAPIContextFactory.class));
 
         PaypalPlusPaymentService paymentService = mock(PaypalPlusPaymentService.class);
         when(paymentService.validateNotificationEvent(any(), anyMapOf(String.class, String.class), any())).thenReturn(completedFuture(true));

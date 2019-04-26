@@ -1,6 +1,6 @@
 package com.commercetools.service.paypalPlus.impl;
 
-import com.commercetools.pspadapter.APIContextFactory;
+import com.commercetools.pspadapter.ExtendedAPIContextFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
 import com.paypal.api.payments.*;
 import com.paypal.base.Constants;
@@ -18,8 +18,8 @@ import java.util.concurrent.CompletionStage;
  */
 public class PaypalPlusPaymentServiceImpl extends BasePaypalPlusService implements PaypalPlusPaymentService {
 
-    public PaypalPlusPaymentServiceImpl(@Nonnull APIContextFactory paypalPlusApiContextFactory) {
-        super(paypalPlusApiContextFactory);
+    public PaypalPlusPaymentServiceImpl(@Nonnull ExtendedAPIContextFactory paypalPlusExtendedApiContextFactory) {
+        super(paypalPlusExtendedApiContextFactory);
     }
 
     @Override

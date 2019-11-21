@@ -252,16 +252,13 @@ public class PaymentHandlerProviderImplIT {
 
     @Test
     public void whenPaypalPaymentIsNotApproved_transactionShouldNotBeCreated() {
-
         final CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
         final PaymentHandler paymentHandler = paymentHandlerProvider
                 .getPaymentHandler(MAIN_TEST_TENANT_NAME)
                 .get();
-
         final String ctpPaymentId = ctpPaymentWithCart.getPayment().getId();
 
         executeBlocking(paymentHandler.createPayment(ctpPaymentId));
-
         io.sphere.sdk.payments.Payment ctpPayment = executeBlocking(this.sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
 
         PaymentHandleResponse response = executeBlocking(paymentHandler.executePayment(ctpPayment.getInterfaceId(), "invalidTestPayerId"));

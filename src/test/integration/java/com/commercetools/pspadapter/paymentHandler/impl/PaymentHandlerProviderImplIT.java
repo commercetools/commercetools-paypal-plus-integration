@@ -246,7 +246,7 @@ public class PaymentHandlerProviderImplIT {
         io.sphere.sdk.payments.Payment ctpPayment = executeBlocking(sphereClient
                 .execute(PaymentByIdGet.of(ctpPaymentId)));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED.value());
-        assertThat(ctpPayment.getInterfaceInteractions()).hasSize(1);
+        assertThat(ctpPayment.getTransactions()).hasSize(1);
     }
 
 

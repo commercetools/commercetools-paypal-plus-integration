@@ -13,8 +13,11 @@ import com.commercetools.pspadapter.paymentHandler.PaymentHandlerProvider;
 import com.commercetools.pspadapter.tenant.TenantConfig;
 import com.commercetools.pspadapter.tenant.TenantConfigFactory;
 import com.commercetools.service.paypalPlus.PaypalPlusPaymentService;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.paypal.api.payments.*;
+import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.Transaction;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.CartDraft;
 import io.sphere.sdk.carts.CartDraftBuilder;
@@ -22,9 +25,12 @@ import io.sphere.sdk.carts.commands.CartCreateCommand;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
 import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.payments.PaymentDraftBuilder;
-import io.sphere.sdk.payments.PaymentMethodInfoBuilder;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.payments.*;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
+import io.sphere.sdk.payments.commands.PaymentUpdateCommand;
+import io.sphere.sdk.payments.commands.updateactions.AddTransaction;
+import io.sphere.sdk.payments.commands.updateactions.SetInterfaceId;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.bitbucket.radistao.test.annotation.AfterAllMethods;
@@ -41,6 +47,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nonnull;
+import javax.money.MonetaryAmount;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -202,13 +211,53 @@ public class PaymentHandlerProviderImplIT {
     }
 
     @Test
-    public void whenPaypalPaymentIsNotApproved_transactionShouldNotBeCreated() {
-        CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
-        PaymentHandler paymentHandler = paymentHandlerProvider.getPaymentHandler(MAIN_TEST_TENANT_NAME).get();
+    public void whenCtpPaymentIsAlreadyMarkedAsSuccess_shoudNotCallCreateTransactionInPaypalPlus() {
+        final CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
+        final PaymentHandler paymentHandler = paymentHandlerProvider
+                .getPaymentHandler(MAIN_TEST_TENANT_NAME)
+                .get();
 
-        String ctpPaymentId = ctpPaymentWithCart.getPayment().getId();
+        io.sphere.sdk.payments.Payment payment = ctpPaymentWithCart.getPayment();
+
+        final TransactionDraft transactionDraft = TransactionDraftBuilder
+                .of(CHARGE, Money.of(200, EUR)).state(TransactionState.SUCCESS)
+                .build();
+        final AddTransaction addTransaction = AddTransaction
+                .of(transactionDraft);
+        final SetInterfaceId interfaceIdUpdateAction = SetInterfaceId.of("testInterfaceId");
+        List<UpdateAction<io.sphere.sdk.payments.Payment>> actions = new ArrayList<>();
+        actions.add(addTransaction);
+        actions.add(interfaceIdUpdateAction);
+
+        final io.sphere.sdk.payments.Payment updatedPayment = this
+                .sphereClient
+                .execute(PaymentUpdateCommand.of(payment, actions))
+                .toCompletableFuture()
+                .join();
+
+        final String ctpPaymentId = updatedPayment.getId();
+
         executeBlocking(paymentHandler.createPayment(ctpPaymentId));
 
+        PaymentHandleResponse response = executeBlocking(paymentHandler
+                .executePayment(updatedPayment.getInterfaceId(), "testPayerId"));
+
+        io.sphere.sdk.payments.Payment ctpPayment = executeBlocking(sphereClient
+                .execute(PaymentByIdGet.of(ctpPaymentId)));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED.value());
+        assertThat(ctpPayment.getTransactions()).hasSize(1);
+    }
+
+
+    @Test
+    public void whenPaypalPaymentIsNotApproved_transactionShouldNotBeCreated() {
+        final CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
+        final PaymentHandler paymentHandler = paymentHandlerProvider
+                .getPaymentHandler(MAIN_TEST_TENANT_NAME)
+                .get();
+        final String ctpPaymentId = ctpPaymentWithCart.getPayment().getId();
+
+        executeBlocking(paymentHandler.createPayment(ctpPaymentId));
         io.sphere.sdk.payments.Payment ctpPayment = executeBlocking(this.sphereClient.execute(PaymentByIdGet.of(ctpPaymentId)));
 
         PaymentHandleResponse response = executeBlocking(paymentHandler.executePayment(ctpPayment.getInterfaceId(), "invalidTestPayerId"));

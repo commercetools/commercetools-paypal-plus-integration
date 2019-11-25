@@ -213,7 +213,16 @@ public class PaymentHandler {
                                                 format("Payment not found for interfaceid=[%s]", paypalPlusPaymentId))
                                         );
                                     } else {
-                                        return executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment);
+                                        boolean isAlreadyCharged = ctpPayment.getTransactions().stream()
+                                                .filter(transaction -> transaction.getType().equals(TransactionType.CHARGE))
+                                                .anyMatch(transaction -> transaction.getState().equals(SUCCESS));
+                                        if (isAlreadyCharged) {
+                                            // Should not charge for already charged transactions
+                                            return CompletableFuture.completedFuture(PaymentHandleResponse
+                                                    .ofHttpStatus(HttpStatus.CREATED));
+                                        } else {
+                                            return executePaymentAndCreateTxn(paypalPlusPaymentId, paypalPlusPayerId, ctpPayment);
+                                        }
                                     }
                                 });
                     }

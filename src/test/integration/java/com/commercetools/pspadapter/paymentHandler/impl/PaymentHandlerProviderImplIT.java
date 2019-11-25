@@ -212,7 +212,6 @@ public class PaymentHandlerProviderImplIT {
 
     @Test
     public void whenCtpPaymentIsAlreadyMarkedAsSuccess_shoudNotCallCreateTransactionInPaypalPlus() {
-
         final CtpPaymentWithCart ctpPaymentWithCart = createCartWithPayment();
         final PaymentHandler paymentHandler = paymentHandlerProvider
                 .getPaymentHandler(MAIN_TEST_TENANT_NAME)

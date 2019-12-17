@@ -4,7 +4,7 @@ buildscript {
     // is only the one known way:
     // https://discuss.gradle.org/t/how-to-access-project-ext-variables-from-within-buildscript-section/5706/3
     ext.springBoot = '1.5.9.RELEASE'
-    ext.grgitVersion = '2.1.1'
+    ext.grgitVersion = '2.3.0'
     ext.testLoggerVersion = '1.1.2'
     ext.dockerPackageVersion = '3.2.5'
 

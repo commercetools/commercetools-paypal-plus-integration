@@ -3,7 +3,7 @@ buildscript {
     // we need to share Spring boot version across buildscript and the rest of the application. Unfortunately, this
     // is only the one known way:
     // https://discuss.gradle.org/t/how-to-access-project-ext-variables-from-within-buildscript-section/5706/3
-    ext.springBoot = '1.5.9.RELEASE'
+    ext.springBoot = '2.2.5.RELEASE'
     ext.grgitVersion = '2.3.0'
     ext.testLoggerVersion = '1.1.2'
     ext.dockerPackageVersion = '3.2.5'

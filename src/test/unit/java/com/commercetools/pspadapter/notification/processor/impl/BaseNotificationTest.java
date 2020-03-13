@@ -6,6 +6,7 @@ import io.sphere.sdk.payments.Transaction;
 import io.sphere.sdk.payments.TransactionState;
 import io.sphere.sdk.payments.TransactionType;
 import io.sphere.sdk.payments.commands.updateactions.ChangeTransactionState;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 
 import java.util.Collections;
@@ -20,10 +21,10 @@ public class BaseNotificationTest {
     protected Payment createMockPayment(String interactionId, TransactionType txnType, TransactionState txnState) {
         Payment ctpMockPayment = mock(Payment.class);
         Transaction transaction = mock(Transaction.class);
-        when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(transaction));
-        when(transaction.getType()).thenReturn(txnType);
-        when(transaction.getState()).thenReturn(txnState);
-        when(transaction.getInteractionId()).thenReturn(interactionId);
+        Mockito.lenient().when(ctpMockPayment.getTransactions()).thenReturn(Collections.singletonList(transaction));
+        Mockito.lenient().when(transaction.getType()).thenReturn(txnType);
+        Mockito.lenient().when(transaction.getState()).thenReturn(txnState);
+        Mockito.lenient().when(transaction.getInteractionId()).thenReturn(interactionId);
         return ctpMockPayment;
     }
 

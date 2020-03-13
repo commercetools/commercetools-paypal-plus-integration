@@ -19,10 +19,10 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class CtpFacadeFactoryImplTest {
 
-    @Mock
+    @Mock(lenient = true)
     private SphereClientFactory sphereClientFactory;
 
-    @Mock
+    @Mock(lenient = true)
     private SphereClient sphereClient;
 
     @Before

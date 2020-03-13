@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
@@ -95,7 +96,7 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
         // set up
-        when(existingCtpTransaction.getType()).thenReturn(TransactionType.CHARGE);
+        Mockito.lenient().when(existingCtpTransaction.getType()).thenReturn(TransactionType.CHARGE);
         when(existingCtpTransaction.getState()).thenReturn(TransactionState.SUCCESS);
 
         // test
@@ -110,9 +111,9 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
     @Test
     public void whenTransactionIsNotFound_shouldAddNewTransaction() {
         // set up
-        when(existingCtpTransaction.getType()).thenReturn(TransactionType.REFUND);
-        when(existingCtpTransaction.getInteractionId()).thenReturn(TEST_INTERACTION_ID + "_random_text");
-        when(existingCtpTransaction.getState()).thenReturn(TransactionState.SUCCESS);
+        Mockito.lenient().when(existingCtpTransaction.getType()).thenReturn(TransactionType.REFUND);
+        Mockito.lenient().when(existingCtpTransaction.getInteractionId()).thenReturn(TEST_INTERACTION_ID + "_random_text");
+        Mockito.lenient().when(existingCtpTransaction.getState()).thenReturn(TransactionState.SUCCESS);
 
         // test
         doAnswer(invocation -> {

@@ -116,7 +116,7 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
 
         // test
         doAnswer(invocation -> {
-            List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
+            List<UpdateAction<Payment>> updateActions = invocation.getArgument(1, List.class);
             assertThat(updateActions.size()).isEqualTo(2);
             UpdateAction<Payment> addInterfaceInteractionAction = updateActions.get(0);
             assertThat(addInterfaceInteractionAction).isInstanceOf(AddInterfaceInteraction.class);

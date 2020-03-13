@@ -2,14 +2,16 @@ package com.commercetools.controller;
 
 import com.commercetools.model.ApplicationInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ErrorAttributes;
-import org.springframework.boot.autoconfigure.web.ErrorController;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
@@ -56,8 +58,8 @@ public class CommercetoolsCustomErrorController implements ErrorController {
 
     private Map<String, Object> getErrorAttributes(@Nonnull HttpServletRequest request,
                                                    @Nonnull ApplicationInfo applicationInfo) {
-        RequestAttributes requestAttributes = new ServletRequestAttributes(request);
-        Map<String, Object> errorAttributes = this.errorAttributes.getErrorAttributes(requestAttributes, false);
+        WebRequest webRequest = new ServletWebRequest(request);
+        Map<String, Object> errorAttributes = this.errorAttributes.getErrorAttributes(webRequest, false);
         errorAttributes.put("requestMethod", request.getMethod());
 
         // override timestamp from DefaultErrorAttributes.getErrorAttributes() which is too verbose

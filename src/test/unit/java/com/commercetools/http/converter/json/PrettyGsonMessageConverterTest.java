@@ -33,7 +33,7 @@ public class PrettyGsonMessageConverterTest {
     @Test
     public void writeInternal_withHashMapBody_returnsMinifiedJson() throws Exception {
         MockHttpOutputMessage mockOutput = new MockHttpOutputMessage();
-        gsonMessageConverter.writeInternal(mockResponseMap(), null, mockOutput);
+        gsonMessageConverter.writeGsonObj(mockResponseMap(), null, mockOutput);
 
         assertThat(mockOutput.getBodyAsString()).hasLineCount(1);
         assertWrittenMessage(mockOutput);
@@ -42,7 +42,7 @@ public class PrettyGsonMessageConverterTest {
     @Test
     public void writeInternal_withPrettyFormattedBodyAndPrettyFalse_returnsMinifiedJson() throws Exception {
         MockHttpOutputMessage mockOutput = new MockHttpOutputMessage();
-        gsonMessageConverter.writeInternal(PrettyFormattedBody.of(mockResponseMap(), false), null, mockOutput);
+        gsonMessageConverter.writeGsonObj(PrettyFormattedBody.of(mockResponseMap(), false), null, mockOutput);
         assertThat(mockOutput.getBodyAsString()).hasLineCount(1);
         assertWrittenMessage(mockOutput);
     }
@@ -50,7 +50,7 @@ public class PrettyGsonMessageConverterTest {
     @Test
     public void writeInternal_withPrettyFormattedBodyAndPrettyTrue_returnsPrettyFormattedJson() throws Exception {
         MockHttpOutputMessage mockOutput = new MockHttpOutputMessage();
-        gsonMessageConverter.writeInternal(PrettyFormattedBody.of(mockResponseMap(), true), null, mockOutput);
+        gsonMessageConverter.writeGsonObj(PrettyFormattedBody.of(mockResponseMap(), true), null, mockOutput);
         assertThat(mockOutput.getBodyAsString().split("[\n\r]+").length).isGreaterThanOrEqualTo(4);
         assertWrittenMessage(mockOutput);
     }

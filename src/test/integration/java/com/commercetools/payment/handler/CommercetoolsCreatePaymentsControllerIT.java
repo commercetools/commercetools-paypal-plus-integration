@@ -3,7 +3,9 @@ package com.commercetools.payment.handler;
 import com.commercetools.Application;
 import com.commercetools.model.CtpPaymentWithCart;
 import com.commercetools.payment.BasePaymentIT;
+import com.paypal.api.payments.Item;
 import com.paypal.api.payments.Payer;
+import com.paypal.api.payments.Transaction;
 import io.sphere.sdk.carts.Cart;
 import io.sphere.sdk.carts.commands.CartUpdateCommand;
 import io.sphere.sdk.carts.commands.updateactions.AddPayment;
@@ -24,6 +26,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -111,7 +114,12 @@ public class CommercetoolsCreatePaymentsControllerIT extends BasePaymentIT {
         com.paypal.api.payments.Payment createdPpPayment = getPpPayment(tenantConfig, ppPaymentId);
 
         assertCustomFields(createdPpPayment, returnedApprovalUrl, ppPaymentId);
-
+        // Paypal item name should prefix with `prefixProductNameWithAttr` setting in application.yml
+        List<Transaction> ppPaymentTransactions = createdPpPayment.getTransactions();
+        assertThat(ppPaymentTransactions.size()).isEqualTo(1);
+        List<Item> itemList = ppPaymentTransactions.get(0).getItemList().getItems();
+        assertThat(itemList.size()).isEqualTo(1);
+        assertThat(itemList.get(0).getName()).isEqualTo("TestAttributeValue TestProd1");
         assertThat(ofNullable(createdPpPayment.getPayer())
                 .map(Payer::getExternalSelectedFundingInstrumentType)).isEmpty();
     }

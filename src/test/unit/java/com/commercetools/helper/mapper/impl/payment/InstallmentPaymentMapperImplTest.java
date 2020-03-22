@@ -20,7 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 // inject this test case specific classes instead of full application context
-@SpringBootTest(classes = {InstallmentPaymentMapperImpl.class, PaypalPlusFormatterImpl.class, AddressMapperImpl.class})
+@SpringBootTest(classes = {InstallmentPaymentMapperImpl.class, PaypalPlusFormatterImpl.class, AddressMapperImpl.class,
+        ProductNameMapper.class})
 public class InstallmentPaymentMapperImplTest extends BasePaymentMapperTest {
 
     @Autowired

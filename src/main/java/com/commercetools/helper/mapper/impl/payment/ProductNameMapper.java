@@ -7,6 +7,7 @@ import io.sphere.sdk.carts.LineItem;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.attributes.Attribute;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,16 +35,20 @@ public class ProductNameMapper {
      */
     public String getPaypalItemName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
         if (StringUtils.isNotBlank(prefixProductNameWithAttr)) {
-            return getPrefixForProductName(lineItem, locales) + " " + lineItem.getName().get(locales);
+            return getPrefixForProductName(lineItem, locales) + lineItem.getName().get(locales);
         }
         return lineItem.getName().get(locales);
     }
 
     private String getPrefixForProductName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
         String prefix = "";
-        Attribute attribute = lineItem.getVariant().getAttribute(prefixProductNameWithAttr);
-        if (attribute != null) {
-            prefix = (extractLabelValue(attribute, locales));
+        ProductVariant variant = lineItem.getVariant();
+        if (Objects.nonNull(variant) && Objects.nonNull(variant.getAttributes()) &&
+                Objects.nonNull(prefixProductNameWithAttr)) {
+            Attribute attribute = variant.getAttribute(prefixProductNameWithAttr);
+            if (Objects.nonNull(attribute)) {
+                prefix = extractLabelValue(attribute, locales) + " " ;
+            }
         }
         return prefix;
     }

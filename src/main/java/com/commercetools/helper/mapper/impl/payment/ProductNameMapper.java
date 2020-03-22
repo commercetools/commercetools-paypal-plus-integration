@@ -23,7 +23,7 @@ public class ProductNameMapper {
 
     protected String prefixProductNameWithAttr;
 
-    @Value("${prefixProductNameWithAttr}")
+    @Value("${prefixProductNameWithAttr:#{null}}")
     public void setPrefixProductNameWithAttr(String prefixProductNameWithAttr) {
         this.prefixProductNameWithAttr = prefixProductNameWithAttr;
     }

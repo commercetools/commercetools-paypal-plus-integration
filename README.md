@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/commercetools/commercetools-paypal-plus-integration.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-paypal-plus-integration)
+
 # commercetools _Paypal Plus_ Integration Service
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->

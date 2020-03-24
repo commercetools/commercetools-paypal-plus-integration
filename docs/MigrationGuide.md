@@ -107,7 +107,7 @@ length of the description must be up to 127 characters, thus length of `referenc
 
 ### To v0.8.0
 
-New service version is capable of adding prefix for productName of paypal `Item`. Prefix is constructed 
+New service version is capable of adding prefix for product name of paypal `Item`. Prefix is constructed 
 through a product attribute. Attribute can be configured through `prefixProductNameWithAttr` optional 
 configuration property in application.yml file. Product name with prefix should not exceed 127 characters. 
 In case if prefixed productName exceeds the limit, it will discard the product name prefix.

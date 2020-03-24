@@ -38,8 +38,11 @@ public class ProductNameMapper {
     public String getPaypalItemName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
         String productName = lineItem.getName().get(locales);
         if (StringUtils.isNotBlank(prefixProductNameWithAttr)) {
-            String withPrefix = getPrefixForProductName(lineItem, locales) + StringUtils.SPACE + productName;
-            return withPrefix.length() < PRODUCT_NAME_MAX_LENGTH ? withPrefix : productName;
+            String prefix = getPrefixForProductName(lineItem, locales);
+            if (StringUtils.isNotBlank(prefix)) {
+                String withPrefix = prefix + StringUtils.SPACE + productName;
+                return withPrefix.length() < PRODUCT_NAME_MAX_LENGTH ? withPrefix : productName;
+            }
         }
         return productName;
     }

@@ -49,6 +49,26 @@ public class ProductNameMapperTest {
     }
 
     @Test
+    public void getPaypalItemName_shouldReturnProductNameWithoutPrefix_whenProductNameWithPrefixExceedMaxLength() {
+        // preparation
+        LineItem mockItem = Mockito.mock(LineItem.class);
+        ProductVariant mockVariant = Mockito.mock(ProductVariant.class);
+        String lengthyAttrValue = Stream.generate(() -> "a").limit(130).reduce((s1, s2) -> s1 + s2).get();
+        Attribute attribute = Attribute.of(testAttrName, AttributeAccess.ofString(), lengthyAttrValue);
+        Mockito.when(mockVariant.getAttribute(Mockito.anyString())).thenReturn(attribute);
+        Mockito.when(mockItem.getVariant()).thenReturn(mockVariant);
+        Mockito.when(mockItem.getName()).thenReturn(
+                LocalizedString.of(Locale.GERMANY, "product001"));
+        List<Locale> localeList = Stream.of(Locale.GERMANY).collect(Collectors.toList());
+
+        // test
+        String paypalItemName = productNameMapper.getPaypalItemName(mockItem, localeList);
+
+        // assertions
+        assertEquals(paypalItemName, "product001");
+    }
+
+    @Test
     public void getPaypalItemName_shouldReturnProductNameWithPrefix_whenAttributeIsTypeString() {
         // preparation
         LineItem mockItem = Mockito.mock(LineItem.class);

@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import static com.commercetools.payment.constants.Psp.PRODUCT_NAME_MAX_LENGTH;
+
 @Component
 public class ProductNameMapper {
 
@@ -34,10 +36,12 @@ public class ProductNameMapper {
      * @return productName String that will be passed to paypal
      */
     public String getPaypalItemName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
+        String productName = lineItem.getName().get(locales);
         if (StringUtils.isNotBlank(prefixProductNameWithAttr)) {
-            return getPrefixForProductName(lineItem, locales) + lineItem.getName().get(locales);
+            String withPrefix = getPrefixForProductName(lineItem, locales) + productName;
+            return withPrefix.length() < PRODUCT_NAME_MAX_LENGTH ? withPrefix : productName;
         }
-        return lineItem.getName().get(locales);
+        return productName;
     }
 
     private String getPrefixForProductName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
@@ -47,7 +51,7 @@ public class ProductNameMapper {
                 Objects.nonNull(prefixProductNameWithAttr)) {
             Attribute attribute = variant.getAttribute(prefixProductNameWithAttr);
             if (Objects.nonNull(attribute)) {
-                prefix = extractLabelValue(attribute, locales) + " " ;
+                prefix = extractLabelValue(attribute, locales) + " ";
             }
         }
         return prefix;

@@ -38,7 +38,7 @@ public class ProductNameMapper {
     public String getPaypalItemName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
         String productName = lineItem.getName().get(locales);
         if (StringUtils.isNotBlank(prefixProductNameWithAttr)) {
-            String withPrefix = getPrefixForProductName(lineItem, locales) + productName;
+            String withPrefix = getPrefixForProductName(lineItem, locales) + " " + productName;
             return withPrefix.length() < PRODUCT_NAME_MAX_LENGTH ? withPrefix : productName;
         }
         return productName;
@@ -51,7 +51,7 @@ public class ProductNameMapper {
                 Objects.nonNull(prefixProductNameWithAttr)) {
             Attribute attribute = variant.getAttribute(prefixProductNameWithAttr);
             if (Objects.nonNull(attribute)) {
-                prefix = extractLabelValue(attribute, locales) + " ";
+                prefix = extractLabelValue(attribute, locales);
             }
         }
         return prefix;

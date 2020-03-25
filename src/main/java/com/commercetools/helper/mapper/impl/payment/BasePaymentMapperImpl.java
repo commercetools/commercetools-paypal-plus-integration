@@ -20,6 +20,7 @@ import com.paypal.api.payments.Transaction;
 import io.sphere.sdk.cartdiscounts.DiscountedLineItemPriceForQuantity;
 import io.sphere.sdk.carts.CustomLineItem;
 import io.sphere.sdk.carts.LineItem;
+import org.apache.commons.lang3.StringUtils;
 import org.javamoney.moneta.Money;
 
 import javax.annotation.Nonnull;
@@ -253,13 +254,21 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
      * @see #mapCustomLineItemToPaypalPlusItem(CustomLineItem, List)
      */
     protected Stream<Item> mapCustomLineItemToPaypalPlusItem(@Nonnull CustomLineItem customLineItem, @Nonnull List<Locale> locales) {
+        String itemName = customLineItem.getName().get(locales);
+        if (StringUtils.isBlank(itemName)) {
+            Locale fallBackLocale = customLineItem.getName().getLocales()
+                    .iterator().next();
+            itemName = customLineItem.getName().get(fallBackLocale);
+        }
+
         if (customLineItem.getDiscountedPricePerQuantity().size() > 0) {
+            String finalItemName = itemName;
             return customLineItem.getDiscountedPricePerQuantity().stream()
-                    .map(dlipfq -> createPaypalPlusItem(customLineItem.getName().get(locales), dlipfq));
+                    .map(dlipfq -> createPaypalPlusItem(finalItemName, dlipfq));
         }
 
         MonetaryAmount actualCustomLineItemPrice = customLineItem.getMoney();
-        return Stream.of(createPaypalPlusItem(customLineItem.getName().get(locales),
+        return Stream.of(createPaypalPlusItem(itemName,
                 customLineItem.getQuantity(), actualCustomLineItemPrice));
     }
 

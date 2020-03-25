@@ -68,6 +68,25 @@ public class ProductNameMapperTest {
     }
 
     @Test
+    public void getPaypalItemName_shouldReturnProductNameWithAvailableLocale_whenGivenLocaleListHasNoMatch() {
+        // preparation
+        LineItem mockItem = Mockito.mock(LineItem.class);
+        ProductVariant mockVariant = Mockito.mock(ProductVariant.class);
+        Attribute attribute = Attribute.of(testAttrName, AttributeAccess.ofString(), "AttrVal");
+        Mockito.when(mockVariant.getAttribute(Mockito.anyString())).thenReturn(attribute);
+        Mockito.when(mockItem.getVariant()).thenReturn(mockVariant);
+        Mockito.when(mockItem.getName()).thenReturn(
+                LocalizedString.of(Locale.GERMANY, "product001"));
+        List<Locale> localeList = Stream.of(Locale.UK).collect(Collectors.toList());
+
+        // test
+        String paypalItemName = productNameMapper.getPaypalItemName(mockItem, localeList);
+
+        // assertions
+        assertEquals(paypalItemName, "AttrVal product001");
+    }
+
+    @Test
     public void getPaypalItemName_shouldReturnProductNameWithPrefix_whenAttributeIsTypeLocalizedString() {
         // preparation
         LineItem mockItem = Mockito.mock(LineItem.class);

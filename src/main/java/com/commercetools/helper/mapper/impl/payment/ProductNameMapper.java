@@ -35,6 +35,11 @@ public class ProductNameMapper {
      */
     public String getPaypalItemName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
         String productName = lineItem.getName().get(locales);
+        if (StringUtils.isBlank(productName)) {
+            Locale fallBackLocale = lineItem.getName().getLocales()
+                    .iterator().next();
+            productName = lineItem.getName().get(fallBackLocale);
+        }
         if (StringUtils.isNotBlank(prefixProductNameWithAttr)) {
             String prefix = getPrefixForProductName(lineItem, locales);
             if (StringUtils.isNotBlank(prefix)) {

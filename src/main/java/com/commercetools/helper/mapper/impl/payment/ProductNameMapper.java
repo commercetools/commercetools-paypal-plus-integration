@@ -18,8 +18,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import static com.commercetools.payment.constants.Psp.PRODUCT_NAME_MAX_LENGTH;
-
 @Component
 public class ProductNameMapper {
 
@@ -40,8 +38,7 @@ public class ProductNameMapper {
         if (StringUtils.isNotBlank(prefixProductNameWithAttr)) {
             String prefix = getPrefixForProductName(lineItem, locales);
             if (StringUtils.isNotBlank(prefix)) {
-                String withPrefix = prefix + StringUtils.SPACE + productName;
-                return withPrefix.length() < PRODUCT_NAME_MAX_LENGTH ? withPrefix : productName;
+                return prefix + StringUtils.SPACE + productName;
             }
         }
         return productName;

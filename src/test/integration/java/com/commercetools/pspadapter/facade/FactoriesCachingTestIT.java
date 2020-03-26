@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * caching. This set of tests verifies the caching works as expected.
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = Application.class, properties = {"spring.main.allow-bean-definition-overriding=true"})
 public class FactoriesCachingTestIT {
 
     @Autowired

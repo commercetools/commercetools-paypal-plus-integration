@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * but tests {@link CtpPaymentMethods#INSTALLMENT} payment creation.
  */
 @RunWith(BeforeAfterSpringTestRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = Application.class, properties = {"spring.main.allow-bean-definition-overriding=true"})
 @AutoConfigureMockMvc
 public class CommercetoolsCreatePaymentInstallmentIT extends BasePaymentIT {
 

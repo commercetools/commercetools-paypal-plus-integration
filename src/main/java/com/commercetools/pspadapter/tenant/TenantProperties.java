@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 @Configuration
-@ConfigurationProperties("tenantConfig")
+@ConfigurationProperties("tenant-config")
 @Validated
 public class TenantProperties {
 

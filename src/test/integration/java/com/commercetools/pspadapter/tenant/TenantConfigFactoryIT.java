@@ -13,7 +13,7 @@ import static com.commercetools.testUtil.TestConstants.SECOND_TEST_TENANT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.main.allow-bean-definition-overriding=true"})
 public class TenantConfigFactoryIT {
 
     @Autowired

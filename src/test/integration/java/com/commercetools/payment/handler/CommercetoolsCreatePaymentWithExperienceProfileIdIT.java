@@ -47,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Test payment creation with web experience profile id.
  */
 @RunWith(BeforeAfterSpringTestRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = Application.class, properties = {"spring.main.allow-bean-definition-overriding=true"})
 @AutoConfigureMockMvc
 @Import(WebProfileConfiguration.class)
 public class CommercetoolsCreatePaymentWithExperienceProfileIdIT extends BasePaymentIT {

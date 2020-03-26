@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(BeforeAfterSpringTestRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = Application.class, properties = {"spring.main.allow-bean-definition-overriding=true"})
 @AutoConfigureMockMvc
 public class CommercetoolsCreatePaymentsControllerIT extends BasePaymentIT {
 

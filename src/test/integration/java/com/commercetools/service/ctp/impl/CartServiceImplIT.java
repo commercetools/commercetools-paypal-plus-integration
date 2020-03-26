@@ -33,7 +33,7 @@ import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(BeforeAfterSpringTestRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = Application.class,properties = {"spring.main.allow-bean-definition-overriding=true"})
 public class CartServiceImplIT {
 
     @Autowired

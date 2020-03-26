@@ -58,7 +58,7 @@ import static org.mockito.Mockito.verify;
  * </ul>
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.main.allow-bean-definition-overriding=true"})
 public class CtpConfigStartupValidatorTestIT {
 
     @Autowired

@@ -11,7 +11,7 @@ import static com.commercetools.pspadapter.facade.CacheableConfigTestUtil.assert
 import static com.commercetools.testUtil.mockObjects.TenantConfigMockUtil.getMockTenantConfig;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.main.allow-bean-definition-overriding=true"})
 public class PaypalPlusFacadeFactoryIT {
 
     @Autowired

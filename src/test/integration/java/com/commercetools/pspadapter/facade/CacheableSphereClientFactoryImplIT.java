@@ -16,7 +16,7 @@ import static com.paypal.base.Constants.SANDBOX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = {"spring.main.allow-bean-definition-overriding=true"})
 public class CacheableSphereClientFactoryImplIT {
 
     @Autowired

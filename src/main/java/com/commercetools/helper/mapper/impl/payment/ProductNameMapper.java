@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -29,17 +30,30 @@ public class ProductNameMapper {
     }
 
     /**
+     * @param localizedString
+     * @param locales
+     * @return ctp product name String for matching locale
+     */
+    public String getCtpProductName(@Nonnull LocalizedString localizedString, @Nonnull List<Locale> locales){
+        String productName = localizedString.get(locales);
+        if (StringUtils.isBlank(productName)) {
+            Iterator<Locale> localeIterator = localizedString.getLocales().iterator();
+            if (localeIterator.hasNext()) {
+                Locale fallBackLocale = localeIterator.next();
+                productName = localizedString.get(fallBackLocale);
+            }
+        }
+        return productName;
+    }
+
+    /**
      * @param lineItem
      * @param locales
      * @return productName String that will be passed to paypal
      */
     public String getPaypalItemName(@Nonnull LineItem lineItem, @Nonnull List<Locale> locales) {
-        String productName = lineItem.getName().get(locales);
-        if (StringUtils.isBlank(productName)) {
-            Locale fallBackLocale = lineItem.getName().getLocales()
-                    .iterator().next();
-            productName = lineItem.getName().get(fallBackLocale);
-        }
+        String productName = this.getCtpProductName(lineItem.getName(), locales);
+
         if (StringUtils.isNotBlank(prefixProductNameWithAttr)) {
             String prefix = getPrefixForProductName(lineItem, locales);
             if (StringUtils.isNotBlank(prefix)) {

@@ -20,7 +20,6 @@ import com.paypal.api.payments.Transaction;
 import io.sphere.sdk.cartdiscounts.DiscountedLineItemPriceForQuantity;
 import io.sphere.sdk.carts.CustomLineItem;
 import io.sphere.sdk.carts.LineItem;
-import org.apache.commons.lang3.StringUtils;
 import org.javamoney.moneta.Money;
 
 import javax.annotation.Nonnull;
@@ -254,30 +253,23 @@ public abstract class BasePaymentMapperImpl implements PaymentMapper {
      * @see #mapCustomLineItemToPaypalPlusItem(CustomLineItem, List)
      */
     protected Stream<Item> mapCustomLineItemToPaypalPlusItem(@Nonnull CustomLineItem customLineItem, @Nonnull List<Locale> locales) {
-        String itemName = customLineItem.getName().get(locales);
-        if (StringUtils.isBlank(itemName)) {
-            Locale fallBackLocale = customLineItem.getName().getLocales()
-                    .iterator().next();
-            itemName = customLineItem.getName().get(fallBackLocale);
-        }
+        final String productName = productNameMapper.getCtpProductName(customLineItem.getName(), locales);
 
         if (customLineItem.getDiscountedPricePerQuantity().size() > 0) {
-            String finalItemName = itemName;
             return customLineItem.getDiscountedPricePerQuantity().stream()
-                    .map(dlipfq -> createPaypalPlusItem(finalItemName, dlipfq));
+                    .map(dlipfq -> createPaypalPlusItem(productName, dlipfq));
         }
 
         MonetaryAmount actualCustomLineItemPrice = customLineItem.getMoney();
-        return Stream.of(createPaypalPlusItem(itemName,
-                customLineItem.getQuantity(), actualCustomLineItemPrice));
+        return Stream.of(createPaypalPlusItem(productName, customLineItem.getQuantity(), actualCustomLineItemPrice));
     }
 
-    protected Item createPaypalPlusItem(String itemName,
+    protected Item createPaypalPlusItem(@Nonnull String itemName,
                                         @Nonnull DiscountedLineItemPriceForQuantity dlipfq) {
         return createPaypalPlusItem(itemName, dlipfq.getQuantity(), dlipfq.getDiscountedPrice().getValue());
     }
 
-    protected Item createPaypalPlusItem(String itemName,
+    protected Item createPaypalPlusItem(@Nonnull String itemName,
                                         @Nonnull Long quantity, @Nonnull MonetaryAmount price) {
         return new Item(itemName,
                 String.valueOf(quantity),

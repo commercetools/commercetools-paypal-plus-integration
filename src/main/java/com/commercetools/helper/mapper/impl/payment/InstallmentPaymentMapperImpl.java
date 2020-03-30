@@ -30,8 +30,9 @@ public class InstallmentPaymentMapperImpl extends BasePaymentMapperImpl implemen
 
     @Autowired
     public InstallmentPaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter,
-                                        @Nonnull AddressMapper addressMapper) {
-        super(paypalPlusFormatter, INSTALLMENT, addressMapper);
+                                        @Nonnull AddressMapper addressMapper,
+                                        @Nonnull ProductNameMapper productNameMapper) {
+        super(paypalPlusFormatter, INSTALLMENT, addressMapper, productNameMapper);
     }
 
     @Override

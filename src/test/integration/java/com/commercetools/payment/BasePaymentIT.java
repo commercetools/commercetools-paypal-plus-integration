@@ -21,6 +21,7 @@ import io.sphere.sdk.carts.commands.updateactions.AddPayment;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.json.SphereJsonUtils;
+import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.payments.Payment;
 import io.sphere.sdk.payments.PaymentDraftBuilder;
@@ -28,6 +29,11 @@ import io.sphere.sdk.payments.PaymentDraftDsl;
 import io.sphere.sdk.payments.commands.PaymentCreateCommand;
 import io.sphere.sdk.payments.queries.PaymentByIdGet;
 import io.sphere.sdk.products.*;
+import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
+import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
+import io.sphere.sdk.products.attributes.AttributeDefinitionDraftDsl;
+import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
@@ -53,6 +59,8 @@ import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.commercetools.helper.mapper.PaymentMapper.getApprovalUrl;
 import static com.commercetools.payment.constants.ctp.CtpPaymentCustomFields.APPROVAL_URL;
@@ -138,6 +146,7 @@ public class BasePaymentIT {
     protected CompletionStage<Cart> createCartCS(@Nonnull SphereClient sphereClient) {
         CartDraft dummyComplexCartWithDiscounts = CartDraftBuilder.of(getDummyComplexCartDraftWithDiscounts())
                 .currency(EUR)
+                .locale(Locale.GERMANY)
                 .build();
         CartDraft cartDraft = getProductsInjectedCartDraft(sphereClient, dummyComplexCartWithDiscounts);
 
@@ -145,8 +154,14 @@ public class BasePaymentIT {
     }
 
     public static CartDraft getProductsInjectedCartDraft(@Nonnull SphereClient sphereClient, CartDraft dummyComplexCartWithDiscounts) {
+        //Product Type attribute
+        AttributeDefinitionDraftDsl attributeDefinitionDraftDsl = AttributeDefinitionDraftBuilder.of(LocalizedEnumAttributeType.of(
+                LocalizedEnumValue.of("TestKey", LocalizedString.ofEnglish("TestAttributeValue"))
+        ), "marke", LocalizedString.ofEnglish("marke"), false).build();
+        List<AttributeDefinitionDraft> attributeDefinitionDraftList = Stream.of(attributeDefinitionDraftDsl).collect(Collectors.toList());
+
         //Create the product
-        ProductTypeDraftDsl typeDraftDsl = ProductTypeDraftBuilder.of(UUID.randomUUID().toString(), "testProd01", "testProd01", null).build();
+        ProductTypeDraftDsl typeDraftDsl = ProductTypeDraftBuilder.of(UUID.randomUUID().toString(), "testProd01", "testProd01", attributeDefinitionDraftList).build();
         ProductTypeCreateCommand productTypeCreateCommand = ProductTypeCreateCommand.of(typeDraftDsl);
         CompletionStage<Product> productCompletionStage = sphereClient.execute(productTypeCreateCommand)
                 .thenCompose(productType -> createDummyProduct(sphereClient, productType));
@@ -163,7 +178,10 @@ public class BasePaymentIT {
         CompletionStage<TaxCategory> taxCategoryCompletionStage = sphereClient.execute(TaxCategoryCreateCommand.of(test_taxCategory));
         TaxCategory taxCategory = taxCategoryCompletionStage.toCompletableFuture().join();
 
-        ProductVariantDraftDsl variantDraftDsl = ProductVariantDraftBuilder.of().price(PriceDraft.of(BigDecimal.valueOf(100), EUR)).build();
+        ProductVariantDraftDsl variantDraftDsl = ProductVariantDraftBuilder.of().price(PriceDraft.of(BigDecimal.valueOf(100), EUR))
+                .attributes(AttributeDraft.of("marke",
+                        LocalizedEnumValue.of("TestKey", LocalizedString.ofEnglish("TestAttributeValue"))))
+                .build();
 
         ProductDraftDsl productDraftDsl = ProductDraftBuilder
                 .of(productType, LocalizedString.ofEnglish("TestProd1"), LocalizedString.ofEnglish(UUID.randomUUID().toString()), Collections.emptyList())

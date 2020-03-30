@@ -18,7 +18,8 @@ public class DefaultPaymentMapperImpl extends BasePaymentMapperImpl implements P
 
     @Autowired
     public DefaultPaymentMapperImpl(@Nonnull PaypalPlusFormatter paypalPlusFormatter,
-                                    @Nonnull AddressMapper addressMapper) {
-        super(paypalPlusFormatter, DEFAULT, addressMapper);
+                                    @Nonnull AddressMapper addressMapper,
+                                    @Nonnull ProductNameMapper productNameMapper) {
+        super(paypalPlusFormatter, DEFAULT, addressMapper, productNameMapper);
     }
 }

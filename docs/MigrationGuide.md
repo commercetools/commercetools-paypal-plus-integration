@@ -104,3 +104,12 @@ to fallback to default description with payment reference:
 
 **Note**: according to [PayPal Plus documentation](https://developer.paypal.com/docs/api/payments/#definition-transaction)
 length of the description must be up to 127 characters, thus length of `reference` must be up to 116 characters.
+
+### To v0.8.0
+
+New service version is capable of adding prefix for product name of paypal `Item`. Prefix is constructed 
+through a product attribute. Attribute can be configured through `prefixProductNameWithAttr` optional 
+configuration property in application.yml file.
+
+**Note**: according to [PayPal Plus documentation](https://developer.paypal.com/docs/api/payments/v1/#definition-item)
+length of the product name must be up to 127 characters.

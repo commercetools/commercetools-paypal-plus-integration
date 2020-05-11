@@ -60,7 +60,7 @@ final depVersions = [
         apacheCollections  : '4.4',
 
         // tests
-        assertJ            : '3.16.0',
+        assertJ            : '3.16.1',
         systemRules        : '1.17.1',
         beforeTestRunner   : '0.1.0'
 ]

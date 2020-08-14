@@ -32,6 +32,7 @@ import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static com.commercetools.testUtil.TestConstants.MAIN_TEST_TENANT_NAME;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.lang.String.format;
+import static org.apache.tomcat.util.http.fileupload.disk.DiskFileItem.DEFAULT_CHARSET;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -153,14 +154,14 @@ public class CommercetoolsPaymentNotificationControllerIT extends BasePaymentIT 
     }
 
     public String getFakeNotificationEventResponseMock(String paypalPaymentId) throws IOException {
-        return new BufferedReader(new InputStreamReader(fakeNotificationResponseResource.getInputStream()))
+        return new BufferedReader(new InputStreamReader(fakeNotificationResponseResource.getInputStream(), DEFAULT_CHARSET))
                 .lines()
                 .collect(Collectors.joining())
                 .replaceAll("PAY-xxxxxx", paypalPaymentId);
     }
 
     public String getPaymentSaleCompletedResponseMock(String paypalPaymentId, String resourceId) throws IOException {
-        return new BufferedReader(new InputStreamReader(paymentSaleCompletedResponseResource.getInputStream()))
+        return new BufferedReader(new InputStreamReader(paymentSaleCompletedResponseResource.getInputStream(), DEFAULT_CHARSET))
                 .lines()
                 .collect(Collectors.joining())
                 .replaceAll("PAY-xxxxxx", paypalPaymentId)

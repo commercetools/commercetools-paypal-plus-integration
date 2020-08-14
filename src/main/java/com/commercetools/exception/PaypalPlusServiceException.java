@@ -30,7 +30,7 @@ public class PaypalPlusServiceException extends RuntimeException {
 
     @Override
     @Nullable
-    public PayPalRESTException getCause() {
+    public synchronized PayPalRESTException getCause() {
         return cause;
     }
 }

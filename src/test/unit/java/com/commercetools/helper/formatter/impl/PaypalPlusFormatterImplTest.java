@@ -131,17 +131,17 @@ public class PaypalPlusFormatterImplTest {
         assertThat(formatter.paypalPlusAmountToCtpMonetaryAmount("1234567890123456789", "CZK"))
                 .isEqualTo(Money.of(1234567890123456789L, "CZK"));
 
-        assertThat(formatter.paypalPlusAmountToCtpMonetaryAmount("-1234567890123456789", "EUR")
-                .isEqualTo(Money.of(-1234567890123456789L, "EUR")));
+        assertThat(formatter.paypalPlusAmountToCtpMonetaryAmount("-1234567890123456789", "EUR"))
+                .isEqualTo(Money.of(-1234567890123456789L, "EUR"));
 
-        assertThat(formatter.paypalPlusAmountToCtpMonetaryAmount("1234567853456785456789765456789045679.78", "USD")
-                .isEqualTo(Money.of(new BigDecimal("1234567853456785456789765456789045679.78"), "USD")));
+        assertThat(formatter.paypalPlusAmountToCtpMonetaryAmount("1234567853456785456789765456789045679.78", "USD"))
+                .isEqualTo(Money.of(new BigDecimal("1234567853456785456789765456789045679.78"), "USD"));
 
-        assertThat(formatter.paypalPlusAmountToCtpMonetaryAmount("-65476512379468971263487132641238412984.10", "DOP")
-                .isEqualTo(Money.of(new BigDecimal("-65476512379468971263487132641238412984.1"), "DOP")));
+        assertThat(formatter.paypalPlusAmountToCtpMonetaryAmount("-65476512379468971263487132641238412984.10", "DOP"))
+                .isEqualTo(Money.of(new BigDecimal("-65476512379468971263487132641238412984.1"), "DOP"));
 
-        assertThat(formatter.paypalPlusAmountToCtpMonetaryAmount("8834579872345823452354.07", "USD")
-                .isEqualTo(Money.of(new BigDecimal("8834579872345823452354.07"), "USD")));
+        assertThat(formatter.paypalPlusAmountToCtpMonetaryAmount("8834579872345823452354.07", "USD"))
+                .isEqualTo(Money.of(new BigDecimal("8834579872345823452354.07"), "USD"));
     }
 
     /**

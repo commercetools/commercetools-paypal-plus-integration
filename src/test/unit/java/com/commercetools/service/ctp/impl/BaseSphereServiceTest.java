@@ -19,6 +19,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import static com.commercetools.testUtil.AssertUtil.assertThatUpdateActionList;
 import static com.commercetools.testUtil.CompletionStageUtil.executeBlocking;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -77,7 +78,9 @@ public class BaseSphereServiceTest {
 
         ArgumentCaptor<PaymentUpdateCommand> commandCaptor = ArgumentCaptor.forClass(PaymentUpdateCommand.class);
         verify(sphereClient).execute(commandCaptor.capture());
-        assertThat(commandCaptor.getValue().getUpdateActions()).containsExactly(SetInterfaceId.of("42"));
+
+        assertThatUpdateActionList(commandCaptor.getValue().getUpdateActions())
+                .containsExactly(SetInterfaceId.of("42"));
 
         // multiple actions
         newPayment = executeBlocking(baseSphereService.returnSameInstanceIfEmptyListOrExecuteCommand(this.payment,
@@ -91,7 +94,8 @@ public class BaseSphereServiceTest {
         commandCaptor = ArgumentCaptor.forClass(PaymentUpdateCommand.class);
         // capture second call, so expected sphere client call twice and take values.get(1)
         verify(sphereClient, times(2)).execute(commandCaptor.capture());
-        assertThat(commandCaptor.getAllValues().get(1).getUpdateActions())
+
+        assertThatUpdateActionList(commandCaptor.getAllValues().get(1).getUpdateActions())
                 .containsExactly(
                         SetInterfaceId.of("42"),
                         SetStatusInterfaceText.of("success"),

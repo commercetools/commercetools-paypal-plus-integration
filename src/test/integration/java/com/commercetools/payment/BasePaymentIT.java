@@ -104,6 +104,7 @@ public class BasePaymentIT {
     public void setupBeforeAll() {
         initTenantConfigs();
         cleanupOrdersCartsPaymentsTypes(sphereClient);
+
         ctpConfigStartupValidator.validateTypes();
     }
 

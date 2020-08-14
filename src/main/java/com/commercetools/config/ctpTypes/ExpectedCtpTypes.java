@@ -30,7 +30,7 @@ public enum ExpectedCtpTypes {
     static final String PATH_TO_TYPE_MOCKS = "ctp/types/";
     static final String CTP_TYPE_MOCK_EXTENSION = ".json";
 
-    private String key;
+    final private String key;
 
     ExpectedCtpTypes(String key) {
         this.key = key;

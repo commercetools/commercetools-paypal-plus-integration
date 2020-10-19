@@ -56,7 +56,7 @@ final depVersions = [
         springBoot         : ext.springBoot,
         commercetoolsSdkJvm: '1.54.0',
         paypalPlusSdk      : '1.14.0',
-        guava              : '29.0-jre',
+        guava              : '30.0-jre',
         apacheCollections  : '4.4',
 
         // tests

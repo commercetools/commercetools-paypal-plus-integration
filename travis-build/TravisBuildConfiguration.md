@@ -3,7 +3,7 @@
 To execute Travis CI build we require for now:
   - `SPRING_APPLICATION_JSON` environment variable + (for integration tests)
   - `DOCKER_USERNAME` and `DOCKER_PASSWORD` for built container deployment to 
-  [Docker Hub](https://hub.docker.com/r/commercetoolsps/commercetools-paypal-plus-integration/)
+  [Docker Hub](https://hub.docker.com/r/commercetools/commercetools-paypal-plus-integration/)
 
 To protect the secret values [Google Cloud KMS](https://cloud.google.com/kms/) is used. 
 Pls, contact Professional Services team to get an access to the encrypted data.

@@ -26,7 +26,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 // project specific settings:
 final dockerContextDir = file('.')
 final dockerfileFile = file('docker-build/Dockerfile')
-final dockerRepository = 'commercetoolsps/commercetools-paypal-plus-integration'
+final dockerRepository = 'commercetools/commercetools-paypal-plus-integration'
 final dockerUserProperty = 'docker.username'
 final dockerPassProperty = 'docker.password'
 

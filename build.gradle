@@ -61,7 +61,7 @@ final depVersions = [
 
         // tests
         assertJ            : '3.19.0',
-        systemRules        : '1.17.1',
+        systemRules        : '1.19.0',
         beforeTestRunner   : '0.1.0'
 ]
 

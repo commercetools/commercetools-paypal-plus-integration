@@ -2,7 +2,7 @@ package com.commercetools.pspadapter.notification.validation;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -28,7 +28,7 @@ public class NotificationValidationFilterTest {
         when(mockRequest.getServletPath()).thenReturn("/notification-test-tenant-name/paypalplus/notification");
 
         doAnswer(invocation -> {
-            ServletRequest request = invocation.getArgumentAt(0, ServletRequest.class);
+            ServletRequest request = invocation.getArgument(0, ServletRequest.class);
             assertThat(request).isInstanceOf(MultipleReadServletRequest.class);
             return null;
         }).when(mockChain).doFilter(any(ServletRequest.class), any(ServletResponse.class));

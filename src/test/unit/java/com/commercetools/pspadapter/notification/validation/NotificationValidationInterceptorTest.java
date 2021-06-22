@@ -12,7 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import com.paypal.api.payments.Webhook;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.servlet.HandlerMapping;
@@ -40,20 +41,20 @@ public class NotificationValidationInterceptorTest {
         TenantConfigFactory configFactory = mock(TenantConfigFactory.class);
 
         TenantConfig tenantConfig = mock(TenantConfig.class);
-        when(configFactory.getTenantConfig(anyString())).thenReturn(Optional.of(tenantConfig));
-        when(tenantConfig.getAPIContextFactory()).thenReturn(mock(ExtendedAPIContextFactory.class));
+        Mockito.lenient().when(configFactory.getTenantConfig(anyString())).thenReturn(Optional.of(tenantConfig));
+        Mockito.lenient().when(tenantConfig.getAPIContextFactory()).thenReturn(mock(ExtendedAPIContextFactory.class));
 
         PaypalPlusPaymentService paymentService = mock(PaypalPlusPaymentService.class);
-        when(paymentService.validateNotificationEvent(any(), anyMapOf(String.class, String.class), any())).thenReturn(completedFuture(true));
+        Mockito.lenient().when(paymentService.validateNotificationEvent(any(), anyMapOf(String.class, String.class), any())).thenReturn(completedFuture(true));
 
         PaypalPlusFacade paypalPlusFacade = mock(PaypalPlusFacade.class);
-        when(paypalPlusFacade.getPaymentService()).thenReturn(paymentService);
+        Mockito.lenient().when(paypalPlusFacade.getPaymentService()).thenReturn(paymentService);
 
         WebhookContainer mockContainer = mock(WebhookContainerImpl.class);
-        when(mockContainer.getWebhookCompletionStageByTenantName(anyString())).thenReturn(CompletableFuture.completedFuture(new Webhook()));
+        Mockito.lenient().when(mockContainer.getWebhookCompletionStageByTenantName(anyString())).thenReturn(CompletableFuture.completedFuture(new Webhook()));
 
         PaypalPlusFacadeFactory paypalPlusFacadeFactory = mock(PaypalPlusFacadeFactory.class);
-        when(paypalPlusFacadeFactory.getPaypalPlusFacade(any())).thenReturn(paypalPlusFacade);
+        Mockito.lenient().when(paypalPlusFacadeFactory.getPaypalPlusFacade(any())).thenReturn(paypalPlusFacade);
         NotificationValidationInterceptor theObject = new NotificationValidationInterceptor(mockContainer, configFactory, paypalPlusFacadeFactory);
         NotificationValidationInterceptor interceptor = spy(theObject);
 

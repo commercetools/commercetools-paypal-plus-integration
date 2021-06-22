@@ -81,8 +81,8 @@ public class PrettyGsonMessageConverter extends GsonHttpMessageConverter {
      * @throws IOException                     in case of I/O errors
      * @throws HttpMessageNotWritableException in case of conversion errors
      */
-    @Override
-    protected void writeInternal(@Nullable final Object objectToWrite,
+
+    protected void writeGsonObj(@Nullable final Object objectToWrite,
                                  @Nullable final Type type,
                                  @Nonnull final HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {

@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -94,8 +94,8 @@ public class PaymentSaleRefundedProcessorTest extends BaseNotificationTest {
     }
 
     private void verifyUpdatePaymentCall(Payment ctpMockPayment, String refundedAmount, String refundedCurrency, InvocationOnMock invocation) {
-        Payment payment = invocation.getArgumentAt(0, Payment.class);
-        List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
+        Payment payment = invocation.getArgument(0, Payment.class);
+        List<UpdateAction<Payment>> updateActions = invocation.getArgument(1, List.class);
         assertThat(payment).isEqualTo(ctpMockPayment);
         assertThat(updateActions.size()).isEqualTo(2);
         // One of the action is AddInterfaceInteraction, which is common for all notification processors.

@@ -31,12 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class CommercetoolsGetPaymentsControllerIT extends BasePaymentIT {
 
-    @BeforeAllMethods
-    @Override
-    public void setupBeforeAll() {
-        super.setupBeforeAll();
-    }
-
     @AfterAllMethods
     @Override
     public void tearDownAfterAll() {
@@ -46,6 +40,7 @@ public class CommercetoolsGetPaymentsControllerIT extends BasePaymentIT {
     @Before
     @Override
     public void setUp() {
+        super.setupBeforeAll();
         super.setUp();
     }
 

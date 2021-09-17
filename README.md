@@ -1,6 +1,8 @@
 
 # commercetools _Paypal Plus_ Integration Service
 
+[![CI](https://github.com/commercetools/commercetools-paypal-plus-integration/actions/workflows/ci.yml/badge.svg)](https://github.com/commercetools/commercetools-paypal-plus-integration/actions/workflows/ci.yml)
+[![.github/workflows/cd.yml](https://github.com/commercetools/commercetools-paypal-plus-integration/actions/workflows/cd.yml/badge.svg)](https://github.com/commercetools/commercetools-paypal-plus-integration/actions/workflows/cd.yml)
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 

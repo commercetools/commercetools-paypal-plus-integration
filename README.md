@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/commercetools/commercetools-paypal-plus-integration.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-paypal-plus-integration)
 
 # commercetools _Paypal Plus_ Integration Service
 
@@ -13,6 +12,8 @@
 - [How to use](#how-to-use)
 - [HTTP Responses](#http-responses)
 - [Possible edge cases](#possible-edge-cases)
+- [How to encrypt/decrypt files](#how-to-encryptdecrypt-files)
+- [Build and deploy](#build-and-deploy)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -227,3 +228,58 @@ Additionally, response can contain additional response body. All fields of the r
     
     **Possible solution:** the backend has to compare total amount of the payment and total amount of payment's cart before calling `execute/payments` endpoint.
      In case of differences, the whole payment process must be restarted.
+
+## How to encrypt/decrypt files
+
+1. Request Professional Services team to add you as an encryptor/decryptor to 
+`ps-keyring#commercetools-paypal-plus-integration` key.
+
+1. [Install/update `gcloud` client (SDK)](https://cloud.google.com/sdk/gcloud/)
+
+1. Navigate to [`root`](/) directory.
+
+1. Run the following commands to:
+    - Encrypt `build-settings.sh` file (must be ignored by VCS):
+
+        ```bash
+        gcloud kms encrypt \
+            --project=professionalserviceslabs \
+            --location=global  \
+            --keyring=ps-keyring \
+            --key=commercetools-paypal-plus-integration \
+            --plaintext-file=build-settings.sh \
+            --ciphertext-file=build-settings.sh.enc
+        ```
+    
+    - Decrypt `build-settings.sh.enc`:
+    
+      ```bash
+      gcloud kms decrypt \
+                 --project=professionalserviceslabs \
+                 --location=global  \
+                 --keyring=ps-keyring \
+                 --key=commercetools-paypal-plus-integration \
+                 --plaintext-file=build-settings.sh \
+                 --ciphertext-file=build-settings.sh.enc
+       ```
+
+## Build and deploy
+
+- This module is deployed as docker image to dockerhub.
+
+- The build and deployment of the docker are done using github actions.
+
+- On each push to the remote github repository, the github action [ci](https://github.com/commercetools/commercetools-paypal-plus-integration/actions/workflows/ci.yml) is triggered, which builds the project and
+ executes it`s tests. 
+ 
+- The github action [cd](https://github.com/commercetools/commercetools-paypal-plus-integration/actions/workflows/cd.yml) is used to create the docker-image and deploy it to dockerhub. This action is triggered when a git release tag is
+ created.
+
+ There are two ways to create the release-tag:
+ - via command line
+
+ ```bash
+ git tag -a v1.0.1 -m "Minor text adjustments."
+ ```
+ 
+- via [Github UI](https://github.com/commercetools/commercetools-paypal-plus-integration/releases)

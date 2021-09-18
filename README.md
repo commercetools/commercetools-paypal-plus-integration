@@ -272,7 +272,7 @@ Additionally, response can contain additional response body. All fields of the r
 - The build and deployment of the docker are done using github actions.
 
 - On each push to the remote github repository, the github action [ci](https://github.com/commercetools/commercetools-paypal-plus-integration/actions/workflows/ci.yml) is triggered, which builds the project and
- executes it`s tests. 
+ executes its tests. 
  
 - The github action [cd](https://github.com/commercetools/commercetools-paypal-plus-integration/actions/workflows/cd.yml) is used to create the docker-image and deploy it to dockerhub. This action is triggered when a git release tag is
  created.

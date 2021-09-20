@@ -38,7 +38,6 @@ sourceCompatibility = 1.8
 version = '0.4.0-DEV' // this will be replaced by git tag version, if available
 
 apply from: "$rootDir/gradle/version-resolver.gradle"
-apply from: "$rootDir/gradle/docker-build.gradle"
 apply from: "$rootDir/gradle/test-config.gradle"
 apply from: "$rootDir/gradle/idea-config.gradle"
 

@@ -40,7 +40,7 @@ version = '0.4.0-DEV' // this will be replaced by git tag version, if available
 apply from: "$rootDir/gradle/version-resolver.gradle"
 apply from: "$rootDir/gradle/test-config.gradle"
 apply from: "$rootDir/gradle/idea-config.gradle"
-
+apply from: "$rootDir/gradle/set-library-version.gradle"
 
 jar {
     version = project.version

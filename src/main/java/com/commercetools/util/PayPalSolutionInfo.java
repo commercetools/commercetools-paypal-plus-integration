@@ -10,7 +10,7 @@ public final class PayPalSolutionInfo extends SolutionInfo {
 
   /**
    * Extends {@link SolutionInfo} class of the JVM SDK to append to the User-Agent header with
-   * information of the commercetools-sync-java library
+   * information of the commercetools-paypal-plus-integration library
    *
    * <p>A User-Agent header with a solution information looks like this: {@code
    * commercetools-jvm-sdk/1.46.1 (AHC/2.0) Java/1.8.0_92-b14 (Mac OS X; x86_64) {@value

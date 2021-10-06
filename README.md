@@ -15,7 +15,6 @@
 - [Possible edge cases](#possible-edge-cases)
 - [How to encrypt/decrypt files](#how-to-encryptdecrypt-files)
 - [Build and deploy](#build-and-deploy)
-
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Definition

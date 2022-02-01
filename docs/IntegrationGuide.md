@@ -3,7 +3,7 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
+- [Architectural diagram](#architectural-diagram)
 - [Setup docker container](#setup-docker-container)
 - [Preparing Paypal Plus accounts](#preparing-paypal-plus-accounts)
 - [Preparing commercetools Platform accounts](#preparing-commercetools-platform-accounts)
@@ -17,6 +17,14 @@
 
 This documentation describes how to setup, start and use `commercetools-paypal-plus-integtration-java` service.
 
+## Architectural Diagram
+![paypal-plus-architecture](paypal-plus-architecture.jpg)
+
+1. Create a payment in CT platform and obtain payment ID.
+2. Send POST request with the obtained payment ID to Create API of paypal-integration.
+3. Update user's details by posting the payment object to Patch API of paypal-integration.
+4. Execute the payment in front-end, and Paypal-plus returns a URL to front-end and redirect the user to payment authorization page.
+ 
 ## Setup docker container
 
 ## Preparing Paypal Plus accounts

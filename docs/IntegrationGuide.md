@@ -39,8 +39,8 @@ SPRING_APPLICATION_JSON='{
           "clientSecret": "xxx"
         },
         "paypalPlus": {
-          "id": "AUUO1sKESnTBUoSMVl0tiDHe6vtBygivsi5hUd085F5r71AKtsgBI",
-          "secret": "ELgrCGsdoefKT4rHIzkdjeG1aozJk_nT0reyEokLZCe7O-J8kklktPC",
+          "id": <your-paypal-plus-id>,
+          "secret": <your-paypal-plus-secret>,
           "mode": "sandbox"
         }
       },
@@ -51,16 +51,18 @@ SPRING_APPLICATION_JSON='{
           "clientSecret": "xxx"
         },
         "paypalPlus": {
-          "id": "AUUO1sKESnTBUoSMVl0tiDHe6vtBygivsi5hUd085F5r71AKtsgBI",
-          "secret": "ELgrCGsdoefKT4rHIzkdjeG1aozJk_nT0reyEokLZCe7O-J8kklktPC",
+          "id": <your-paypal-plus-id>,
+          "secret": <your-paypal-plus-secret>,
           "mode": "sandbox"
         }
       }
     }
   },
-  "ctp.paypal.plus.integration.server.url": "https://my-deployed-paypal-plus-serviceurl.de"
+  "ctp.paypal.plus.integration.server.url": <The URL of this deployed paypal integration application>
 }'
 ```
+
+
 
 ## CTP custom types synchronization on startup
 

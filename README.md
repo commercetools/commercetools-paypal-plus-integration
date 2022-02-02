@@ -6,6 +6,7 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Definition](#definition)
+- [Architecture](#architecture)
 - [Front-end integration guide](#front-end-integration-guide)
 - [Local debug](#local-debug)
 - [Tests](#tests)
@@ -23,6 +24,15 @@ In this process, there are 3 parties involved:
 * **The backend** - the shop server.
 * **Paypal-integration** - hosted service (this repository) which exposes public endpoints 
 
+
+## Architectural Diagram
+![paypal-plus-architecture](docs/paypal-plus-architecture.jpg)
+
+1. Create a payment in CT platform and obtain payment ID.
+2. Send POST request with the obtained payment ID to Create API of paypal-integration.
+3. Update user's details by posting the payment object to Patch API of paypal-integration.
+4. Execute the payment in front-end, and Paypal-plus returns a URL to front-end and redirect the user to payment authorization page.
+ 
 ## Front-end integration guide
 
 See [commercetools _Paypal Plus_ Service Integration Guide](/docs/IntegrationGuide.md) documentation.

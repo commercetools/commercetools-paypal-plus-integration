@@ -6,7 +6,7 @@
 - [Setup docker container](#setup-docker-container)
 - [Preparing Paypal Plus accounts](#preparing-paypal-plus-accounts)
 - [Preparing commercetools Platform accounts](#preparing-commercetools-platform-accounts)
-- [Front-end workflow](#front-end-workflow)
+- [Configuration](#configuration)
 - [CTP custom types synchronization on startup](#ctp-custom-types-synchronization-on-startup)
 - [Prevent shipping (delivery) address change in Paypal Payment Dialog](#prevent-shipping-delivery-address-change-in-paypal-payment-dialog)
 - [Create default payments](#create-default-payments)
@@ -26,7 +26,41 @@ This documentation describes how to setup, start and use `commercetools-paypal-p
   [ctPaymentCustomType.json](/src/main/resources/referenceModels/ctPaymentCustomType.json). See also 
   [CtpPaymentCustomFields](/src/main/java/com/commercetools/payment/constants/ctp/CtpPaymentCustomFields.java) class.
 
-## Front-end workflow
+## Configuration
+Application on startup will try to load the required configuration as environment variable named "SPRING_APPLICATION_JSON". The value should be not formatted JSON:
+```
+SPRING_APPLICATION_JSON='{
+  "tenantConfig": {
+    "tenants": {
+      "my-commercetools-projectkey1": {
+        "ctp": {
+          "projectKey": "my-commercetools-projectkey1",
+          "clientId": "xxx",
+          "clientSecret": "xxx"
+        },
+        "paypalPlus": {
+          "id": "AUUO1sKESnTBUoSMVl0tiDHe6vtBygivsi5hUd085F5r71AKtsgBI",
+          "secret": "ELgrCGsdoefKT4rHIzkdjeG1aozJk_nT0reyEokLZCe7O-J8kklktPC",
+          "mode": "sandbox"
+        }
+      },
+      "my-commercetools-projectkey2": {
+        "ctp": {
+          "projectKey": "my-commercetools-projectkey2",
+          "clientId": "xxx",
+          "clientSecret": "xxx"
+        },
+        "paypalPlus": {
+          "id": "AUUO1sKESnTBUoSMVl0tiDHe6vtBygivsi5hUd085F5r71AKtsgBI",
+          "secret": "ELgrCGsdoefKT4rHIzkdjeG1aozJk_nT0reyEokLZCe7O-J8kklktPC",
+          "mode": "sandbox"
+        }
+      }
+    }
+  },
+  "ctp.paypal.plus.integration.server.url": "https://my-deployed-paypal-plus-serviceurl.de"
+}'
+```
 
 ## CTP custom types synchronization on startup
 

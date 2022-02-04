@@ -27,7 +27,7 @@ This documentation describes how to setup, start and use `commercetools-paypal-p
   [CtpPaymentCustomFields](/src/main/java/com/commercetools/payment/constants/ctp/CtpPaymentCustomFields.java) class.
 
 ## Configuration
-Application on startup will try to load the required configuration as environment variable named "SPRING_APPLICATION_JSON". The value should be not formatted JSON:
+Application on startup will try to load the required configuration as environment variable named "SPRING_APPLICATION_JSON" :
 ```
 SPRING_APPLICATION_JSON='{
   "tenantConfig": {

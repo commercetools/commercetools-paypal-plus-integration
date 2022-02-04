@@ -41,7 +41,7 @@ In this process, there are 3 parties involved:
     ```
     For details, please see [the section 1.1 of How to use](#how-to-use)
     
-4. Execute the payment in front-end, and Paypal-plus returns a URL to front-end and redirect the user to payment authorization page.
+4. Shop backend executes the payment in front-end, Paypal-plus returns a URL to front-end and shop backend redirects the user to payment authorization page.
  
 ## Front-end integration guide
 

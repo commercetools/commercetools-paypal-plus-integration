@@ -29,19 +29,19 @@ In this process, there are 3 parties involved:
 ![paypal-plus-architecture](docs/paypal-plus-architecture.jpg)
 
 1. Shop backend creates a payment in CT platform and obtains payment ID.
-2. Shop backend sends POST request with the obtained payment ID to following Create API of paypal-integration.
+1. Shop backend sends POST request with the obtained payment ID to following Create API of paypal-integration.
     ```
     http://paypal-plus-integration-server.com/${tenantName}/commercetools/create/payments/${ctpPaymentId} 
     ```
     For details, please see [the section 1.1 of How to use](#how-to-use)
 
-3. Shop backend updates user's details by posting the payment object to following Patch API of paypal-integration.
+1. Shop backend updates user's details by posting the payment object to following Patch API of paypal-integration.
     ```
     http://paypal-plus-integration-server.com/${tenantName}/commercetools/patch/payments/${ctpPaymentId}
     ```
     For details, please see [the section 1.1 of How to use](#how-to-use)
     
-4. Shop backend executes the payment in front-end, Paypal-plus returns a URL to front-end and shop backend redirects the user to payment authorization page.
+1. Shop backend executes the payment in front-end, Paypal-plus returns a URL to front-end and shop backend redirects the user to payment authorization page.
  
 ## Front-end integration guide
 
@@ -127,7 +127,7 @@ which is used for local run/debug, because the integration tests will remove all
         If request was successful both response body and CTP payment object will have `approvalUrl` defined.
     1. Frontend uses returned `approvalUrl` to render available payment methods as described in the Paypal Plus integration documentation.
 
-2. Add user's addresses to Paypal Plus
+1. Add user's addresses to Paypal Plus
     1. Before redirect the user to Paypal, backend POSTs CTP payment ID to Paypal-integration:
         ```
         POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/patch/payments/${ctpPaymentId}
@@ -147,7 +147,7 @@ which is used for local run/debug, because the integration tests will remove all
          });
      ```
 
-3. Execute payment after user successfully finished PayPal Plus checkout and was redirected back to the shop through `successUrl`.
+1. Execute payment after user successfully finished PayPal Plus checkout and was redirected back to the shop through `successUrl`.
     PayPal Plus will set 3 request parameters to `successUrl`:
     - `token`
     - `paymentId` - identifies this particular payment. **Required for execute payment.**
@@ -171,12 +171,12 @@ which is used for local run/debug, because the integration tests will remove all
         {"payment":"{\"id\":\"PAY-xxx\",\"intent\":\"sale\",\"cart\":\"1234abcd\", .... }"}
         ``` 
     
-    2. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them in the request body to Paypal-integration for payment execution. Example:
+    1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them in the request body to Paypal-integration for payment execution. Example:
         ```
         POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
         {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
         ```
-    3. In case of **invoice payment**, the bank details for the invoice will be saved as custom fields in the Payment object. Example:
+    1. In case of **invoice payment**, the bank details for the invoice will be saved as custom fields in the Payment object. Example:
         ```json
         {
            "custom": {
@@ -203,21 +203,20 @@ which is used for local run/debug, because the integration tests will remove all
     
 ## HTTP Responses
 All endpoints accept and return data as JSON.
-
 1. Return HTTP codes on `create/payments` endpoint URL:
-- **201**: successfully created payment in PayPal and CTP updated with approvalUrl as custom field
+    - **201**: successfully created payment in PayPal and CTP updated with approvalUrl as custom field
 
 1. Return HTTP codes on `execute/payments` endpoint URL:
-- **201**: successfully executed payment in PayPal, created transaction in CTP
+    - **201**: successfully executed payment in PayPal, created transaction in CTP
 
 1. Return HTTP codes on `paypalplus/payments/${paypalPaymentId}` endpoint URL:
-- **200**: Paypal payment found and returned as JSON response body
+    - **200**: Paypal payment found and returned as JSON response body
 
 1. Common error codes
-- **404**: resource not found by the supplied UUID/ID
-- **400**: required request parameters are missing or wrong
-- **503**: any exception which implies that request can be safely retried with the same parameters/payload again
-- **500**: unexpected/not handled exceptions
+    - **404**: resource not found by the supplied UUID/ID
+    - **400**: required request parameters are missing or wrong
+    - **503**: any exception which implies that request can be safely retried with the same parameters/payload again
+    - **500**: unexpected/not handled exceptions
 
 Additionally, response can contain additional response body. All fields of the response body are optional. Example:
 ```json

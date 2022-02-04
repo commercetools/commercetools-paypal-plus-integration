@@ -28,7 +28,7 @@ In this process, there are 3 parties involved:
 ## Architectural Diagram
 ![paypal-plus-architecture](docs/paypal-plus-architecture.jpg)
 
-1. Create a payment in CT platform and obtain payment ID.
+1. Shop backend creates a payment in CT platform and obtains payment ID.
 2. Send POST request with the obtained payment ID to Create API of paypal-integration.
 3. Update user's details by posting the payment object to Patch API of paypal-integration.
 4. Execute the payment in front-end, and Paypal-plus returns a URL to front-end and redirect the user to payment authorization page.

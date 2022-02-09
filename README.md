@@ -26,7 +26,7 @@ In this process, there are 3 parties involved:
 
 
 ## Architectural Diagram
-![paypal-plus-architecture](docs/paypal-plus-architecture.jpg)
+![paypal-plus-architecture](./docs/paypal-plus-architecture.jpg)
 
 1. Shop backend creates a payment in CT platform and obtains payment ID.
 1. Shop backend sends POST request with the obtained payment ID to following Create API of paypal-integration.
@@ -41,8 +41,17 @@ In this process, there are 3 parties involved:
     ```
     For details, please see [the section 1.1 of How to use](#how-to-use)
     
-1. Shop backend executes the payment in front-end, Paypal-plus returns a URL to front-end and shop backend redirects the user to payment authorization page.
- 
+1. Shop front-end trigger  Paypal-plus checkout function, customer is redirected to payment authorization page. Once completed, it returns a success URL which redirects the customer back to order confirmation page in the shop front-end.
+
+1. After order confirmation, shop front-end extracts payer ID and Paypal payment ID, and send them to shop back-end. Back-end sends POST request to following Execute API of paypal-integration.
+   ```
+   http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
+   ```
+   The request of above API should be with payload as follow :
+   ```
+   {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
+   ```
+  
 ## Front-end integration guide
 
 See [commercetools _Paypal Plus_ Service Integration Guide](/docs/IntegrationGuide.md) documentation.

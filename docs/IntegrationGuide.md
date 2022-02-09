@@ -29,39 +29,11 @@ This documentation describes how to setup, start and use `commercetools-paypal-p
 ## Configuration
 Application on startup will try to load the required configuration as environment variable named "SPRING_APPLICATION_JSON" :
 ```
-SPRING_APPLICATION_JSON='{
-  "tenantConfig": {
-    "tenants": {
-      "my-commercetools-projectkey1": {
-        "ctp": {
-          "projectKey": "my-commercetools-projectkey1",
-          "clientId": "xxx",
-          "clientSecret": "xxx"
-        },
-        "paypalPlus": {
-          "id": <your-paypal-plus-id>,
-          "secret": <your-paypal-plus-secret>,
-          "mode": "sandbox"
-        }
-      },
-      "my-commercetools-projectkey2": {
-        "ctp": {
-          "projectKey": "my-commercetools-projectkey2",
-          "clientId": "xxx",
-          "clientSecret": "xxx"
-        },
-        "paypalPlus": {
-          "id": <your-paypal-plus-id>,
-          "secret": <your-paypal-plus-secret>,
-          "mode": "sandbox"
-        }
-      }
-    }
-  },
-  "ctp.paypal.plus.integration.server.url": <The URL of this deployed paypal integration application>
-}'
+SPRING_APPLICATION_JSON={"tenantConfig":{"tenants":{"my-commercetools-projectkey1":{"ctp":{"projectKey":"my-commercetools-projectkey1","clientId":"xxx","clientSecret":"xxx"},"paypalPlus":{"id":<your-paypal-plus-id>,"secret": <your-paypal-plus-secret>,"mode": "sandbox"}},"my-commercetools-projectkey2":{"ctp":{"projectKey":"my-commercetools-projectkey2","clientId":"xxx","clientSecret": "xxx"},"paypalPlus":{"id": <your-paypal-plus-id>,"secret":<your-paypal-plus-secret>,"mode":"sandbox"}}}},"ctp.paypal.plus.integration.server.url":<The URL of this deployed paypal integration application>}
 ```
 
+- The JSON string should NOT be formatted.
+- Be careful that variables like project key, paypal plus account ID and so on are within the above JSON string. Please change it appropriately before the usage.
 
 
 ## CTP custom types synchronization on startup

@@ -6,6 +6,7 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Definition](#definition)
+- [Architecture](#architecture)
 - [Front-end integration guide](#front-end-integration-guide)
 - [Local debug](#local-debug)
 - [Tests](#tests)
@@ -23,6 +24,34 @@ In this process, there are 3 parties involved:
 * **The backend** - the shop server.
 * **Paypal-integration** - hosted service (this repository) which exposes public endpoints 
 
+
+## Architectural Diagram
+![paypal-plus-architecture](docs/paypal-plus-architecture.jpg)
+
+1. Shop backend creates a payment in CT platform and obtains payment ID.
+1. Shop backend sends POST request with the obtained payment ID to following Create API of paypal-integration.
+    ```
+    http://paypal-plus-integration-server.com/${tenantName}/commercetools/create/payments/${ctpPaymentId} 
+    ```
+    For details, please see [the section 1.1 of How to use](#how-to-use)
+
+1. Shop backend updates user's details by posting the payment object to following Patch API of paypal-integration.
+    ```
+    http://paypal-plus-integration-server.com/${tenantName}/commercetools/patch/payments/${ctpPaymentId}
+    ```
+    For details, please see [the section 1.1 of How to use](#how-to-use)
+    
+1. Shop front-end trigger  Paypal-plus checkout function, customer is redirected to payment authorization page. Once completed, it returns a success URL which redirects the customer back to order confirmation page in the shop front-end.
+
+1. After order confirmation, shop front-end extracts payer ID and Paypal payment ID, and send them to shop back-end. Back-end sends POST request to following Execute API of paypal-integration.
+   ```
+   http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
+   ```
+   The request of above API should be with payload as follow :
+   ```
+   {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
+   ```
+  
 ## Front-end integration guide
 
 See [commercetools _Paypal Plus_ Service Integration Guide](/docs/IntegrationGuide.md) documentation.
@@ -152,52 +181,51 @@ which is used for local run/debug, because the integration tests will remove all
         ``` 
     
     1. Backend extracts PayPal specific parameters: `paymentId`, `PayerID` and POSTs them in the request body to Paypal-integration for payment execution. Example:
-    ```
-    POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
-    {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
-    ```
+        ```
+        POST http://paypal-plus-integration-server.com/${tenantName}/commercetools/execute/payments/
+        {"paypalPlusPaymentId": "${paymentId}", "paypalPlusPayerId": "${payerId}"}
+        ```
     1. In case of **invoice payment**, the bank details for the invoice will be saved as custom fields in the Payment object. Example:
-    ```json
-    {
-       "custom": {
-        "type": {
-          "typeId": "type",
-          "id": "1455d4e6-41b4-yyyy-xxxx-4f120864e231"
-        },
-        "fields": {
-          "reference": "6KF07542JV235932C",
-          "description": "Thank you for your order. Order number: 12345",
-          "paymentDueDate": "2017-09-27",
-          "amount": {
-            "centAmount": 200,
-            "currencyCode": "EUR"
-          },
-          "paidToIBAN": "DE1212121212123456789",
-          "paidToAccountBankName": "Deutsche Bank",
-          "paidToAccountHolderName": "PayPal Europe",
-          "paidToBIC": "DEUTDEDBPAL"
+        ```json
+        {
+           "custom": {
+            "type": {
+              "typeId": "type",
+              "id": "1455d4e6-41b4-yyyy-xxxx-4f120864e231"
+            },
+            "fields": {
+              "reference": "6KF07542JV235932C",
+              "description": "Thank you for your order. Order number: 12345",
+              "paymentDueDate": "2017-09-27",
+              "amount": {
+                "centAmount": 200,
+                "currencyCode": "EUR"
+              },
+              "paidToIBAN": "DE1212121212123456789",
+              "paidToAccountBankName": "Deutsche Bank",
+              "paidToAccountHolderName": "PayPal Europe",
+              "paidToBIC": "DEUTDEDBPAL"
+            }
+          }
         }
-      }
-    }
-    ``` 
+        ``` 
     
 ## HTTP Responses
 All endpoints accept and return data as JSON.
-
 1. Return HTTP codes on `create/payments` endpoint URL:
-- **201**: successfully created payment in PayPal and CTP updated with approvalUrl as custom field
+    - **201**: successfully created payment in PayPal and CTP updated with approvalUrl as custom field
 
 1. Return HTTP codes on `execute/payments` endpoint URL:
-- **201**: successfully executed payment in PayPal, created transaction in CTP
+    - **201**: successfully executed payment in PayPal, created transaction in CTP
 
 1. Return HTTP codes on `paypalplus/payments/${paypalPaymentId}` endpoint URL:
-- **200**: Paypal payment found and returned as JSON response body
+    - **200**: Paypal payment found and returned as JSON response body
 
 1. Common error codes
-- **404**: resource not found by the supplied UUID/ID
-- **400**: required request parameters are missing or wrong
-- **503**: any exception which implies that request can be safely retried with the same parameters/payload again
-- **500**: unexpected/not handled exceptions
+    - **404**: resource not found by the supplied UUID/ID
+    - **400**: required request parameters are missing or wrong
+    - **503**: any exception which implies that request can be safely retried with the same parameters/payload again
+    - **500**: unexpected/not handled exceptions
 
 Additionally, response can contain additional response body. All fields of the response body are optional. Example:
 ```json

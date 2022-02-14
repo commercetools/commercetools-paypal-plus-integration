@@ -3,11 +3,10 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Setup docker container](#setup-docker-container)
 - [Preparing Paypal Plus accounts](#preparing-paypal-plus-accounts)
 - [Preparing commercetools Platform accounts](#preparing-commercetools-platform-accounts)
-- [Front-end workflow](#front-end-workflow)
+- [Configuration](#configuration)
 - [CTP custom types synchronization on startup](#ctp-custom-types-synchronization-on-startup)
 - [Prevent shipping (delivery) address change in Paypal Payment Dialog](#prevent-shipping-delivery-address-change-in-paypal-payment-dialog)
 - [Create default payments](#create-default-payments)
@@ -27,7 +26,15 @@ This documentation describes how to setup, start and use `commercetools-paypal-p
   [ctPaymentCustomType.json](/src/main/resources/referenceModels/ctPaymentCustomType.json). See also 
   [CtpPaymentCustomFields](/src/main/java/com/commercetools/payment/constants/ctp/CtpPaymentCustomFields.java) class.
 
-## Front-end workflow
+## Configuration
+Application on startup will try to load the required configuration as environment variable named "SPRING_APPLICATION_JSON" :
+```
+SPRING_APPLICATION_JSON={"tenantConfig":{"tenants":{"my-commercetools-projectkey1":{"ctp":{"projectKey":"my-commercetools-projectkey1","clientId":"xxx","clientSecret":"xxx"},"paypalPlus":{"id":<your-paypal-plus-id>,"secret": <your-paypal-plus-secret>,"mode": "sandbox"}},"my-commercetools-projectkey2":{"ctp":{"projectKey":"my-commercetools-projectkey2","clientId":"xxx","clientSecret": "xxx"},"paypalPlus":{"id": <your-paypal-plus-id>,"secret":<your-paypal-plus-secret>,"mode":"sandbox"}}}},"ctp.paypal.plus.integration.server.url":<The URL of this deployed paypal integration application>}
+```
+
+- The JSON string should NOT be formatted.
+- Be careful that variables like project key, paypal plus account ID and so on are within the above JSON string. Please change it appropriately before the usage.
+
 
 ## CTP custom types synchronization on startup
 

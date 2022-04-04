@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static com.commercetools.testUtil.mockObjects.TenantPropertiesMock.setUpMockTenantProperties;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,10 +19,10 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class CtpFacadeFactoryImplTest {
 
-    @Mock
+    @Mock(lenient = true)
     private SphereClientFactory sphereClientFactory;
 
-    @Mock
+    @Mock(lenient = true)
     private SphereClient sphereClient;
 
     @Before

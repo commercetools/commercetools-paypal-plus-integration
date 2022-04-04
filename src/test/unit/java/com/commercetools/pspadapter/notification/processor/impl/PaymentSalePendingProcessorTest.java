@@ -21,7 +21,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
@@ -95,7 +96,7 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
     @Test
     public void shouldCallUpdatePaymentWithCorrectArgs() {
         // set up
-        when(existingCtpTransaction.getType()).thenReturn(TransactionType.CHARGE);
+        Mockito.lenient().when(existingCtpTransaction.getType()).thenReturn(TransactionType.CHARGE);
         when(existingCtpTransaction.getState()).thenReturn(TransactionState.SUCCESS);
 
         // test
@@ -110,13 +111,13 @@ public class PaymentSalePendingProcessorTest extends BaseNotificationTest {
     @Test
     public void whenTransactionIsNotFound_shouldAddNewTransaction() {
         // set up
-        when(existingCtpTransaction.getType()).thenReturn(TransactionType.REFUND);
-        when(existingCtpTransaction.getInteractionId()).thenReturn(TEST_INTERACTION_ID + "_random_text");
-        when(existingCtpTransaction.getState()).thenReturn(TransactionState.SUCCESS);
+        Mockito.lenient().when(existingCtpTransaction.getType()).thenReturn(TransactionType.REFUND);
+        Mockito.lenient().when(existingCtpTransaction.getInteractionId()).thenReturn(TEST_INTERACTION_ID + "_random_text");
+        Mockito.lenient().when(existingCtpTransaction.getState()).thenReturn(TransactionState.SUCCESS);
 
         // test
         doAnswer(invocation -> {
-            List<UpdateAction<Payment>> updateActions = invocation.getArgumentAt(1, List.class);
+            List<UpdateAction<Payment>> updateActions = invocation.getArgument(1, List.class);
             assertThat(updateActions.size()).isEqualTo(2);
             UpdateAction<Payment> addInterfaceInteractionAction = updateActions.get(0);
             assertThat(addInterfaceInteractionAction).isInstanceOf(AddInterfaceInteraction.class);
